@@ -88,6 +88,13 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: opacity 0.7s var(--ease), visibility 0.7s;
 }
 .loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+/* Failsafe: if the script never runs at all -- blocked by CSP, JS disabled,
+   a parse error -- the spinner must not sit over the content forever. Pure
+   CSS, so it fires with no JS involved. */
+.loader { animation: loaderFailsafe 0s 4s forwards; }
+@keyframes loaderFailsafe {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
 .loader-ring {
   width: 46px;
   height: 46px;
@@ -639,16 +646,17 @@ a.cert-name:hover { color: var(--cyan); }
 }
 .footer-sep { opacity: 0.5; }
 
-.noscript {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: grid;
-  place-content: center;
-  background: var(--bg);
-  color: var(--text);
-  padding: 2rem;
+/* Non-blocking: sits above the nav, never covers content. */
+.noscript-note {
+  position: relative;
+  z-index: 70;
+  margin: 0;
+  padding: 0.7rem 1rem;
   text-align: center;
+  font-size: 0.82rem;
+  color: #ffd9a8;
+  background: rgba(60, 38, 8, 0.9);
+  border-bottom: 1px solid rgba(255, 190, 100, 0.3);
 }
 
 /* ---------- reveal ---------- */

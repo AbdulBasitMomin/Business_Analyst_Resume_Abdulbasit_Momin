@@ -41,21 +41,46 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-## Single-file preview
-
-For a copy that needs no server, no network and no hosting at all:
+## Build
 
 ```bash
-python3 tools/build-standalone.py    # -> dist/resume-standalone.html (~950 KB)
+# 1. serve the source
+npx http-server -p 8123 -s .
+
+# 2. bake the rendered DOM into static HTML (needs Playwright)
+node tools/prerender.mjs http://localhost:8123/ dist/index.html
+
+# 3. inline everything into one portable file
+python3 tools/build-standalone.py dist/index.html
 ```
 
-That inlines the CSS, flattens the ES modules into one inline module script and
-embeds three.js as a base64 `data:` URL, so the result opens straight off the
-filesystem and can be emailed or AirDropped as a single file. Verified rendering
-from `file://` with all network requests blocked.
+**`tools/prerender.mjs`** drives a real browser, waits for the render, then
+snapshots the DOM. Without this a crawler — or any viewer where scripts are
+blocked — sees an empty shell. The scripts stay in the snapshot and re-render
+the same sections on load, which is idempotent, so the 3D still attaches.
 
-The web fonts are the one thing still fetched over the network; without it the
-page falls back to the system sans-serif and looks essentially the same.
+**`tools/build-standalone.py`** produces `dist/resume-standalone.html` (~790 KB):
+one file, no server, no network, no relative requests. Email it or AirDrop it.
+
+Two hard-won constraints are encoded in that bundler:
+
+- **No `data:` URL for three.js.** The obvious build maps the bare `three`
+  specifier to a base64 `data:` URL via an importmap. Any CSP that omits
+  `data:` from `script-src` refuses it — which is what in-app preview panels,
+  email clients and corporate proxies all send. The failure is total: the
+  module never runs and the page sits on its spinner forever.
+- **No flat concatenation either.** Merging the modules into one shared scope
+  collides identifiers: minified three.js declares `el`, and so does `ui.js`
+  (`Identifier 'el' has already been declared`). Each module therefore gets
+  its own IIFE returning its exports, with imports rebound from the enclosing
+  module objects — real module scoping in a classic script.
+
+Verified in a real browser across four environments — normal `file://`, a CSP
+without `data:` scripts, `script-src 'none'`, and JavaScript disabled outright.
+All four show the complete resume; the last two simply lose the 3D.
+
+Web fonts are the only remaining network fetch; without them the page falls
+back to the system sans-serif and looks essentially the same.
 
 ## Deploying
 
@@ -85,8 +110,10 @@ publishes the source, so keep anything sensitive out of `data.js`.
 
 ## Accessibility & performance
 
-- Content renders before the 3D layers, so the page is fully readable if WebGL
-  fails or is unavailable.
+- Content is prerendered into the markup and rendered before the 3D layers, so
+  the page is fully readable if WebGL fails, scripts are blocked, or JS is off.
+- A pure-CSS failsafe hides the loading spinner after 4s, so a script that
+  never runs cannot leave it covering the page.
 - `prefers-reduced-motion` disables the animation loops and reveal transitions.
 - Device pixel ratio is capped at 2; particle count drops on small viewports;
   rendering stops entirely while the tab is hidden.
