@@ -46,9 +46,26 @@ python3 -m http.server 8000
 `.github/workflows/deploy.yml` publishes the repo root to GitHub Pages on every
 push to `main` or `claude/3d-resume-website-rqm1j9`.
 
-One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+One-time setup, done by hand — the workflow's `GITHUB_TOKEN` cannot create the
+Pages site, as that needs repo admin rights:
+
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions**
+2. Re-run the workflow (or push again).
 
 The published URL is then `https://<user>.github.io/<repo>/`.
+
+### Repository visibility
+
+This repo is currently **private**, and that blocks a publicly shareable link:
+
+- On the **free** plan, Pages only serves **public** repositories.
+- On a **paid** plan, a private repo can serve Pages, but the site inherits
+  access control — only collaborators can open it, so the link cannot be sent
+  to a recruiter.
+
+For a link anyone can open, make the repository public
+(**Settings → General → Danger Zone → Change visibility**). Note this also
+publishes the source, so keep anything sensitive out of `data.js`.
 
 ## Accessibility & performance
 

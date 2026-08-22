@@ -24,10 +24,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
+      # Requires Pages to be enabled once by hand, with Source set to
+      # "GitHub Actions" (Settings -> Pages). The workflow GITHUB_TOKEN cannot
+      # create the Pages site itself -- that needs repo admin rights.
       - uses: actions/configure-pages@v5
-        # Creates the Pages site on first run so no manual repo setting is needed.
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
