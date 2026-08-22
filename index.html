@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Abdulbasit Momin — Business Analyst | Toronto</title>
-<meta name="description" content="Abdulbasit Momin — Business Analyst in Toronto with 4+ years bridging business, data and technology teams, including 3+ years in regulated delivery. SQL, Power BI, requirements, data validation and UAT." />
+<title>Abdulbasit Momin | Business Analyst | AI, Data &amp; Agile</title>
+<meta name="description" content="Business Analyst specializing in requirements, Agile delivery, data analytics, AI-assisted analysis, process improvement, and business systems. Toronto, ON." />
 <link rel="canonical" href="https://abdulbasitmomin.github.io/ai-project/" />
-<meta name="theme-color" content="#05070f" />
+<meta name="theme-color" content="#06080f" />
+<meta name="robots" content="index, follow" />
 
 <meta property="og:type" content="profile" />
-<meta property="og:title" content="Abdulbasit Momin — Business Analyst" />
+<meta property="og:title" content="Abdulbasit Momin | Business Analyst | AI, Data &amp; Agile" />
 <meta property="og:url" content="https://abdulbasitmomin.github.io/ai-project/" />
-<meta property="og:description" content="Abdulbasit Momin — Business Analyst in Toronto with 4+ years bridging business, data and technology teams, including 3+ years in regulated delivery. SQL, Power BI, requirements, data validation and UAT." />
+<meta property="og:description" content="Don't just read my resume — experience how I think. An interactive walkthrough of one business problem, from discovery to measurable impact." />
 <meta name="twitter:card" content="summary_large_image" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,7 +33,7 @@
   "address": { "@type": "PostalAddress", "addressLocality": "Toronto", "addressRegion": "ON", "addressCountry": "CA" },
   "sameAs": ["https://linkedin.com/in/abmomin1", "https://github.com/AbdulBasitMomin", "https://bodywellnessai.com"],
   "alumniOf": { "@type": "CollegeOrUniversity", "name": "Gujarat Technological University" },
-  "knowsAbout": ["Business Analysis", "Requirements Engineering", "SQL", "Power BI", "Data Validation", "UAT", "Data Governance", "Customer Data Platforms"],
+  "knowsAbout": ["Business Analysis", "Requirements Engineering", "SQL", "Power BI", "Source-to-target validation", "UAT", "Data Governance", "Agile delivery", "AI output evaluation"],
   "seeks": { "@type": "Demand", "name": "Business Analyst roles in Toronto, ON or remote" }
 }
 </script>
@@ -43,140 +44,263 @@
 </head>
 <body>
 
-<!-- Fixed WebGL backdrop: particle field, core geometry, scroll-driven camera -->
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- Fixed WebGL world. The camera is driven by page scroll. -->
 <canvas id="bg-canvas" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
 <div class="scroll-progress" aria-hidden="true"><span id="scroll-bar"></span></div>
 
 <div id="loader" class="loader">
   <div class="loader-ring"></div>
-  <p class="loader-text">Building scene</p>
-</div>
-
-<div id="draft-banner" class="draft-banner" hidden>
-  <strong>Draft</strong> — placeholder content, not a finished profile.
+  <p class="loader-text">Assembling the system</p>
 </div>
 
 <header class="nav" id="nav">
-  <a class="nav-mark" href="#top"><span class="nav-mark-dot"></span><span id="nav-name">—</span></a>
+  <a class="nav-mark" href="#top"><span class="nav-mark-dot"></span><span id="nav-name">Abdulbasit Momin</span></a>
   <nav class="nav-links" id="nav-links" aria-label="Sections"></nav>
-  <a class="btn btn-sm" id="nav-cta" href="#contact">Get in touch</a>
+  <div class="nav-actions">
+    <button type="button" class="btn btn-sm btn-recruiter" id="recruiter-toggle" aria-pressed="false">Recruiter mode</button>
+    <a class="btn btn-sm" id="nav-cta" href="#contact">Contact</a>
+  </div>
 </header>
 
-<main id="top">
+<!-- Chapter rail: where you are in the journey. -->
+<nav class="rail" id="rail" aria-label="Journey chapters"></nav>
 
+<section class="recruiter-panel" id="recruiter-panel" hidden aria-label="30-second profile"></section>
+
+<main id="main">
+<div id="top"></div>
+
+  <!-- ===================== HERO ===================== -->
   <section class="hero" id="hero">
     <div class="hero-inner">
       <p class="eyebrow" id="hero-availability"></p>
       <h1 class="hero-name" id="hero-name"></h1>
-      <p class="hero-role" id="hero-role"></p>
-      <p class="hero-tagline" id="hero-tagline"></p>
+      <p class="hero-role">Business Analyst</p>
+      <p class="hero-disciplines">Business Analysis &nbsp;·&nbsp; Data &nbsp;·&nbsp; AI &nbsp;·&nbsp; Agile &nbsp;·&nbsp; Process Improvement</p>
+      <p class="hero-tagline">Turning complex business problems into clear, measurable solutions.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#experience">View experience</a>
-        <a class="btn btn-ghost" id="hero-resume" href="#contact">Download resume</a>
+        <a class="btn btn-primary magnetic" href="#ch-problem">Explore my journey</a>
+        <a class="btn btn-ghost magnetic" href="#resume">View resume</a>
+        <a class="btn btn-ghost magnetic" id="hero-linkedin" href="#" target="_blank" rel="noopener">Connect on LinkedIn</a>
       </div>
       <ul class="stats" id="stats"></ul>
+      <p class="hero-thesis">“Don’t just read my resume. Experience how I think.”</p>
     </div>
-    <!-- Names the backdrop, so the 3D reads as meaning rather than decoration. -->
     <p class="scene-legend" aria-hidden="true">
-      <span class="scene-legend-title">Backdrop</span>
+      <span class="scene-legend-title">You are entering</span>
       <span id="scene-legend-chain"></span>
     </p>
-    <div class="scroll-hint" aria-hidden="true"><span></span>scroll</div>
+    <div class="scroll-hint" aria-hidden="true"><span></span>scroll to enter the system</div>
   </section>
 
-  <section class="section" id="about">
+  <!-- ===================== 01 PROBLEM ===================== -->
+  <section class="section chapter" id="ch-problem" data-station="0">
     <div class="section-head">
       <span class="section-num">01</span>
-      <h2 class="section-title">About</h2>
+      <h2 class="section-title">The problem</h2>
+      <p class="section-lede">Fragmented inputs, no shared definition of what is actually wrong. Before solving a problem, understand it.</p>
     </div>
-    <div class="about-grid">
-      <p class="about-headline" id="about-headline"></p>
-      <div class="about-body" id="about-body"></div>
+    <ul class="chaos-grid" id="problem-inputs"></ul>
+    <div class="method-grid" id="discovery-methods"></div>
+  </section>
+
+  <!-- ===================== 02 STAKEHOLDERS ===================== -->
+  <section class="section chapter" id="ch-stakeholders" data-station="1">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Stakeholder ecosystem</h2>
+      <p class="section-lede">Every requirement has an owner, a source, and a decision behind it. Select a stakeholder to see which.</p>
+    </div>
+    <div class="stake-layout">
+      <ul class="stake-list" id="stake-list"></ul>
+      <div class="stake-detail glass" id="stake-detail"></div>
+    </div>
+    <ul class="chips chips-row" id="elicitation"></ul>
+  </section>
+
+  <!-- ===================== 03 REQUIREMENTS ===================== -->
+  <section class="section chapter" id="ch-requirements" data-station="2">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Requirements engine</h2>
+      <p class="section-lede">Ambiguity in. Structure out. “I turn ambiguity into clarity.”</p>
+    </div>
+    <ol class="ladder" id="clarity-ladder"></ol>
+    <div class="req-grid" id="requirement-types"></div>
+    <div class="deliv-block">
+      <h3 class="sub-head">Artefacts I produce</h3>
+      <ul class="deliv-grid" id="deliv-grid"></ul>
     </div>
   </section>
 
-  <section class="section" id="experience">
+  <!-- ===================== 04 USER STORY LAB ===================== -->
+  <section class="section chapter" id="ch-stories" data-station="2">
     <div class="section-head">
-      <span class="section-num">02</span>
+      <span class="section-num">04</span>
+      <h2 class="section-title">User story lab</h2>
+      <p class="section-lede">Epic to story to acceptance criteria to task. Step through the breakdown.</p>
+      <p class="illustrative">Illustrative worked example — structure, not a delivered ticket.</p>
+    </div>
+    <div id="story-lab"></div>
+  </section>
+
+  <!-- ===================== 05 DELIVERY ===================== -->
+  <section class="section chapter" id="ch-agile" data-station="3">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Delivery board</h2>
+      <p class="section-lede">A backlog is a sequence of decisions, not a list. Move a card and watch the burndown respond.</p>
+      <p class="illustrative">Illustrative mechanics. The burndown tracks <em>your</em> moves — no past sprint data is implied.</p>
+    </div>
+    <div class="board-wrap">
+      <div class="board-scroll"><div class="board-columns" id="board-columns"></div></div>
+      <aside class="board-side">
+        <h3 class="sub-head">Burndown</h3>
+        <div class="burndown" id="burndown"></div>
+        <p class="board-readout" id="board-readout" role="status" aria-live="polite"></p>
+      </aside>
+    </div>
+    <div class="ceremony-grid" id="ceremonies"></div>
+    <div class="retro-grid" id="retro"></div>
+  </section>
+
+  <!-- ===================== 06 DATA ===================== -->
+  <section class="section chapter" id="ch-data" data-station="4">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Data</h2>
+      <p class="section-lede">Source to target, and proof that nothing was lost on the way.</p>
+    </div>
+    <ol class="pipeline" id="pipeline"></ol>
+    <ul class="chips chips-row" id="data-controls"></ul>
+  </section>
+
+  <!-- ===================== 07 AI ===================== -->
+  <section class="section chapter" id="ch-ai" data-station="5">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <h2 class="section-title">AI × business analysis</h2>
+      <p class="section-lede" id="ai-stance"></p>
+    </div>
+    <ol class="ai-loop" id="ai-loop"></ol>
+    <div class="ai-practices" id="ai-practices"></div>
+    <p class="ai-grounding" id="ai-grounding"></p>
+  </section>
+
+  <!-- ===================== 08 VALIDATION ===================== -->
+  <section class="section chapter" id="ch-uat" data-station="6">
+    <div class="section-head">
+      <span class="section-num">08</span>
+      <h2 class="section-title">Validation</h2>
+      <p class="section-lede">A requirement is not done until something proves it.</p>
+    </div>
+    <ol class="uat-chain" id="uat-chain"></ol>
+  </section>
+
+  <!-- ===================== 09 EXPERIENCE ===================== -->
+  <section class="section" id="experience" data-station="6">
+    <div class="section-head">
+      <span class="section-num">09</span>
       <h2 class="section-title">Experience</h2>
       <p class="section-lede">Three roles, newest first.</p>
     </div>
     <div class="timeline" id="timeline"></div>
   </section>
 
-  <section class="section" id="process">
+  <!-- ===================== 10 CASE STUDIES ===================== -->
+  <section class="section" id="cases" data-station="7">
     <div class="section-head">
-      <span class="section-num">03</span>
-      <h2 class="section-title">How I work</h2>
-      <p class="section-lede">The loop I run on every delivery — elicit, analyse, specify, validate, optimise, then round again.</p>
+      <span class="section-num">10</span>
+      <h2 class="section-title">Case studies</h2>
+      <p class="section-lede">The same eight-stage frame applied to real work. Stages the resume does not cover are marked, not invented.</p>
     </div>
-    <div class="process-layout">
-      <div class="process-canvas-wrap">
-        <canvas id="process-canvas"></canvas>
-      </div>
-      <ol class="process-steps" id="process-steps"></ol>
-    </div>
+    <div class="case-list" id="case-list"></div>
   </section>
 
-  <section class="section" id="skills">
+  <!-- ===================== 11 SKILLS AS EVIDENCE ===================== -->
+  <section class="section" id="evidence" data-station="7">
     <div class="section-head">
-      <span class="section-num">04</span>
-      <h2 class="section-title">Skills</h2>
-      <p class="section-lede">Four disciplines. Drag the graph to explore, or read the meters.</p>
+      <span class="section-num">11</span>
+      <h2 class="section-title">Capabilities, with evidence</h2>
+      <p class="section-lede">Not a list. Select a capability to see the role it was used in and the resume line that backs it.</p>
     </div>
-    <div class="skills-layout">
-      <!-- Draggable 3D label sphere -->
+    <div class="ev-layout">
+      <div>
+        <div class="ev-filters" id="evidence-filters" role="group" aria-label="Filter capabilities by category"></div>
+        <div class="ev-grid" id="evidence-grid"></div>
+      </div>
+      <div class="ev-detail glass" id="evidence-detail" aria-live="polite"></div>
+    </div>
+    <div class="orb-block">
+      <h3 class="sub-head">Capability constellation</h3>
       <div class="orb-wrap">
         <canvas id="orb-canvas"></canvas>
         <p class="orb-hint">drag to rotate</p>
       </div>
-      <div class="skill-groups" id="skill-groups"></div>
     </div>
   </section>
 
-  <section class="section" id="projects">
+  <!-- ===================== 12 IMPACT ===================== -->
+  <section class="section chapter" id="ch-impact" data-station="7">
     <div class="section-head">
-      <span class="section-num">05</span>
-      <h2 class="section-title">Highlights</h2>
+      <span class="section-num">12</span>
+      <h2 class="section-title">Business impact</h2>
+      <p class="section-lede">Only figures that appear in the resume. Nothing derived, rounded or estimated.</p>
     </div>
-    <div class="cards" id="projects-grid"></div>
+    <ul class="impact-grid" id="impact-grid"></ul>
   </section>
 
-  <section class="section" id="deliverables">
+  <!-- ===================== FINALE ===================== -->
+  <section class="section finale" id="finale">
+    <ul class="converge" id="converge"></ul>
+    <p class="converge-arrow" aria-hidden="true">↓</p>
+    <p class="converge-out">Business value</p>
+    <blockquote class="finale-quote">
+      “I don’t just document problems. I connect the pieces needed to solve them.”
+      <cite>Abdulbasit Momin — Business Analyst</cite>
+    </blockquote>
+  </section>
+
+  <!-- ===================== ASK MY PORTFOLIO ===================== -->
+  <section class="section" id="ask">
     <div class="section-head">
-      <span class="section-num">06</span>
-      <h2 class="section-title">What I produce</h2>
-      <p class="section-lede">The artefacts that come out of that loop, and the settings I have run it in.</p>
+      <span class="section-num">13</span>
+      <h2 class="section-title">Ask my portfolio</h2>
+      <p class="section-lede">Ask about the work. Answers come only from verified portfolio content.</p>
     </div>
-    <div class="deliv-layout">
-      <ul class="deliv-grid" id="deliv-grid"></ul>
-      <div class="domain-list" id="domain-list"></div>
+    <div class="ask-wrap glass">
+      <form class="ask-form" id="ask-form" autocomplete="off">
+        <label class="sr-only" for="ask-input">Ask a question about this portfolio</label>
+        <input type="text" id="ask-input" placeholder="e.g. How have you used AI?" />
+        <button type="submit" class="btn btn-primary btn-sm">Ask</button>
+      </form>
+      <div class="ask-suggested" id="ask-suggested"></div>
+      <div class="ask-answer" id="ask-answer" role="status" aria-live="polite"></div>
+      <p class="ask-note">Retrieval assistant — it searches verified portfolio content and returns the source. It is not a language model and will not answer beyond what is documented here.</p>
     </div>
   </section>
 
-  <section class="section" id="education">
+  <!-- ===================== RESUME ===================== -->
+  <section class="section" id="resume">
     <div class="section-head">
-      <span class="section-num">07</span>
-      <h2 class="section-title">Education &amp; Certifications</h2>
+      <span class="section-num">14</span>
+      <h2 class="section-title">Resume</h2>
+      <p class="section-lede">The conventional version — plain, complete and ATS-friendly.</p>
     </div>
-    <div class="edu-layout">
-      <div class="edu-list" id="education-list"></div>
-      <div class="cert-list" id="cert-list"></div>
+    <div class="resume-actions">
+      <a class="btn btn-primary magnetic" id="resume-download" href="#">Download PDF</a>
+      <button type="button" class="btn btn-ghost magnetic" id="resume-print">Print / save as PDF</button>
     </div>
+    <div class="ats" id="ats"></div>
   </section>
 
-  <section class="section" id="testimonials" hidden>
-    <div class="section-head">
-      <span class="section-num">08</span>
-      <h2 class="section-title">Endorsements</h2>
-    </div>
-    <div class="cards" id="testimonial-grid"></div>
-  </section>
-
+  <!-- ===================== CONTACT ===================== -->
   <section class="section contact" id="contact">
-    <div class="contact-card glass tilt">
-      <h2 class="contact-title">Let's talk</h2>
+    <div class="contact-card glass">
+      <h2 class="contact-title">Let’s solve something interesting.</h2>
       <p class="contact-sub" id="contact-sub"></p>
       <div class="contact-links" id="contact-links"></div>
     </div>
@@ -187,14 +311,11 @@
 <footer class="footer">
   <span id="footer-name"></span>
   <span class="footer-sep">·</span>
-  <span>Built with Three.js</span>
+  <span>Built with Three.js — no frameworks, no trackers</span>
 </footer>
 
 <script type="module" src="./assets/js/main.js"></script>
 <noscript>
-  <!-- The resume content is prerendered into this page, so it reads fine
-       without JS -- only the 3D layer is missing. A full-screen overlay here
-       would hide working content. -->
   <div class="noscript-note">Interactive 3D is unavailable without JavaScript — the resume below is complete.</div>
 </noscript>
 </body>

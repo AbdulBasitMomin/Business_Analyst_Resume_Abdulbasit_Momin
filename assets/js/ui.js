@@ -1,112 +1,248 @@
 /**
- * Renders every section from `resume` and wires the 2D interaction layer:
- * scroll reveals, count-up stats, pointer-tilt on cards, and nav state.
- * No content is hardcoded here -- it all comes from data.js.
+ * DOM rendering and the 2D interaction layer.
+ *
+ * Every section renders from the data modules -- no content is hardcoded here.
+ * Structure mirrors the journey: hero, the nine chapters, then experience,
+ * cases, evidence, impact, finale, ask, resume, contact.
  */
-
-const SECTIONS = [
-  ['about', 'About'],
-  ['experience', 'Experience'],
-  ['process', 'Process'],
-  ['skills', 'Skills'],
-  ['projects', 'Highlights'],
-  ['deliverables', 'Deliverables'],
-  ['education', 'Education'],
-];
-
-/** Layer names for the traceability backdrop legend. */
-const TRACE_CHAIN = ['Business need', 'Requirement', 'User story', 'Acceptance criteria', 'Test case'];
+import { resume } from './data.js';
+import {
+  problemInputs, discoveryMethods, stakeholders, elicitation, requirementTypes,
+  clarityLadder, board, pipeline, dataControls, ai, uatChain, impact, convergence,
+} from './journey.js';
+import { caseStudies } from './evidence.js';
+import { SUGGESTED, answer } from './assistant.js';
 
 const el = (id) => document.getElementById(id);
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
-  );
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export function renderAll(resume, { isPlaceholder = false } = {}) {
-  renderMeta(resume.meta);
+const NAV = [
+  ['ch-problem', 'Journey'],
+  ['experience', 'Experience'],
+  ['cases', 'Cases'],
+  ['evidence', 'Capabilities'],
+  ['ch-impact', 'Impact'],
+  ['resume', 'Resume'],
+];
+
+/** Named for the hero legend: what the visitor is about to travel through. */
+const SYSTEM_CHAIN = ['Problem', 'Stakeholders', 'Requirements', 'Delivery', 'Data', 'AI', 'Validation', 'Impact'];
+
+export function renderAll() {
+  renderMeta();
   renderNav();
-  renderHero(resume);
-  renderAbout(resume.about);
-  renderExperience(resume.experience);
-  renderProcess(resume.process);
-  renderDeliverables(resume.deliverables, resume.domains);
-  renderSceneLegend();
-  renderSkills(resume.skills);
-  renderProjects(resume.projects);
-  renderEducation(resume.education, resume.certifications, resume.awards);
-  renderTestimonials(resume.testimonials);
-  renderContact(resume.meta);
-
-  if (isPlaceholder) el('draft-banner').hidden = false;
+  renderRail();
+  renderHero();
+  renderProblem();
+  renderStakeholders();
+  renderRequirements();
+  renderBoardExtras();
+  renderPipeline();
+  renderAI();
+  renderUAT();
+  renderExperience();
+  renderCases();
+  renderImpact();
+  renderFinale();
+  renderAsk();
+  renderATS();
+  renderContact();
 }
 
-/* ---------- head / chrome ---------- */
+/* ---------- chrome ---------- */
 
-function renderMeta(meta) {
-  // Keep the location in the tab title -- it matches the static <title> and
-  // is what recruiters searching by city actually see.
-  document.title = `${meta.name} — ${meta.role}${meta.location ? ` | ${meta.location}` : ''}`;
-  el('nav-name').textContent = meta.name;
-  el('footer-name').textContent = `© ${new Date().getFullYear()} ${meta.name}`;
+function renderMeta() {
+  const m = resume.meta;
+  document.title = `${m.name} | Business Analyst | AI, Data & Agile`;
+  el('nav-name').textContent = m.name;
+  el('footer-name').textContent = `© ${new Date().getFullYear()} ${m.name}`;
 }
 
 function renderNav() {
-  el('nav-links').innerHTML = SECTIONS.map(
-    ([id, label]) => `<a href="#${id}" data-nav="${id}">${label}</a>`
-  ).join('');
+  el('nav-links').innerHTML = NAV
+    .map(([id, label]) => `<a href="#${id}" data-nav="${id}">${label}</a>`)
+    .join('');
 }
 
-function renderHero(resume) {
-  const { meta, stats } = resume;
-  el('hero-availability').textContent = meta.availability || '';
-  el('hero-role').textContent = meta.role;
-  el('hero-tagline').textContent = meta.tagline;
+/** Chapter rail, built from the sections actually present in the document. */
+function renderRail() {
+  const rail = el('rail');
+  if (!rail) return;
+  const items = [...document.querySelectorAll('main section[id]')]
+    .map((s) => ({
+      id: s.id,
+      num: s.querySelector('.section-num')?.textContent?.trim(),
+      title: s.querySelector('.section-title')?.textContent?.trim(),
+    }))
+    .filter((s) => s.num && s.title);
 
-  // Split the name so each character can be animated in independently.
-  el('hero-name').innerHTML = meta.name
+  rail.innerHTML = items
+    .map((s) => `<a class="rail-item" href="#${esc(s.id)}" data-rail="${esc(s.id)}">
+      <span class="rail-num">${esc(s.num)}</span>
+      <span class="rail-label">${esc(s.title)}</span>
+    </a>`)
+    .join('');
+}
+
+function renderHero() {
+  const m = resume.meta;
+  el('hero-availability').textContent = m.availability || '';
+  el('hero-name').innerHTML = m.name
     .split(' ')
-    .map(
-      (word) =>
-        `<span class="word">${word
-          .split('')
-          .map((ch, i) => `<span class="char" style="--i:${i}">${esc(ch)}</span>`)
-          .join('')}</span>`
-    )
+    .map((word) => `<span class="word">${word.split('').map((ch, i) =>
+      `<span class="char" style="--i:${i}">${esc(ch)}</span>`).join('')}</span>`)
     .join(' ');
 
-  const resumeBtn = el('hero-resume');
-  if (meta.resumePdf) {
-    resumeBtn.href = meta.resumePdf;
-    resumeBtn.setAttribute('download', 'Abdulbasit-Momin-Business-Analyst.pdf');
-  } else {
-    resumeBtn.hidden = true;
-  }
+  const li = el('hero-linkedin');
+  if (m.linkedin) li.href = m.linkedin;
+  else li.hidden = true;
 
-  el('stats').innerHTML = (stats || [])
-    .map(
-      (s) => `<li class="stat reveal">
-        <span class="stat-value" data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || '')}">0</span>
-        <span class="stat-label">${esc(s.label)}</span>
-      </li>`
-    )
-    .join('');
+  el('stats').innerHTML = (resume.stats || [])
+    .map((s) => `<li class="stat reveal">
+      <span class="stat-value" data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || '')}">0</span>
+      <span class="stat-label">${esc(s.label)}</span>
+    </li>`).join('');
+
+  el('scene-legend-chain').innerHTML = SYSTEM_CHAIN
+    .map((label) => `<span class="chain-node">${esc(label)}</span>`)
+    .join('<span class="chain-arrow">→</span>');
 }
 
-/* ---------- sections ---------- */
+/* ---------- 01 problem ---------- */
 
-function renderAbout(about) {
-  el('about-headline').textContent = about.headline;
-  el('about-body').innerHTML = (about.paragraphs || [])
-    .map((p) => `<p class="reveal">${esc(p)}</p>`)
-    .join('');
+function renderProblem() {
+  el('problem-inputs').innerHTML = problemInputs
+    .map((p, i) => `<li class="chaos-item reveal" style="--d:${i * 45}ms">${esc(p)}</li>`).join('');
+  el('discovery-methods').innerHTML = discoveryMethods
+    .map((d, i) => `<div class="method-card glass reveal" style="--d:${i * 70}ms">
+      <h3 class="method-name">${esc(d.name)}</h3>
+      <p class="method-note">${esc(d.note)}</p>
+    </div>`).join('');
 }
 
-function renderExperience(roles) {
-  el('timeline').innerHTML = (roles || [])
+/* ---------- 02 stakeholders ---------- */
+
+function renderStakeholders() {
+  const list = el('stake-list');
+  const detail = el('stake-detail');
+  if (!list || !detail) return;
+
+  list.innerHTML = `<li class="stake-hub">Business Analyst</li>` + stakeholders
+    .map((s) => `<li><button type="button" class="stake-btn" data-stake="${esc(s.id)}">${esc(s.name)}</button></li>`)
+    .join('');
+
+  const show = (id) => {
+    const s = stakeholders.find((x) => x.id === id) || stakeholders[0];
+    detail.innerHTML = `
+      <h3 class="stake-name">${esc(s.name)}</h3>
+      <dl class="stake-facts">
+        <div><dt>Needs</dt><dd>${esc(s.needs)}</dd></div>
+        <div><dt>Provides</dt><dd>${esc(s.provides)}</dd></div>
+        <div><dt>Decides</dt><dd>${esc(s.decides)}</dd></div>
+      </dl>`;
+    list.querySelectorAll('.stake-btn').forEach((b) =>
+      b.classList.toggle('is-on', b.dataset.stake === s.id));
+  };
+
+  // Pointer and keyboard both work: hover previews, click/focus commits.
+  list.addEventListener('click', (e) => {
+    const b = e.target.closest('.stake-btn');
+    if (b) show(b.dataset.stake);
+  });
+  list.addEventListener('mouseover', (e) => {
+    const b = e.target.closest('.stake-btn');
+    if (b) show(b.dataset.stake);
+  });
+  list.addEventListener('focusin', (e) => {
+    const b = e.target.closest('.stake-btn');
+    if (b) show(b.dataset.stake);
+  });
+
+  show(stakeholders[0].id);
+  el('elicitation').innerHTML = elicitation.map((x) => `<li class="chip">${esc(x)}</li>`).join('');
+}
+
+/* ---------- 03 requirements ---------- */
+
+function renderRequirements() {
+  el('clarity-ladder').innerHTML = clarityLadder
+    .map((step, i) => `<li class="ladder-step reveal" style="--d:${i * 90}ms"><span>${esc(step)}</span></li>`)
+    .join('');
+  el('requirement-types').innerHTML = requirementTypes
+    .map((r, i) => `<div class="req-card reveal" style="--d:${i * 45}ms">
+      <h3 class="req-name">${esc(r.name)}</h3>
+      <p class="req-note">${esc(r.note)}</p>
+    </div>`).join('');
+  el('deliv-grid').innerHTML = (resume.deliverables || [])
+    .map((d, i) => `<li class="deliv-item reveal" style="--d:${i * 30}ms">
+      <span class="deliv-tick" aria-hidden="true"></span>${esc(d)}
+    </li>`).join('');
+}
+
+/* ---------- 05 delivery ---------- */
+
+function renderBoardExtras() {
+  el('ceremonies').innerHTML = board.ceremonies
+    .map((c, i) => `<div class="ceremony glass reveal" style="--d:${i * 60}ms">
+      <h3 class="ceremony-name">${esc(c.name)}</h3>
+      <p class="ceremony-note">${esc(c.note)}</p>
+    </div>`).join('');
+  el('retro').innerHTML = board.retro
+    .map((r, i) => `<div class="retro-col reveal" style="--d:${i * 70}ms">
+      <h3 class="retro-head">${esc(r.heading)}</h3>
+      <ul>${r.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+/* ---------- 06 data ---------- */
+
+function renderPipeline() {
+  el('pipeline').innerHTML = pipeline
+    .map((p, i) => `<li class="pipe-step reveal" style="--d:${i * 55}ms">
+      <span class="pipe-index">${String(i + 1).padStart(2, '0')}</span>
+      <h3 class="pipe-stage">${esc(p.stage)}</h3>
+      <p class="pipe-note">${esc(p.note)}</p>
+    </li>`).join('');
+  el('data-controls').innerHTML = dataControls.map((c) => `<li class="chip">${esc(c)}</li>`).join('');
+}
+
+/* ---------- 07 AI ---------- */
+
+function renderAI() {
+  el('ai-stance').textContent = ai.stance;
+  el('ai-loop').innerHTML = ai.loop
+    .map((s, i) => `<li class="ai-step reveal" style="--d:${i * 60}ms">
+      <span class="ai-index">${String(i + 1).padStart(2, '0')}</span>
+      <h3 class="ai-step-name">${esc(s.step)}</h3>
+      <p class="ai-step-note">${esc(s.note)}</p>
+    </li>`).join('');
+  el('ai-practices').innerHTML = ai.practices
+    .map((p, i) => `<div class="ai-practice glass reveal" style="--d:${i * 60}ms">
+      <h3 class="ai-practice-name">${esc(p.name)}</h3>
+      <p class="ai-practice-note">${esc(p.note)}</p>
+    </div>`).join('');
+  el('ai-grounding').innerHTML = `${esc(ai.grounding)}<br /><span class="ai-transfer">${esc(ai.transfer)}</span>`;
+}
+
+/* ---------- 08 validation ---------- */
+
+function renderUAT() {
+  el('uat-chain').innerHTML = uatChain
+    .map((u, i) => `<li class="uat-step reveal" style="--d:${i * 50}ms">
+      <span class="uat-index">${String(i + 1).padStart(2, '0')}</span>
+      <h3 class="uat-name">${esc(u.step)}</h3>
+      <p class="uat-note">${esc(u.note)}</p>
+    </li>`).join('');
+}
+
+/* ---------- 09 experience ---------- */
+
+function renderExperience() {
+  el('timeline').innerHTML = (resume.experience || [])
     .map((r, i) => {
       const current = String(r.end).toLowerCase() === 'present';
-      return `<article class="tl-item reveal" style="--d:${i * 90}ms">
+      return `<article class="tl-item reveal" style="--d:${i * 80}ms">
         <div class="tl-marker"><span class="tl-dot${current ? ' is-live' : ''}"></span></div>
         <div class="tl-card glass tilt">
           <header class="tl-head">
@@ -117,292 +253,244 @@ function renderExperience(roles) {
             <span class="tl-dates${current ? ' is-current' : ''}">${esc(r.start)} — ${esc(r.end)}</span>
           </header>
           ${r.summary ? `<p class="tl-summary">${esc(r.summary)}</p>` : ''}
-          ${
-            r.achievements?.length
-              ? `<ul class="tl-list">${r.achievements.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>`
-              : ''
-          }
-          ${
-            r.tools?.length
-              ? `<div class="chips">${r.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>`
-              : ''
-          }
+          ${r.achievements?.length ? `<ul class="tl-list">${r.achievements.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
+          ${r.tools?.length ? `<div class="chips">${r.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
         </div>
       </article>`;
-    })
-    .join('');
+    }).join('');
 }
 
-function renderSceneLegend() {
-  const node = el('scene-legend-chain');
-  if (!node) return;
-  node.innerHTML = TRACE_CHAIN.map(
-    (label, i) => `<span class="chain-node" style="--slot:${i}">${esc(label)}</span>`
-  ).join('<span class="chain-arrow">→</span>');
+/* ---------- 10 case studies ---------- */
+
+function renderCases() {
+  el('case-list').innerHTML = caseStudies
+    .map((c, i) => `<details class="case glass reveal" id="${esc(c.id)}" style="--d:${i * 70}ms"${i === 0 ? ' open' : ''}>
+      <summary class="case-summary">
+        <span class="case-org">${esc(c.org)}</span>
+        <h3 class="case-title">${esc(c.title)}</h3>
+        <span class="case-period">${esc(c.period)}</span>
+        <div class="chips chips-sm">${c.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>
+      </summary>
+      <ol class="case-stages">
+        ${c.stages.map((s) => {
+          const gap = s.v.includes('[ADD');
+          return `<li class="case-stage${gap ? ' is-gap' : ''}">
+            <span class="case-n">${esc(s.n)}</span>
+            <span class="case-k">${esc(s.k)}</span>
+            <span class="case-v">${esc(s.v)}</span>
+          </li>`;
+        }).join('')}
+      </ol>
+    </details>`).join('');
 }
 
-function renderProcess(stages) {
-  const node = el('process-steps');
-  if (!node) return;
-  node.innerHTML = (stages || [])
-    .map(
-      (s, i) => `<li class="process-step reveal" data-step="${i}" style="--slot:${i}; --d:${i * 70}ms">
-      <span class="process-index">0${i + 1}</span>
-      <div class="process-body">
-        <h3 class="process-stage">${esc(s.stage)}</h3>
-        <p class="process-blurb">${esc(s.blurb)}</p>
-        <div class="chips chips-sm">${(s.artifacts || []).map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div>
-      </div>
-    </li>`
-    )
-    .join('');
+/* ---------- 12 impact ---------- */
+
+function renderImpact() {
+  el('impact-grid').innerHTML = impact
+    .map((m, i) => `<li class="impact-card glass reveal" style="--d:${i * 60}ms">
+      <span class="impact-value">${esc(m.value)}</span>
+      <span class="impact-label">${esc(m.label)}</span>
+      <p class="impact-note">${esc(m.note)}</p>
+    </li>`).join('');
 }
 
-/** Highlights the step the 3D token is currently parked on. */
-export function setActiveStep(index) {
-  const steps = document.querySelectorAll('.process-step');
-  steps.forEach((n) => n.classList.toggle('is-active', Number(n.dataset.step) === index));
+function renderFinale() {
+  el('converge').innerHTML = convergence
+    .map((c, i) => `<li class="converge-item reveal" style="--d:${i * 80}ms">${esc(c)}</li>`).join('');
 }
 
-function renderDeliverables(deliverables, domains) {
-  const grid = el('deliv-grid');
-  if (grid) {
-    grid.innerHTML = (deliverables || [])
-      .map(
-        (d, i) => `<li class="deliv-item reveal" style="--d:${i * 35}ms">
-        <span class="deliv-tick" aria-hidden="true"></span>${esc(d)}
-      </li>`
-      )
-      .join('');
+/* ---------- 13 ask ---------- */
+
+function renderAsk() {
+  const form = el('ask-form');
+  const input = el('ask-input');
+  const out = el('ask-answer');
+  const sugg = el('ask-suggested');
+  if (!form || !input || !out) return;
+
+  sugg.innerHTML = SUGGESTED
+    .map((q) => `<button type="button" class="ask-chip" data-q="${esc(q)}">${esc(q)}</button>`).join('');
+
+  const render = (a) => {
+    if (!a) { out.innerHTML = ''; return; }
+    out.innerHTML = `<div class="ask-card${a.unmatched ? ' is-unmatched' : ''}">
+      <h3 class="ask-title">${esc(a.title)}</h3>
+      <ul class="ask-lines">${a.lines.map((l) => l ? `<li>${esc(l)}</li>` : '<li class="ask-gap"></li>').join('')}</ul>
+      ${a.sources?.length ? `<p class="ask-sources">Sources: ${a.sources.map((s) => esc(s)).join(' · ')}</p>` : ''}
+    </div>`;
+  };
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    render(answer(input.value));
+  });
+  sugg.addEventListener('click', (e) => {
+    const b = e.target.closest('.ask-chip');
+    if (!b) return;
+    input.value = b.dataset.q;
+    render(answer(b.dataset.q));
+  });
+}
+
+/* ---------- 14 resume (ATS) ---------- */
+
+function renderATS() {
+  const m = resume.meta;
+  const block = (h, body) => `<section class="ats-block"><h3>${esc(h)}</h3>${body}</section>`;
+
+  el('ats').innerHTML = `
+    <header class="ats-head">
+      <h2>${esc(m.name)}</h2>
+      <p>${esc(m.role)} — ${esc(m.location)}</p>
+      <p>${esc(m.email)} · ${esc(m.phone)} · ${esc(m.linkedin)}</p>
+    </header>
+    ${block('Professional summary', `<p>${esc(resume.about.headline)}</p>${resume.about.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}`)}
+    ${block('Experience', (resume.experience || []).map((r) => `
+      <div class="ats-role">
+        <h4>${esc(r.role)} — ${esc(r.company)}${r.location ? `, ${esc(r.location)}` : ''}</h4>
+        <p class="ats-dates">${esc(r.start)} – ${esc(r.end)}</p>
+        <ul>${(r.achievements || []).map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
+      </div>`).join(''))}
+    ${block('Skills', `<p>${(resume.skills || []).flatMap((g) => g.items.map((i) => i.name)).map(esc).join(', ')}</p>`)}
+    ${block('Projects', caseStudies.map((c) => `<p><strong>${esc(c.title)}</strong> — ${esc(c.org)}, ${esc(c.period)}</p>`).join(''))}
+    ${block('Education', (resume.education || []).map((e) => `<p>${esc(e.degree)} — ${esc(e.school)}, ${esc(e.start)}–${esc(e.end)}</p>`).join(''))}
+    ${block('Certifications', `<ul>${(resume.certifications || []).map((c) => `<li>${esc(c.name)} — ${esc(c.issuer)}</li>`).join('')}${(resume.awards || []).map((a) => `<li>Award: ${esc(a.name)} — ${esc(a.issuer)}</li>`).join('')}</ul>`)}
+  `;
+
+  const dl = el('resume-download');
+  if (m.resumePdf) {
+    dl.href = m.resumePdf;
+    dl.setAttribute('download', 'Abdulbasit-Momin-Business-Analyst.pdf');
+  } else {
+    dl.hidden = true;
   }
-
-  const list = el('domain-list');
-  if (list) {
-    list.innerHTML = (domains || [])
-      .map(
-        (d, i) => `<div class="domain-item glass reveal" style="--slot:${i}; --d:${i * 70}ms">
-        <h3 class="domain-name">${esc(d.name)}</h3>
-        <p class="domain-detail">${esc(d.detail)}</p>
-      </div>`
-      )
-      .join('');
-  }
+  el('resume-print')?.addEventListener('click', () => window.print());
 }
 
-function renderSkills(groups) {
-  el('skill-groups').innerHTML = (groups || [])
-    .map(
-      (g, gi) => `<div class="skill-group reveal" style="--d:${gi * 80}ms">
-      <h3 class="skill-group-title">${esc(g.group)}</h3>
-      ${(g.items || [])
-        .map(
-          (s) => `<div class="bar-row">
-            <span class="bar-name">${esc(s.name)}</span>
-            <span class="bar-track"><span class="bar-fill" data-level="${Number(s.level) || 0}"></span></span>
-          </div>`
-        )
-        .join('')}
-    </div>`
-    )
-    .join('');
-}
+/* ---------- contact ---------- */
 
-function renderProjects(projects) {
-  el('projects-grid').innerHTML = (projects || [])
-    .map(
-      (p, i) => `<article class="card glass tilt reveal" style="--d:${i * 80}ms">
-      <h3 class="card-title">${esc(p.name)}</h3>
-      <p class="card-body">${esc(p.blurb)}</p>
-      ${p.impact ? `<p class="card-impact"><span>Impact</span>${esc(p.impact)}</p>` : ''}
-      ${p.tags?.length ? `<div class="chips">${p.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
-      ${p.link ? `<a class="card-link" href="${esc(p.link)}" target="_blank" rel="noopener">View →</a>` : ''}
-    </article>`
-    )
-    .join('');
-}
-
-function renderEducation(education, certs, awards) {
-  el('education-list').innerHTML = (education || [])
-    .map(
-      (e, i) => `<div class="edu-item glass reveal" style="--d:${i * 80}ms">
-      <h3 class="edu-degree">${esc(e.degree)}</h3>
-      <p class="edu-school">${esc(e.school)}${e.location ? ` · ${esc(e.location)}` : ''}</p>
-      <p class="edu-dates">${esc(e.start)} — ${esc(e.end)}</p>
-      ${e.detail ? `<p class="edu-detail">${esc(e.detail)}</p>` : ''}
-    </div>`
-    )
-    .join('');
-
-  const credentials = [
-    ...(certs || []).map((c) => ({ ...c, kind: 'cert' })),
-    ...(awards || []).map((a) => ({ ...a, kind: 'award' })),
-  ];
-
-  el('cert-list').innerHTML = credentials
-    .map(
-      (c, i) => `<div class="cert-item reveal" style="--d:${i * 60}ms">
-      <span class="cert-tick">${c.kind === 'award' ? '★' : '✦'}</span>
-      <div>
-        ${c.link ? `<a href="${esc(c.link)}" target="_blank" rel="noopener" class="cert-name">${esc(c.name)}</a>` : `<span class="cert-name">${esc(c.name)}</span>`}
-        <span class="cert-meta">${esc(c.issuer)}${c.year ? ` · ${esc(c.year)}` : ''}</span>
-      </div>
-    </div>`
-    )
-    .join('');
-}
-
-function renderTestimonials(items) {
-  if (!items?.length) return;
-  el('testimonials').hidden = false;
-  el('testimonial-grid').innerHTML = items
-    .map(
-      (t, i) => `<blockquote class="card glass reveal" style="--d:${i * 80}ms">
-      <p class="quote">“${esc(t.quote)}”</p>
-      <footer class="quote-by">${esc(t.author)}<span>${esc(t.role)}</span></footer>
-    </blockquote>`
-    )
-    .join('');
-}
-
-function renderContact(meta) {
-  el('contact-sub').textContent = meta.availability || `Reach out to ${meta.name}.`;
+function renderContact() {
+  const m = resume.meta;
+  el('contact-sub').textContent = `${m.name} — Business Analyst, ${m.location}. ${m.availability}`;
   const links = [
-    meta.email && { label: 'Email', href: `mailto:${meta.email}`, text: meta.email },
-    meta.phone && { label: 'Phone', href: `tel:${meta.phone.replace(/\s/g, '')}`, text: meta.phone },
-    meta.linkedin && { label: 'LinkedIn', href: meta.linkedin, text: 'in/abmomin1' },
-    meta.website && { label: 'Website', href: meta.website, text: meta.website.replace(/^https?:\/\//, '') },
-    meta.github && { label: 'GitHub', href: meta.github, text: 'AbdulBasitMomin' },
+    m.email && { label: 'Email', href: `mailto:${m.email}`, text: m.email },
+    m.linkedin && { label: 'LinkedIn', href: m.linkedin, text: 'in/abmomin1' },
+    m.resumePdf && { label: 'Resume', href: m.resumePdf, text: 'Download PDF' },
+    m.github && { label: 'GitHub', href: m.github, text: 'AbdulBasitMomin' },
   ].filter(Boolean);
-
   el('contact-links').innerHTML = links
-    .map(
-      (l) => `<a class="contact-link" href="${esc(l.href)}"${l.href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>
-        <span class="contact-link-label">${esc(l.label)}</span>
-        <span class="contact-link-text">${esc(l.text)}</span>
-      </a>`
-    )
-    .join('');
+    .map((l) => `<a class="contact-link magnetic" href="${esc(l.href)}"${l.href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>
+      <span class="contact-link-label">${esc(l.label)}</span>
+      <span class="contact-link-text">${esc(l.text)}</span>
+    </a>`).join('');
 }
 
-/* ---------- interaction layer ---------- */
+/* ==================== interaction ==================== */
 
-/** Reveals elements once, then stops observing them. */
 export function initReveal() {
   const targets = document.querySelectorAll('.reveal');
   if (!('IntersectionObserver' in window)) {
     targets.forEach((t) => t.classList.add('is-in'));
     return;
   }
-  const io = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add('is-in');
-        io.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
-  );
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.classList.add('is-in');
+      io.unobserve(e.target);
+    }
+  }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
   targets.forEach((t) => io.observe(t));
 }
 
-/** Animates skill bars to their data-level width when scrolled into view. */
-export function initBars() {
-  const bars = document.querySelectorAll('.bar-fill');
-  const io = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.style.width = `${entry.target.dataset.level}%`;
-        io.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.4 }
-  );
-  bars.forEach((b) => io.observe(b));
-}
-
-/** Count-up for hero stats, eased so it decelerates into the final value. */
 export function initCounters({ reducedMotion = false } = {}) {
   const nodes = document.querySelectorAll('.stat-value');
   const run = (node) => {
     const target = Number(node.dataset.count) || 0;
     const suffix = node.dataset.suffix || '';
-    if (reducedMotion || !target) {
-      node.textContent = `${target}${suffix}`;
-      return;
-    }
-    const duration = 1400;
+    if (reducedMotion || !target) { node.textContent = `${target}${suffix}`; return; }
     const start = performance.now();
     const tick = (now) => {
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      node.textContent = `${Math.round(target * eased)}${suffix}`;
+      const p = Math.min((now - start) / 1300, 1);
+      node.textContent = `${Math.round(target * (1 - Math.pow(1 - p, 3)))}${suffix}`;
       if (p < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   };
-
-  const io = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        run(entry.target);
-        io.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.6 }
-  );
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      run(e.target);
+      io.unobserve(e.target);
+    }
+  }, { threshold: 0.6 });
   nodes.forEach((n) => io.observe(n));
 }
 
-/** Pointer-following 3D tilt. Skipped on touch and under reduced motion. */
 export function initTilt({ reducedMotion = false } = {}) {
   if (reducedMotion || !window.matchMedia('(hover: hover)').matches) return;
-  const MAX = 7;
+  const MAX = 6;
   for (const card of document.querySelectorAll('.tilt')) {
     card.addEventListener('pointermove', (e) => {
       const r = card.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width - 0.5;
       const py = (e.clientY - r.top) / r.height - 0.5;
-      card.style.transform = `perspective(900px) rotateY(${px * MAX}deg) rotateX(${-py * MAX}deg) translateZ(6px)`;
+      card.style.transform = `perspective(900px) rotateY(${px * MAX}deg) rotateX(${-py * MAX}deg) translateZ(5px)`;
       card.style.setProperty('--mx', `${(px + 0.5) * 100}%`);
       card.style.setProperty('--my', `${(py + 0.5) * 100}%`);
     });
-    card.addEventListener('pointerleave', () => {
-      card.style.transform = '';
+    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+  }
+}
+
+/** Magnetic buttons: a small pull toward the cursor. Pointer devices only. */
+export function initMagnetic({ reducedMotion = false } = {}) {
+  if (reducedMotion || !window.matchMedia('(hover: hover)').matches) return;
+  for (const b of document.querySelectorAll('.magnetic')) {
+    b.addEventListener('pointermove', (e) => {
+      const r = b.getBoundingClientRect();
+      const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+      const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+      b.style.transform = `translate(${dx * 7}px, ${dy * 7}px)`;
     });
+    b.addEventListener('pointerleave', () => { b.style.transform = ''; });
   }
 }
 
 /**
- * Drives nav state and returns page scroll progress to the WebGL scene.
- * Reads are batched into a rAF so scrolling never triggers sync layout.
+ * Drives nav state, the chapter rail and the scroll bar, and reports page
+ * progress to the WebGL journey. Reads are batched into one rAF.
  */
 export function initScrollSync(onProgress) {
   const nav = el('nav');
-  const links = [...document.querySelectorAll('[data-nav]')];
-  const ids = links.map((l) => l.dataset.nav);
+  const navLinks = [...document.querySelectorAll('[data-nav]')];
+  const railLinks = [...document.querySelectorAll('[data-rail]')];
+  const railIds = new Set(railLinks.map((l) => l.dataset.rail));
+  const bar = el('scroll-bar');
   let queued = false;
 
   const update = () => {
     queued = false;
     const max = document.documentElement.scrollHeight - window.innerHeight;
     const y = window.scrollY;
-    const progress = max > 0 ? Math.min(y / max, 1) : 0;
-    onProgress(progress);
+    const p = max > 0 ? Math.min(y / max, 1) : 0;
+    onProgress(p);
     nav.classList.toggle('is-stuck', y > 40);
-    const bar = el('scroll-bar');
-    if (bar) bar.style.transform = `scaleX(${progress})`;
+    if (bar) bar.style.transform = `scaleX(${p})`;
 
-    // Active link = last section whose top has passed the 35% viewport mark.
     const line = y + window.innerHeight * 0.35;
     let active = '';
-    for (const id of ids) {
-      const node = el(id);
-      if (node && node.offsetTop <= line) active = id;
+    let activeRail = '';
+    for (const s of document.querySelectorAll('main section[id]')) {
+      if (s.offsetTop > line) continue;
+      active = s.id;
+      // Sections without a chapter number are absent from the rail; tracking
+      // them here would blank the highlight instead of holding the last one.
+      if (railIds.has(s.id)) activeRail = s.id;
     }
-    links.forEach((l) => l.classList.toggle('is-active', l.dataset.nav === active));
+    navLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.nav === active));
+    railLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.rail === activeRail));
   };
 
   const onScroll = () => {
@@ -410,7 +498,6 @@ export function initScrollSync(onProgress) {
     queued = true;
     requestAnimationFrame(update);
   };
-
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
   update();

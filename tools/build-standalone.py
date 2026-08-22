@@ -37,7 +37,10 @@ OUT = ROOT / 'dist' / 'resume-standalone.html'
 BASE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'index.html'
 
 # Order matters: a module's dependencies must be defined before it.
-MODULES = ['data.js', 'ui.js', 'scene.js', 'orb.js', 'process.js', 'main.js']
+MODULES = [
+    'data.js', 'journey.js', 'evidence.js', 'assistant.js', 'ui.js',
+    'interactive.js', 'chapters.js', 'orb.js', 'main.js',
+]
 
 IMPORT_RE = re.compile(
     r"^import\s+(?:\*\s+as\s+(?P<ns>\w+)|\{(?P<named>[^}]*)\})\s+from\s+"
@@ -102,22 +105,14 @@ def module_iife(name: str) -> str:
     exports = EXPORT_DECL_RE.findall(src)
     src = re.sub(r'^export\s+(?=(const|let|var|function|class)\b)', '', src, flags=re.M)
 
-    if name == 'main.js':
-        # scene.js and orb.js are already built above; pull their factories
-        # straight off the module objects instead of dynamically importing.
-        src, n = re.subn(
-            r'const \[\{ createScene \}, \{ createOrb \}, \{ createProcess \}\] = '
-            r'await Promise\.all\(\[\s*'
-            r"import\('\./scene\.js'\),\s*import\('\./orb\.js'\),\s*"
-            r"import\('\./process\.js'\),\s*\]\);",
-            'const createScene = %s.createScene;\n'
-            '    const createOrb = %s.createOrb;\n'
-            '    const createProcess = %s.createProcess;'
-            % (module_var('./scene.js'), module_var('./orb.js'), module_var('./process.js')),
-            src,
-        )
-        if n != 1:
-            sys.exit('main.js: dynamic import block did not match -- update the bundler')
+    # Dynamic imports of local modules resolve to the already-built module
+    # object. Generic, so adding a module needs no bundler change -- the old
+    # per-call-site regex broke every time main.js was edited.
+    src = re.sub(
+        r"import\(\s*['\"]\./([\w.-]+)\.js['\"]\s*\)",
+        lambda m: f"Promise.resolve({module_var('./' + m.group(1) + '.js')})",
+        src,
+    )
 
     body = '\n'.join(preamble + ['', src.strip()])
     returns = ', '.join(f'{e}: {e}' for e in exports)

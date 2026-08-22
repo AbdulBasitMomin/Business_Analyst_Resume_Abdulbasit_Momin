@@ -51,8 +51,13 @@ const html = await page.evaluate(() => {
   });
   // Inline transforms from the tilt handler would freeze cards mid-tilt.
   document.querySelectorAll('.tilt').forEach((n) => n.removeAttribute('style'));
-  // Runtime-only flags must not be baked in -- the snapshot has no WebGL.
-  document.body.classList.remove('has-webgl', 'no-webgl');
+  // Runtime-only flags must not be baked in -- the snapshot has no WebGL,
+  // and a stored Recruiter Mode preference must not become the default page.
+  document.body.classList.remove('has-webgl', 'no-webgl', 'recruiter-mode');
+  const panel = document.getElementById('recruiter-panel');
+  if (panel) panel.hidden = true;
+  // Inline canvas opacity from the scroll-driven dim would freeze the backdrop.
+  document.getElementById('bg-canvas')?.removeAttribute('style');
   return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 });
 

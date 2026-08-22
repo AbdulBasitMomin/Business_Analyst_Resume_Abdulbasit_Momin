@@ -1,72 +1,61 @@
 /**
- * Bootstrap: render content first (so the page is readable even if WebGL is
- * unavailable), then attach the 3D layers progressively.
+ * Bootstrap.
+ *
+ * Content renders first, so the page is complete before any WebGL exists. The
+ * 3D world and the interaction layer attach afterwards; a failure in either
+ * leaves a fully readable resume behind.
  */
-import { resume, isPlaceholder } from './data.js';
-import { renderAll, initReveal, initBars, initCounters, initTilt, initScrollSync, setActiveStep } from './ui.js';
+import { renderAll, initReveal, initCounters, initTilt, initMagnetic, initScrollSync } from './ui.js';
+import { initRecruiterMode, initEvidence, initStoryLab, initBoard } from './interactive.js';
+import { resume } from './data.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-renderAll(resume, { isPlaceholder });
+renderAll();
 initReveal();
-initBars();
 initCounters({ reducedMotion });
 initTilt({ reducedMotion });
+initMagnetic({ reducedMotion });
+initRecruiterMode();
+initEvidence();
+initStoryLab();
+initBoard();
 
-let scene = null;
+let journey = null;
 let orb = null;
-let process = null;
 
-/** WebGL is an enhancement -- a failure here must not take the content down. */
+/** WebGL is an enhancement; never let it take the content down. */
 async function initThree() {
   try {
-    const [{ createScene }, { createOrb }, { createProcess }] = await Promise.all([
-      import('./scene.js'),
+    const [{ createJourney }, { createOrb }] = await Promise.all([
+      import('./chapters.js'),
       import('./orb.js'),
-      import('./process.js'),
     ]);
 
-    scene = createScene(document.getElementById('bg-canvas'), { reducedMotion });
-    // The graph clusters by discipline, so it takes the grouped skills.
+    journey = createJourney(document.getElementById('bg-canvas'), { reducedMotion });
     orb = createOrb(document.getElementById('orb-canvas'), resume.skills, { reducedMotion });
-    process = createProcess(document.getElementById('process-canvas'), resume.process, {
-      reducedMotion,
-      onStage: setActiveStep,
-    });
 
     window.addEventListener('resize', () => {
-      scene?.resize();
+      journey?.resize();
       orb?.resize();
-      process?.resize();
     });
-
-    window.addEventListener(
-      'pointermove',
-      (e) => scene?.onPointerMove(e.clientX, e.clientY),
-      { passive: true }
-    );
+    window.addEventListener('pointermove',
+      (e) => journey?.onPointerMove(e.clientX, e.clientY), { passive: true });
 
     // Stop rendering entirely while the tab is hidden.
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        scene?.stop();
-        orb?.stop();
-        process?.stop();
-      } else {
-        scene?.start();
-        orb?.start();
-        process?.start();
-      }
+      if (document.hidden) { journey?.stop(); orb?.stop(); }
+      else { journey?.start(); orb?.start(); }
     });
 
     document.body.classList.add('has-webgl');
   } catch (err) {
-    console.warn('3D layer unavailable, falling back to flat background.', err);
+    console.warn('3D layer unavailable; content is unaffected.', err);
     document.body.classList.add('no-webgl');
   } finally {
     document.getElementById('loader').classList.add('is-done');
   }
 }
 
-initScrollSync((progress) => scene?.setScroll(progress));
+initScrollSync((p) => journey?.setScroll(p));
 initThree();
