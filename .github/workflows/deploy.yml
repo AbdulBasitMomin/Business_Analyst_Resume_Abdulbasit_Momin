@@ -3,7 +3,7 @@ name: Deploy resume site
 # Publishes the static site to GitHub Pages.
 on:
   push:
-    branches: [claude/3d-resume-website-rqm1j9, main]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
