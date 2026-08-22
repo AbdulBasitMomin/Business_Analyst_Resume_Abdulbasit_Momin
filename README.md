@@ -41,6 +41,22 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
+## Single-file preview
+
+For a copy that needs no server, no network and no hosting at all:
+
+```bash
+python3 tools/build-standalone.py    # -> dist/resume-standalone.html (~950 KB)
+```
+
+That inlines the CSS, flattens the ES modules into one inline module script and
+embeds three.js as a base64 `data:` URL, so the result opens straight off the
+filesystem and can be emailed or AirDropped as a single file. Verified rendering
+from `file://` with all network requests blocked.
+
+The web fonts are the one thing still fetched over the network; without it the
+page falls back to the system sans-serif and looks essentially the same.
+
 ## Deploying
 
 `.github/workflows/deploy.yml` publishes the repo root to GitHub Pages on every
