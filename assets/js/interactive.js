@@ -6,7 +6,7 @@
  * the guided journey -- on a resume it read as a product demo rather than
  * evidence, and the credentials are the point.
  */
-import { capabilities, CATEGORIES, recruiterProfile, caseStudies } from './evidence.js';
+import { capabilities, CATEGORIES, recruiterProfile, caseStudies, projectsFor } from './evidence.js';
 import { storyLab } from './journey.js';
 
 const el = (id) => document.getElementById(id);
@@ -114,6 +114,9 @@ export function initEvidence() {
       listed: 'Listed in the resume skills section — no achievement bullet',
     }[cap.sourced];
 
+    // Skill -> project -> evidence. The project link is what turns a listed
+    // skill into something a recruiter can go and read about.
+    const projects = projectsFor(cap);
     detail.innerHTML = `
       <h3 class="ev-title">${esc(cap.name)}</h3>
       <p class="ev-source ev-source--${esc(cap.sourced)}">${esc(badge)}</p>
@@ -122,7 +125,11 @@ export function initEvidence() {
             <blockquote>${esc(e.quote)}</blockquote>
             <figcaption>${esc(e.role)} · ${esc(e.company)}</figcaption>
           </figure>`).join('')
-        : `<p class="ev-empty">No achievement bullet references this directly. Shown here rather than dropped, so the claim stays checkable.</p>`}`;
+        : `<p class="ev-empty">No achievement bullet references this directly. Shown here rather than dropped, so the claim stays checkable.</p>`}
+      ${projects.length ? `<div class="ev-proof">
+        <span class="ev-proof-label">Used on</span>
+        <ul>${projects.map((p) => `<li><a href="#${esc(p.id)}">${esc(p.title)}</a></li>`).join('')}</ul>
+      </div>` : ''}`;
   }
 
   filters.addEventListener('click', (e) => {

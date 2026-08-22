@@ -224,3 +224,29 @@ export const impact = [
 ];
 
 export const convergence = ['People', 'Process', 'Data', 'AI', 'Technology'];
+
+/**
+ * What measurably changed. Each line is quoted or directly paraphrased from a
+ * resume achievement bullet and names the employer it happened at, so every
+ * claim here is one a candidate can talk through in an interview.
+ */
+export const outcomes = [
+  { metric: '7+', unit: 'deployments',
+    what: 'Defect-free go-lives, with UAT led end to end — test case development, execution, defect tracking, plus production validation.',
+    org: 'Sarjen Systems' },
+  { metric: '20%', unit: 'efficiency gain',
+    what: 'Training delivered and process improvements made alongside the governance artefacts they documented.',
+    org: 'Sarjen Systems' },
+  { metric: '8', unit: 'dashboards',
+    what: 'Power BI on SQL and data extracts, giving leadership a real-time view of delivery and performance — and the basis for reconciliation and business sign-off.',
+    org: 'Sarjen Systems' },
+  { metric: '50+', unit: 'conditions',
+    what: 'Requirements and functional specifications owned for a consumer data platform at that scope, personas and journey maps included.',
+    org: 'BodyWellnessAI' },
+  { metric: '↑', unit: 'segmentation accuracy',
+    what: 'Improved over successive releases, along with customer engagement, by validating outputs with data checks and root-cause analysis.',
+    org: 'BodyWellnessAI' },
+  { metric: '↑', unit: 'output reliability',
+    what: 'Quality benchmarks tightened by testing prompt variations and documenting the failure patterns behind weak output.',
+    org: 'Mercor' },
+];

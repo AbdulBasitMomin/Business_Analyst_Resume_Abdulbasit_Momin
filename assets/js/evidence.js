@@ -112,13 +112,12 @@ export const caseStudies = [
     tags: ['Requirements', 'Segmentation', 'Personas', 'Backlog'],
     stages: [
       { n: '01', k: 'Problem', v: 'A consumer platform spanning 50+ conditions needed personalisation logic that could be specified, built and defended.' },
-      { n: '02', k: 'Discovery', v: '[ADD: how the need was surfaced — which stakeholders, what evidence]' },
       { n: '03', k: 'Requirements', v: 'Owned requirements and functional specifications, including user personas and end-to-end journey maps.' },
       { n: '04', k: 'Analysis', v: 'Defined and validated audience and segmentation logic using customer, behavioural and engagement data.' },
       { n: '05', k: 'Solution', v: 'Segmentation and personalisation logic driving audience creation, testing and activation to downstream experiences.' },
       { n: '06', k: 'Delivery', v: 'Translated needs into user stories, acceptance criteria, process flows and business rules; managed and prioritised the backlog across multiple release cycles.' },
       { n: '07', k: 'Validation', v: 'Validated outputs with data checks and root-cause analysis, tracking issues to resolution.' },
-      { n: '08', k: 'Impact', v: 'Improved segmentation accuracy and customer engagement over time. [ADD: figure, if one can be shared]' },
+      { n: '08', k: 'Impact', v: 'Improved segmentation accuracy and customer engagement over time.' },
     ],
   },
   {
@@ -134,7 +133,6 @@ export const caseStudies = [
       { n: '03', k: 'Requirements', v: 'Gathered and prioritised business, functional, data and technical requirements.' },
       { n: '04', k: 'Analysis', v: 'Partnered with data architects and engineers to document sources, schemas, mappings, integration points and APIs.' },
       { n: '05', k: 'Solution', v: '8 Power BI dashboards built on SQL and data extracts.' },
-      { n: '06', k: 'Delivery', v: '[ADD: delivery cadence and who consumed the dashboards day to day]' },
       { n: '07', k: 'Validation', v: 'Source-to-target validation of ingestion, transformation logic and field-level mappings against requirements.' },
       { n: '08', k: 'Impact', v: 'Gave leadership a real-time view and supported reconciliation and business sign-off.' },
     ],
@@ -148,7 +146,6 @@ export const caseStudies = [
     tags: ['UAT', 'Defect tracking', 'Governance'],
     stages: [
       { n: '01', k: 'Problem', v: 'Regulated deliveries needed go-lives that held up to audit, not just to a test pass.' },
-      { n: '02', k: 'Discovery', v: '[ADD: what was failing or at risk before this practice existed]' },
       { n: '03', k: 'Requirements', v: 'Requirements captured with the traceability and evidence a regulated delivery has to produce.' },
       { n: '04', k: 'Analysis', v: 'Documented governance artefacts: quality controls, privacy, consent, lineage and data flows.' },
       { n: '05', k: 'Solution', v: 'UAT run end to end — test case development, execution and defect tracking — plus production validation.' },
@@ -166,18 +163,29 @@ export const caseStudies = [
     tags: ['Rubrics', 'Prompt testing', 'Quality benchmarks'],
     stages: [
       { n: '01', k: 'Problem', v: 'Model output on business and data tasks needed judging consistently, not impressionistically.' },
-      { n: '02', k: 'Discovery', v: '[ADD: how the rubric dimensions were chosen]' },
       { n: '03', k: 'Requirements', v: 'Defined rubrics covering accuracy, reasoning and instruction adherence.' },
       { n: '04', k: 'Analysis', v: 'Tested prompt variations and documented the failure patterns behind weak output.' },
       { n: '05', k: 'Solution', v: 'Tightened quality benchmarks so the next round measured the real gap.' },
       { n: '06', k: 'Delivery', v: 'Ongoing evaluation cycles.' },
       { n: '07', k: 'Validation', v: 'Scores checked against rubric criteria rather than overall impression.' },
-      { n: '08', k: 'Impact', v: 'Improved reliability of the evaluated output. [ADD: any shareable measure]' },
+      { n: '08', k: 'Impact', v: 'Improved reliability of the evaluated output.' },
     ],
   },
 ];
 
-/** The 30-second version, for Recruiter Mode. */
+/**
+ * PROOF: capability -> project -> evidence.
+ *
+ * Derived, never asserted. A capability cites an employer; a case study
+ * belongs to one. Matching them turns "I know SQL" into "SQL, on this project,
+ * doing this" without adding a single new claim.
+ */
+export function projectsFor(capability) {
+  const orgs = new Set((capability.evidence || []).map((ev) => ev.company));
+  return caseStudies.filter((c) => orgs.has(c.org));
+}
+
+/** The 30-second version, for Condensed mode. */
 export const recruiterProfile = {
   headline: 'Business Analyst — requirements, data validation and regulated delivery',
   years: '4+ years, including 3+ in regulated environments',

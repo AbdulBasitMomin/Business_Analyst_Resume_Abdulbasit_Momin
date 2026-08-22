@@ -122,6 +122,13 @@
     <div class="case-list" id="case-list"></div>
   </section>
 
+  <!-- ============ BUSINESS IMPACT ============ -->
+  <section class="section" id="impact">
+    <h2 class="section-title">Business impact</h2>
+    <p class="section-lede">What measurably changed, and where. Each line traces to an achievement on the resume.</p>
+    <ul class="impact-list" id="impact-list"></ul>
+  </section>
+
   <!-- ============ EDUCATION ============ -->
   <section class="section" id="education">
     <h2 class="section-title">Education &amp; certifications</h2>
@@ -134,55 +141,76 @@
   <!-- ============ METHOD: the BA thinking, kept compact ============ -->
   <section class="section" id="method">
     <h2 class="section-title">How I work</h2>
-    <p class="section-lede">The loop I run on a delivery, and the artefacts it produces.</p>
+    <p class="section-lede">The lifecycle of a business problem, end to end. This is the part a skills list cannot show.</p>
 
-    <ol class="method-flow" id="method-flow"></ol>
+    <nav class="lifecycle-rail" id="lifecycle-rail" aria-label="Lifecycle stages"></nav>
 
-    <div class="method-cols">
-      <div>
-        <h3 class="sub-head">Artefacts I produce</h3>
-        <ul class="deliv-grid" id="deliv-grid"></ul>
-      </div>
-      <div>
-        <h3 class="sub-head">Validation chain</h3>
-        <ol class="chain-list" id="uat-chain"></ol>
+    <div class="stage" id="st-problem">
+      <h3 class="stage-head"><span class="stage-num">01</span>Problem</h3>
+      <p class="stage-lede">Fragmented inputs, no shared definition of what is wrong. I turn ambiguity into clarity.</p>
+      <ol class="chain-list" id="clarity-chain"></ol>
+    </div>
+
+    <div class="stage" id="st-people">
+      <h3 class="stage-head"><span class="stage-num">02</span>People</h3>
+      <p class="stage-lede">Every requirement has an owner, a source, and a decision behind it.</p>
+      <ul class="stake-list" id="stake-list"></ul>
+      <div class="stake-detail" id="stake-detail"></div>
+    </div>
+
+    <div class="stage" id="st-requirements">
+      <h3 class="stage-head"><span class="stage-num">03</span>Requirements</h3>
+      <p class="stage-lede">Raw input becomes something a team can build and a tester can verify.</p>
+      <ol class="method-flow" id="method-flow"></ol>
+      <h4 class="sub-head">Artefacts I produce</h4>
+      <ul class="deliv-grid" id="deliv-grid"></ul>
+      <details class="extra">
+        <summary>Worked example: one user story, broken down</summary>
+        <p class="illustrative">Illustrative example — structure, not a delivered ticket.</p>
+        <div id="story-lab"></div>
+      </details>
+    </div>
+
+    <div class="stage" id="st-agile">
+      <h3 class="stage-head"><span class="stage-num">04</span>Agile delivery</h3>
+      <p class="stage-lede">Agile isn’t a skill I list. It’s a delivery system I work inside.</p>
+      <p class="illustrative">Illustrative mechanics — how work moves, not a record of a past sprint.</p>
+      <div class="sprint" id="sprint"></div>
+    </div>
+
+    <div class="stage" id="st-data">
+      <h3 class="stage-head"><span class="stage-num">05</span>Data</h3>
+      <p class="stage-lede">Source to target, and proof that nothing was lost on the way.</p>
+      <ol class="chain-list" id="pipeline"></ol>
+    </div>
+
+    <div class="stage" id="st-ai">
+      <h3 class="stage-head"><span class="stage-num">06</span>AI</h3>
+      <div class="ai-block">
+        <p class="ai-stance" id="ai-stance"></p>
+        <ol class="chain-list" id="ai-loop"></ol>
+        <ul class="ai-practices" id="ai-practices"></ul>
+        <p class="ai-grounding" id="ai-grounding"></p>
       </div>
     </div>
 
-    <div class="method-cols">
-      <div>
-        <h3 class="sub-head">Stakeholders I work across</h3>
-        <ul class="stake-list" id="stake-list"></ul>
-        <div class="stake-detail" id="stake-detail"></div>
-      </div>
-      <div>
-        <h3 class="sub-head">Data, source to insight</h3>
-        <ol class="chain-list" id="pipeline"></ol>
-      </div>
+    <div class="stage" id="st-uat">
+      <h3 class="stage-head"><span class="stage-num">07</span>UAT</h3>
+      <p class="stage-lede">A requirement is not done until something proves it.</p>
+      <ol class="chain-list" id="uat-chain"></ol>
     </div>
 
-    <div class="ai-block">
-      <h3 class="sub-head">AI in the work</h3>
-      <p class="ai-stance" id="ai-stance"></p>
-      <ul class="ai-practices" id="ai-practices"></ul>
-      <p class="ai-grounding" id="ai-grounding"></p>
-    </div>
 
-    <details class="extra">
-      <summary>Worked example: one user story, broken down</summary>
-      <p class="illustrative">Illustrative example — structure, not a delivered ticket.</p>
-      <div id="story-lab"></div>
-    </details>
   </section>
 
   <!-- ============ ASK ============ -->
   <section class="section" id="ask">
-    <h2 class="section-title">Ask about the work</h2>
-    <p class="section-lede">Answers come only from the content on this page.</p>
+    <h2 class="section-title">Ask my experience</h2>
+    <p class="section-lede">Every answer is skill, project, and the resume line behind it. Nothing else.</p>
     <div class="ask-wrap">
       <form class="ask-form" id="ask-form" autocomplete="off">
         <label class="sr-only" for="ask-input">Ask a question about this resume</label>
-        <input type="text" id="ask-input" placeholder="e.g. How have you used AI?" />
+        <input type="text" id="ask-input" placeholder="e.g. Where have you used SQL?" />
         <button type="submit" class="btn btn-primary btn-sm">Ask</button>
       </form>
       <div class="ask-suggested" id="ask-suggested"></div>

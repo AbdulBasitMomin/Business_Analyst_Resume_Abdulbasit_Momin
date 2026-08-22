@@ -9,7 +9,7 @@
  * All content comes from the data modules -- nothing is hardcoded here.
  */
 import { resume } from './data.js';
-import { stakeholders, pipeline, ai, uatChain, chapters } from './journey.js';
+import { stakeholders, pipeline, ai, uatChain, clarityLadder, board, outcomes } from './journey.js';
 import { caseStudies } from './evidence.js';
 import { SUGGESTED, answer } from './assistant.js';
 import { renderTimelineGraphic, renderCoverageGraphic } from './graphics.js';
@@ -20,11 +20,22 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
 
 const NAV = [
   ['experience', 'Experience'],
-  ['skills', 'Skills'],
+  ['skills', 'Proof'],
   ['projects', 'Projects'],
-  ['education', 'Education'],
-  ['method', 'How I work'],
+  ['impact', 'Impact'],
+  ['method', 'Journey'],
   ['contact', 'Contact'],
+];
+
+/** The lifecycle stages, in order, for the in-section rail. */
+const STAGES = [
+  ['st-problem', '01', 'Problem'],
+  ['st-people', '02', 'People'],
+  ['st-requirements', '03', 'Requirements'],
+  ['st-agile', '04', 'Agile'],
+  ['st-data', '05', 'Data'],
+  ['st-ai', '06', 'AI'],
+  ['st-uat', '07', 'UAT'],
 ];
 
 export function renderAll() {
@@ -37,6 +48,7 @@ export function renderAll() {
   renderCoverageGraphic(el('gfx-coverage'));
   renderProjects();
   renderEducation();
+  renderImpact();
   renderMethod();
   renderAsk();
   renderContact();
@@ -169,10 +181,7 @@ function renderProjects() {
       <details class="proj-more">
         <summary>Full breakdown</summary>
         <ol class="proj-stages">
-          ${c.stages.map((s) => {
-            const gap = s.v.includes('[ADD');
-            return `<li class="${gap ? 'is-gap' : ''}"><span>${esc(s.k)}</span>${esc(s.v)}</li>`;
-          }).join('')}
+          ${c.stages.map((s) => `<li><span>${esc(s.k)}</span>${esc(s.v)}</li>`).join('')}
         </ol>
       </details>
     </article>`).join('');
@@ -197,9 +206,36 @@ function renderEducation() {
     </div>`).join('');
 }
 
-/* ---------- how I work ---------- */
+/* ---------- business impact ---------- */
+
+function renderImpact() {
+  const node = el('impact-list');
+  if (!node) return;
+  node.innerHTML = outcomes.map((o) => `<li class="outcome">
+    <span class="outcome-metric">${esc(o.metric)}</span>
+    <span class="outcome-unit">${esc(o.unit)}</span>
+    <p class="outcome-what">${esc(o.what)}</p>
+    <span class="outcome-org">${esc(o.org)}</span>
+  </li>`).join('');
+}
+
+/* ---------- how I work: the lifecycle ---------- */
 
 function renderMethod() {
+  // In-section rail, so the reader always knows where in the lifecycle they are.
+  const rail = el('lifecycle-rail');
+  if (rail) {
+    rail.innerHTML = STAGES
+      .map(([id, num, label]) => `<a href="#${id}" data-stage="${id}"><span>${num}</span>${esc(label)}</a>`)
+      .join('');
+  }
+
+  // 01 Problem: ambiguity to requirement.
+  el('clarity-chain').innerHTML = ['Current state', 'Root cause', 'Gap', 'Requirement']
+    .map((step) => `<li class="flow-step">${esc(step)}</li>`)
+    .join('<li class="flow-arrow" aria-hidden="true">→</li>');
+
+  renderSprint();
   // The five-stage loop, drawn from the resume's own verbs.
   el('method-flow').innerHTML = (resume.process || [])
     .map((s, i) => `<li class="mf-step">
@@ -220,10 +256,52 @@ function renderMethod() {
 
   renderStakeholders();
 
+  // 06 AI: the loop, ending on a human decision.
+  el('ai-loop').innerHTML = ai.loop
+    .map((x) => `<li class="flow-step" title="${esc(x.note)}">${esc(x.step)}</li>`)
+    .join('<li class="flow-arrow" aria-hidden="true">→</li>');
+
   el('ai-stance').textContent = ai.stance;
   el('ai-practices').innerHTML = ai.practices
     .map((p) => `<li><strong>${esc(p.name)}</strong> — ${esc(p.note)}</li>`).join('');
   el('ai-grounding').textContent = ai.grounding;
+}
+
+/**
+ * 04 Agile: a compact sprint flow. Cards advance a column on click, so the
+ * mechanic is demonstrable without asserting anything about a real sprint --
+ * the copy above it says as much.
+ */
+function renderSprint() {
+  const node = el('sprint');
+  if (!node) return;
+  const cols = ['Backlog', 'Sprint', 'In progress', 'Review', 'UAT', 'Done'];
+  const cards = board.cards.map((c, i) => ({ ...c, col: i < 2 ? 1 : 0 }));
+
+  const draw = () => {
+    const done = cards.filter((c) => c.col === cols.length - 1).length;
+    node.innerHTML = `
+      <p class="sprint-goal"><span>Sprint goal</span>Status taxonomy defined, mapped and testable.</p>
+      <div class="sprint-board">
+        ${cols.map((name, ci) => `<div class="sprint-col">
+          <h5>${esc(name)}<span>${cards.filter((c) => c.col === ci).length}</span></h5>
+          ${cards.filter((c) => c.col === ci).map((c) => `
+            <button type="button" class="sprint-card" data-id="${esc(c.id)}"
+              aria-label="${esc(c.title)}, in ${esc(name)}. Activate to advance.">
+              <span>${esc(c.type)}</span>${esc(c.title)}
+            </button>`).join('')}
+        </div>`).join('')}
+      </div>
+      <p class="sprint-readout" role="status" aria-live="polite">${done} of ${cards.length} done — tap a card to advance it.</p>`;
+  };
+
+  node.addEventListener('click', (e) => {
+    const b = e.target.closest('.sprint-card');
+    if (!b) return;
+    const card = cards.find((c) => c.id === b.dataset.id);
+    if (card && card.col < cols.length - 1) { card.col += 1; draw(); }
+  });
+  draw();
 }
 
 function renderStakeholders() {
@@ -266,7 +344,15 @@ function renderAsk() {
     if (!a) { out.innerHTML = ''; return; }
     out.innerHTML = `<div class="ask-card${a.unmatched ? ' is-unmatched' : ''}">
       <h3 class="ask-title">${esc(a.title)}</h3>
-      <ul class="ask-lines">${a.lines.map((l) => l ? `<li>${esc(l)}</li>` : '<li class="ask-gap"></li>').join('')}</ul>
+      ${a.lines?.length ? `<ul class="ask-lines">${a.lines.map((l) => l ? `<li>${esc(l)}</li>` : '<li class="ask-gap"></li>').join('')}</ul>` : ''}
+      ${a.proof?.length ? `<div class="proof-table">
+        <div class="proof-head"><span>Skill</span><span>Project</span><span>Evidence</span></div>
+        ${a.proof.map((p) => `<div class="proof-row${p.weak ? ' is-weak' : ''}">
+          <span class="proof-skill">${esc(p.skill)}</span>
+          <span class="proof-project">${esc(p.project)}</span>
+          <span class="proof-evidence">${esc(p.evidence)}</span>
+        </div>`).join('')}
+      </div>` : ''}
       ${a.sources?.length ? `<p class="ask-sources">Sources: ${a.sources.map(esc).join(' · ')}</p>` : ''}
     </div>`;
   };
@@ -367,6 +453,7 @@ export function initScrollSync(onProgress) {
   const nav = el('nav');
   const navLinks = [...document.querySelectorAll('[data-nav]')];
   const bar = el('scroll-bar');
+  const stageLinks = [...document.querySelectorAll('[data-stage]')];
   let queued = false;
 
   const update = () => {
@@ -384,6 +471,13 @@ export function initScrollSync(onProgress) {
       if (s.offsetTop <= line) active = s.id;
     }
     navLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.nav === active));
+
+    let stage = '';
+    for (const [id] of STAGES) {
+      const n = document.getElementById(id);
+      if (n && n.offsetTop <= line) stage = id;
+    }
+    stageLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.stage === stage));
   };
   const onScroll = () => { if (queued) return; queued = true; requestAnimationFrame(update); };
   window.addEventListener('scroll', onScroll, { passive: true });

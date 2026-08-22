@@ -11,8 +11,8 @@
  *
  * The UI labels it accurately: "searches verified portfolio content".
  */
-import { capabilities, caseStudies, recruiterProfile } from './evidence.js';
-import { ai, impact, uatChain, pipeline, board } from './journey.js';
+import { capabilities, caseStudies, recruiterProfile, projectsFor } from './evidence.js';
+import { ai, impact, uatChain, pipeline } from './journey.js';
 import { resume } from './data.js';
 
 const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9\s+]/g, ' ');
@@ -20,17 +20,43 @@ const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9\s+]/g, ' ');
 // most important terms in the domain -- "AI", "BI", "QA".
 const tokens = (s) => norm(s).split(/\s+/).filter((w) => w.length >= 2);
 
-/** Answers are {title, lines[], sources[]}. */
+/**
+ * Answers are {title, lines[], proof[], sources[]}.
+ *
+ * `proof` is the important half: every row is skill -> project -> the resume
+ * line behind it, so a recruiter can verify a claim rather than take it. Rows
+ * are built from the evidence map, so the assistant cannot state anything the
+ * resume does not.
+ */
+function proofRows(caps) {
+  return caps.map((c) => {
+    const ev = c.evidence[0];
+    return {
+      skill: c.name,
+      project: projectsFor(c).map((p) => p.title).join('; ') || (ev ? ev.company : '—'),
+      evidence: ev ? ev.quote : 'Listed in the resume skills section, with no supporting achievement bullet.',
+      weak: !ev,
+    };
+  });
+}
+
 function capabilityAnswer(cat, title) {
   const caps = capabilities.filter((c) => c.cat === cat);
   return {
     title,
-    lines: caps.map((c) => {
-      const ev = c.evidence[0];
-      return ev
-        ? `${c.name} — ${ev.company}: “${ev.quote}”`
-        : `${c.name} — listed in the resume skills section, with no supporting achievement bullet.`;
-    }),
+    lines: [],
+    proof: proofRows(caps),
+    sources: [...new Set(caps.flatMap((c) => c.evidence.map((e) => e.company)))],
+  };
+}
+
+/** Answer for a named skill area, assembled from matching capabilities. */
+function areaAnswer(title, matcher, extra = []) {
+  const caps = capabilities.filter(matcher);
+  return {
+    title,
+    lines: extra,
+    proof: proofRows(caps),
     sources: [...new Set(caps.flatMap((c) => c.evidence.map((e) => e.company)))],
   };
 }
@@ -52,60 +78,25 @@ const INTENTS = [
   {
     id: 'agile',
     keys: 'agile scrum sprint backlog kanban ceremony retrospective release delivery iteration',
-    build: () => ({
-      title: 'Agile and delivery experience',
-      lines: [
-        'Backlog management — BodyWellnessAI: “Managed and prioritized the backlog across multiple release cycles.”',
-        'Release delivery — Sarjen Systems: “Supporting defect-free go-lives across 7+ deployments.”',
-        'Certified — HP LIFE: “Agile Project Management.”',
-        '',
-        `The board on this page is illustrative mechanics (${board.columns.join(' → ')}), not a record of a past sprint.`,
-      ],
-      sources: ['BodyWellnessAI', 'Sarjen Systems', 'HP LIFE certification'],
-    }),
+    build: () => areaAnswer('Agile and delivery', (c) => c.cat === 'Delivery'),
   },
   {
     id: 'ai',
     keys: 'ai artificial intelligence llm model prompt genai generative machine learning evaluation rubric',
-    build: () => ({
-      title: 'How AI features in the work',
-      lines: [
-        ai.stance,
-        ...ai.practices.map((p) => `${p.name} — ${p.note}`),
-        '',
-        ai.grounding,
-      ],
-      sources: ['Mercor', 'Anthropic Academy certification'],
-    }),
+    build: () => areaAnswer('AI in the work', (c) => c.cat === 'AI', [ai.stance, ai.grounding]),
   },
   {
     id: 'data',
     keys: 'data sql power bi dashboard reporting pipeline etl model warehouse query excel analytics',
-    build: () => ({
-      title: 'Data work',
-      lines: [
-        'SQL and Power BI — Sarjen Systems: “Built 8 Power BI dashboards using SQL and data extracts, giving leadership a real-time view of delivery and performance.”',
-        'Source-to-target validation — Sarjen Systems: “Checking ingestion, transformation logic, and field-level mappings against requirements.”',
-        'Segmentation — BodyWellnessAI: “Defined and validated audience and segmentation logic using customer, behavioral, and engagement data.”',
-        '',
-        'Pipeline stages covered: ' + pipeline.map((p) => p.stage).join(' → '),
-      ],
-      sources: ['Sarjen Systems', 'BodyWellnessAI'],
-    }),
+    build: () => areaAnswer('Data work', (c) => c.cat === 'Data',
+      ['Source to insight: ' + pipeline.map((p) => p.stage).join(' → ')]),
   },
   {
     id: 'uat',
     keys: 'uat test testing qa defect bug validation sign off signoff regression acceptance quality',
-    build: () => ({
-      title: 'UAT and validation',
-      lines: [
-        'Sarjen Systems: “Led UAT end to end (test case development, execution, defect tracking) plus production validation, supporting defect-free go-lives across 7+ deployments.”',
-        'BodyWellnessAI: “Validated outputs with data checks and root-cause analysis, tracking issues to resolution.”',
-        '',
-        'Chain applied: ' + uatChain.map((u) => u.step).join(' → '),
-      ],
-      sources: ['Sarjen Systems', 'BodyWellnessAI'],
-    }),
+    build: () => areaAnswer('UAT and validation',
+      (c) => /UAT|Test cases|Root-cause|Source-to-target/.test(c.name),
+      ['Chain applied: ' + uatChain.map((u) => u.step).join(' → ')]),
   },
   {
     id: 'requirements',
