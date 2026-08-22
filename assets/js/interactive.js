@@ -8,6 +8,7 @@
  */
 import { capabilities, CATEGORIES, recruiterProfile, caseStudies, projectsFor } from './evidence.js';
 import { storyLab } from './journey.js';
+import { showTrace } from './traceui.js';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -145,6 +146,8 @@ export function initEvidence() {
     activeCap = btn.dataset.cap === activeCap ? null : btn.dataset.cap;
     renderGrid();
     renderDetail();
+    // Mark the resume bullets this capability traces back to.
+    showTrace(activeCap);
   });
 
   renderGrid();

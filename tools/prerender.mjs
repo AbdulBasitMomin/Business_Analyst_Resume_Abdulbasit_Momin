@@ -56,6 +56,29 @@ const html = await page.evaluate(() => {
   if (panel) panel.hidden = true;
   // Inline canvas opacity from the scroll-driven dim would freeze the backdrop.
   document.getElementById('bg-canvas')?.removeAttribute('style');
+  // The trace graph is a live WebGL figure. Baking in its "is-live" class and
+  // its projected tag positions would leave a dead box and a scatter of
+  // stranded labels in the snapshot, so it goes back to its pre-mount state
+  // and is re-enabled by the script if the browser can actually draw it.
+  const fig = document.getElementById('trace-graph');
+  if (fig) {
+    fig.classList.remove('is-live');
+    const tags = document.getElementById('tg-tags');
+    if (tags) tags.innerHTML = '';
+    const label = document.getElementById('tg-label');
+    if (label) { label.hidden = true; label.innerHTML = ''; label.removeAttribute('style'); }
+    const cvs = document.getElementById('trace-canvas');
+    ['width', 'height', 'style', 'data-engine'].forEach((a) => cvs?.removeAttribute(a));
+    const counts = document.getElementById('tg-counts');
+    if (counts) counts.textContent = '';
+  }
+  // Selecting a capability is a runtime action; a snapshot must not open with
+  // one chosen, a chain panel filled in, and bullets highlighted.
+  document.querySelectorAll('.ev-chip.is-on, .ev-chip.is-traced').forEach((n) => n.classList.remove('is-on', 'is-traced'));
+  document.querySelectorAll('.role-list li.is-traced, .role-list li.is-source')
+    .forEach((n) => n.classList.remove('is-traced', 'is-source'));
+  const chain = document.getElementById('trace-chain');
+  if (chain) { chain.hidden = true; chain.innerHTML = ''; }
   return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 });
 

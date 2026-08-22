@@ -56,12 +56,25 @@
   <a class="nav-mark" href="#top"><span class="nav-mark-dot"></span><span id="nav-name">Abdulbasit Momin</span></a>
   <nav class="nav-links" id="nav-links" aria-label="Sections"></nav>
   <div class="nav-actions">
+    <button type="button" class="btn btn-sm btn-ghost-k" id="palette-open" aria-label="Search this resume">
+      Search <kbd>⌘K</kbd>
+    </button>
     <button type="button" class="btn btn-sm btn-recruiter" id="recruiter-toggle" aria-pressed="false">Condensed</button>
     <a class="btn btn-sm btn-primary" id="nav-resume" href="#" download>Resume</a>
   </div>
 </header>
 
 <section class="recruiter-panel" id="recruiter-panel" hidden aria-label="Condensed profile"></section>
+
+<!-- Command palette: jump straight to any capability, project or section. -->
+<div class="palette" id="palette" hidden role="dialog" aria-modal="true" aria-label="Search this resume">
+  <div class="palette-box">
+    <label class="sr-only" for="palette-input">Search capabilities, projects and sections</label>
+    <input type="text" id="palette-input" placeholder="Search capabilities, projects, sections…" autocomplete="off" />
+    <ul class="palette-list" id="palette-list"></ul>
+    <p class="palette-hint">↑↓ to move · Enter to jump · Esc to close</p>
+  </div>
+</div>
 
 <main id="main">
 <div id="top"></div>
@@ -104,15 +117,40 @@
   <!-- ============ SKILLS ============ -->
   <section class="section" id="skills">
     <h2 class="section-title">Skills &amp; tools</h2>
-    <p class="section-lede">Grouped as they appear on the resume. Select any capability to see the role it was used in and the line that supports it.</p>
+    <p class="section-lede">Grouped as they appear on the resume. Select a capability to see the role it was used in
+      and the exact line that supports it &mdash; or start from an achievement in Experience and work back to what it evidences.</p>
     <div class="ev-layout">
       <div>
         <div class="ev-filters" id="evidence-filters" role="group" aria-label="Filter capabilities by category"></div>
         <div class="ev-grid" id="evidence-grid"></div>
       </div>
-      <div class="ev-detail" id="evidence-detail" aria-live="polite"></div>
+      <div>
+        <div class="ev-detail" id="evidence-detail" aria-live="polite"></div>
+        <div class="trace-chain" id="trace-chain" hidden></div>
+      </div>
     </div>
     <div class="gfx-slot reveal" id="gfx-coverage"></div>
+
+    <!-- The traceability matrix itself, as a graph. Interactive enhancement:
+         the chips above are the complete, keyboard-accessible equivalent. -->
+    <figure class="tg reveal" id="trace-graph">
+      <figcaption class="tg-cap">
+        <span class="tg-title">Traceability matrix</span>
+        <span class="tg-note" id="tg-counts"></span>
+      </figcaption>
+      <div class="tg-stage">
+        <canvas id="trace-canvas" role="img"
+          aria-label="Three-dimensional traceability graph linking resume achievements to capabilities. The capability list above carries the same information."></canvas>
+        <div class="tg-tags" id="tg-tags" aria-hidden="true"></div>
+        <div class="tg-label" id="tg-label" hidden aria-hidden="true"></div>
+      </div>
+      <ul class="tg-legend">
+        <li><i class="tg-dot tg-dot--bullet"></i>Achievement on the resume</li>
+        <li><i class="tg-dot tg-dot--cap"></i>Capability it evidences</li>
+        <li><i class="tg-dot tg-dot--gap"></i>Listed, with no achievement behind it</li>
+      </ul>
+      <p class="tg-hint">Drag to turn it. Click any node to open its evidence.</p>
+    </figure>
   </section>
 
   <!-- ============ PROJECTS ============ -->

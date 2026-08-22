@@ -7,6 +7,7 @@
  */
 import { renderAll, initReveal, initCounters, initMagnetic, initScrollSync } from './ui.js';
 import { initRecruiterMode, initEvidence, initStoryLab } from './interactive.js';
+import { initTrace, initTraceGraph } from './traceui.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,6 +18,8 @@ initMagnetic({ reducedMotion });
 initRecruiterMode();
 initEvidence();
 initStoryLab();
+// After the evidence chips and bullets exist, so the matrix can bind to them.
+initTrace();
 
 let backdrop = null;
 
@@ -46,3 +49,4 @@ async function initThree() {
 
 initScrollSync((p) => backdrop?.setScroll(p));
 initThree();
+initTraceGraph({ reducedMotion });

@@ -142,7 +142,7 @@ function renderSummary() {
 
 function renderExperience() {
   el('timeline').innerHTML = (resume.experience || [])
-    .map((r) => {
+    .map((r, ri) => {
       const current = String(r.end).toLowerCase() === 'present';
       return `<article class="role reveal">
         <header class="role-head">
@@ -153,7 +153,9 @@ function renderExperience() {
           <span class="role-dates${current ? ' is-current' : ''}">${esc(r.start)} – ${esc(r.end)}</span>
         </header>
         ${r.summary ? `<p class="role-summary">${esc(r.summary)}</p>` : ''}
-        ${r.achievements?.length ? `<ul class="role-list">${r.achievements.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${r.achievements?.length ? `<ul class="role-list">${r.achievements.map((x, bi) =>
+          `<li data-bullet="${ri}-${bi}">${esc(x)}<button type="button" class="trace-btn" data-trace-bullet="${ri}-${bi}"
+            aria-label="Show the capabilities this achievement evidences"></button></li>`).join('')}</ul>` : ''}
         ${r.tools?.length ? `<p class="role-tools"><span>Tools</span>${r.tools.map(esc).join(' · ')}</p>` : ''}
       </article>`;
     }).join('');

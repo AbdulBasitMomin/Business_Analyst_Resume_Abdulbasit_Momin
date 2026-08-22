@@ -46,6 +46,7 @@ export const resume = {
     {
       role: 'AI Evaluator',
       company: 'Mercor',
+      short: 'Mercor',
       location: 'Remote',
       start: 'May 2026',
       end: 'Present',
@@ -59,6 +60,7 @@ export const resume = {
     {
       role: 'Product Owner / Business Analyst',
       company: 'BodyWellnessAI',
+      short: 'BodyWellnessAI',
       location: 'Toronto, ON',
       start: 'July 2025',
       end: 'April 2026',
@@ -82,6 +84,7 @@ export const resume = {
     {
       role: 'Business Analyst, IT Consulting',
       company: 'Sarjen Systems Pvt. Ltd.',
+      short: 'Sarjen',
       location: 'India',
       start: 'January 2022',
       end: 'June 2025',

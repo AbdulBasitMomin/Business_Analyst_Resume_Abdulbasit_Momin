@@ -39,6 +39,10 @@ async function run(label, url, viewport, isMobile) {
   await page.waitForTimeout(4200);
   const P = `[${label}]`;
 
+  // Measured on arrival, before this script expands anything: the number that
+  // matters is the page a recruiter actually lands on.
+  const landingHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+
   check(`${P} no JS errors or warnings`, errs.length === 0, errs.slice(0, 2).join(' | '));
 
   const webgl = await page.evaluate(() => ({
@@ -109,6 +113,67 @@ async function run(label, url, viewport, isMobile) {
   await tap('.lifecycle-rail a[data-stage="st-ai"]',
     () => !!document.getElementById('st-ai'), 'lifecycle rail navigates');
 
+  // --- traceability: the claim-to-evidence chain, in both directions ---
+  await tap('.ev-chip:not(.is-on)', () => {
+    const cap = document.querySelector('.ev-chip.is-on')?.dataset.cap;
+    return !!cap && !document.getElementById('trace-chain').hidden
+      && new URLSearchParams(location.search).get('trace') === cap;
+  }, 'capability traces to a bullet');
+  check(`${P} traced bullets marked`, await page.evaluate(
+    () => document.querySelectorAll('.role-list li.is-traced').length > 0));
+  check(`${P} every bullet reports its capabilities`, await page.evaluate(() => {
+    const b = [...document.querySelectorAll('.trace-btn')];
+    return b.length > 0 && b.every((n) => /^\d+ capabilit/.test(n.textContent.trim()));
+  }));
+  await tap('.trace-btn', () => document.querySelectorAll('.ev-chip.is-traced').length > 0
+    && document.querySelectorAll('.role-list li.is-source').length === 1, 'bullet traces back to capabilities');
+
+  // --- the matrix as a graph: present, framed, and labelled ---
+  check(`${P} trace graph live`, await page.evaluate(() => {
+    const fig = document.getElementById('trace-graph');
+    return !!fig && fig.classList.contains('is-live');
+  }));
+  check(`${P} trace graph counts stated`, await page.evaluate(
+    () => /\d+ achievements · \d+ capabilities · \d+ derived links/.test(
+      document.getElementById('tg-counts')?.textContent || '')));
+  const tg = await page.evaluate(() => {
+    const c = document.getElementById('trace-canvas');
+    if (!c) return null;
+    const r = c.getBoundingClientRect();
+    const tags = [...document.querySelectorAll('.tg-tag')].map((t) => {
+      const b = t.getBoundingClientRect();
+      return { in: b.left >= r.left - 1 && b.right <= r.right + 1, w: Math.round(b.width) };
+    });
+    return { w: Math.round(r.width), h: Math.round(r.height), drawn: c.width > 0, tags };
+  });
+  check(`${P} trace graph canvas sized`, tg && tg.drawn && tg.h > 200, JSON.stringify(tg && { w: tg.w, h: tg.h }));
+  check(`${P} trace graph tags fit the canvas`,
+    tg && tg.tags.length >= 9 && tg.tags.every((t) => t.in && t.w > 8),
+    JSON.stringify(tg && tg.tags.filter((t) => !t.in)));
+
+  // --- command palette: keyboard only, so desktop only ---
+  if (!isMobile) {
+    await page.keyboard.press('Control+k');
+    await page.waitForTimeout(250);
+    check(`${P} palette opens on Ctrl-K`, await page.evaluate(
+      () => !document.getElementById('palette').hidden
+        && document.getElementById('palette-list').children.length > 0));
+    await page.keyboard.type('reconcil');
+    await page.waitForTimeout(200);
+    check(`${P} palette filters`, await page.evaluate(
+      () => /Reconcil/i.test(document.getElementById('palette-list').textContent)));
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+    check(`${P} palette closes and acts`, await page.evaluate(
+      () => document.getElementById('palette').hidden
+        && !!document.querySelector('.ev-chip.is-on')));
+  }
+  // A closed overlay must not sit over the page swallowing clicks.
+  check(`${P} closed overlays do not block`, await page.evaluate(() => {
+    const p = document.getElementById('palette');
+    return !!p && p.hidden && getComputedStyle(p).display === 'none';
+  }));
+
   await tap('#recruiter-toggle', () => document.body.classList.contains('recruiter-mode'), 'condensed mode on');
   check(`${P} condensed keeps experience + contact`, await page.evaluate(() =>
     getComputedStyle(document.getElementById('experience')).display !== 'none'
@@ -120,12 +185,11 @@ async function run(label, url, viewport, isMobile) {
     .map((b) => Math.round(b.getBoundingClientRect().height)));
   check(`${P} hero buttons 44-56px`, btnH.every((h) => h >= 44 && h <= 56), JSON.stringify(btnH));
 
-  const height = await page.evaluate(() => document.documentElement.scrollHeight);
   // A 320px viewport stacks every grid to one column, so the same content is
   // legitimately taller there. The budget scales with that rather than
   // pretending one number fits both.
   const budget = viewport.width < 360 ? 17000 : 15000;
-  check(`${P} page under ${budget}px`, height < budget, `${height}px`);
+  check(`${P} landing page under ${budget}px`, landingHeight < budget, `${landingHeight}px`);
 
   const caps = await page.evaluate(() => [...document.querySelectorAll('*')]
     .filter((n) => !n.children.length && n.textContent.trim().length > 2)

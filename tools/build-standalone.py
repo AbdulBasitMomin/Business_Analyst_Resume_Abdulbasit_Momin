@@ -38,8 +38,8 @@ BASE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'index.html'
 
 # Order matters: a module's dependencies must be defined before it.
 MODULES = [
-    'data.js', 'journey.js', 'evidence.js', 'assistant.js', 'graphics.js', 'ui.js',
-    'interactive.js', 'backdrop.js', 'main.js',
+    'data.js', 'journey.js', 'evidence.js', 'assistant.js', 'graphics.js',
+    'trace.js', 'tracegraph.js', 'traceui.js', 'ui.js', 'interactive.js', 'backdrop.js', 'main.js',
 ]
 
 IMPORT_RE = re.compile(
@@ -47,7 +47,7 @@ IMPORT_RE = re.compile(
     r"['\"](?P<src>[^'\"]+)['\"];\s*$",
     re.M,
 )
-EXPORT_DECL_RE = re.compile(r'^export\s+(?:const|let|var|function|class)\s+(\w+)', re.M)
+EXPORT_DECL_RE = re.compile(r'^export\s+(?:async\s+)?(?:const|let|var|function|class)\s+(\w+)', re.M)
 
 THREE_NS = '__three'
 
@@ -103,7 +103,7 @@ def module_iife(name: str) -> str:
     src = IMPORT_RE.sub('', src)
 
     exports = EXPORT_DECL_RE.findall(src)
-    src = re.sub(r'^export\s+(?=(const|let|var|function|class)\b)', '', src, flags=re.M)
+    src = re.sub(r'^export\s+(?=(?:async\s+)?(?:const|let|var|function|class)\b)', '', src, flags=re.M)
 
     # Dynamic imports of local modules resolve to the already-built module
     # object. Generic, so adding a module needs no bundler change -- the old
@@ -113,6 +113,13 @@ def module_iife(name: str) -> str:
         lambda m: f"Promise.resolve({module_var('./' + m.group(1) + '.js')})",
         src,
     )
+
+    # A missed form of export or import is a syntax error in the browser, and
+    # the page dies whole. Fail here instead, where the message is useful:
+    # `export async function` slipped through once and shipped a blank page.
+    for line in src.splitlines():
+        if re.match(r'\s*(export|import)\b', line):
+            sys.exit(f'{name}: unhandled module syntax -- {line.strip()[:70]!r}')
 
     body = '\n'.join(preamble + ['', src.strip()])
     returns = ', '.join(f'{e}: {e}' for e in exports)
