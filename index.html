@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Abdul Basit Momin — Business Analyst</title>
+<meta name="description" content="Business Analyst portfolio and interactive resume of Abdul Basit Momin." />
+<meta name="theme-color" content="#05070f" />
+
+<meta property="og:type" content="profile" />
+<meta property="og:title" content="Abdul Basit Momin — Business Analyst" />
+<meta property="og:description" content="Interactive 3D resume: experience, skills, projects and impact." />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+<link rel="stylesheet" href="./assets/css/style.css" />
+
+<script type="importmap">
+{ "imports": { "three": "./assets/vendor/three/three.module.min.js" } }
+</script>
+</head>
+<body>
+
+<!-- Fixed WebGL backdrop: particle field, core geometry, scroll-driven camera -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<div id="loader" class="loader">
+  <div class="loader-ring"></div>
+  <p class="loader-text">Building scene</p>
+</div>
+
+<div id="draft-banner" class="draft-banner" hidden>
+  <strong>Draft</strong> — placeholder content, not a finished profile.
+</div>
+
+<header class="nav" id="nav">
+  <a class="nav-mark" href="#top"><span class="nav-mark-dot"></span><span id="nav-name">—</span></a>
+  <nav class="nav-links" id="nav-links" aria-label="Sections"></nav>
+  <a class="btn btn-sm" id="nav-cta" href="#contact">Get in touch</a>
+</header>
+
+<main id="top">
+
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <p class="eyebrow" id="hero-availability"></p>
+      <h1 class="hero-name" id="hero-name"></h1>
+      <p class="hero-role" id="hero-role"></p>
+      <p class="hero-tagline" id="hero-tagline"></p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#experience">View experience</a>
+        <a class="btn btn-ghost" id="hero-resume" href="#contact">Download resume</a>
+      </div>
+      <ul class="stats" id="stats"></ul>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span></span>scroll</div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2 class="section-title">About</h2>
+    </div>
+    <div class="about-grid">
+      <p class="about-headline" id="about-headline"></p>
+      <div class="about-body" id="about-body"></div>
+    </div>
+  </section>
+
+  <section class="section" id="experience">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Experience</h2>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section class="section" id="skills">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Skills</h2>
+    </div>
+    <div class="skills-layout">
+      <!-- Draggable 3D label sphere -->
+      <div class="orb-wrap">
+        <canvas id="orb-canvas"></canvas>
+        <p class="orb-hint">drag to rotate</p>
+      </div>
+      <div class="skill-groups" id="skill-groups"></div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Projects</h2>
+    </div>
+    <div class="cards" id="projects-grid"></div>
+  </section>
+
+  <section class="section" id="education">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Education &amp; Certifications</h2>
+    </div>
+    <div class="edu-layout">
+      <div class="edu-list" id="education-list"></div>
+      <div class="cert-list" id="cert-list"></div>
+    </div>
+  </section>
+
+  <section class="section" id="testimonials" hidden>
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Endorsements</h2>
+    </div>
+    <div class="cards" id="testimonial-grid"></div>
+  </section>
+
+  <section class="section contact" id="contact">
+    <div class="contact-card glass tilt">
+      <h2 class="contact-title">Let's talk</h2>
+      <p class="contact-sub" id="contact-sub"></p>
+      <div class="contact-links" id="contact-links"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span id="footer-name"></span>
+  <span class="footer-sep">·</span>
+  <span>Built with Three.js</span>
+</footer>
+
+<script type="module" src="./assets/js/main.js"></script>
+<noscript>
+  <div class="noscript">This interactive resume needs JavaScript enabled.</div>
+</noscript>
+</body>
+</html>
