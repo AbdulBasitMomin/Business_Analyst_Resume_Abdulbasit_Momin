@@ -67,6 +67,7 @@
 
 <!-- Chapter rail: where you are in the journey. -->
 <nav class="rail" id="rail" aria-label="Journey chapters"></nav>
+<div class="rail-mobile" id="rail-mobile" aria-hidden="true"><span id="rail-mobile-text"></span></div>
 
 <section class="recruiter-panel" id="recruiter-panel" hidden aria-label="30-second profile"></section>
 
@@ -81,10 +82,14 @@
       <p class="hero-role">Business Analyst</p>
       <p class="hero-disciplines">Business Analysis &nbsp;·&nbsp; Data &nbsp;·&nbsp; AI &nbsp;·&nbsp; Agile &nbsp;·&nbsp; Process Improvement</p>
       <p class="hero-tagline">Turning complex business problems into clear, measurable solutions.</p>
+      <!-- Narrow screens get a purpose-built compact diagram rather than the
+           desktop 3D scene, which collided with the copy and cost GPU time. -->
+      <div class="hero-diagram" id="hero-diagram" role="img"
+           aria-label="Business Analyst at the centre of People, Process, Data, AI, Agile and Systems."></div>
       <div class="hero-actions">
         <a class="btn btn-primary magnetic" href="#ch-problem">Explore my journey</a>
         <a class="btn btn-ghost magnetic" href="#resume">View resume</a>
-        <a class="btn btn-ghost magnetic" id="hero-linkedin" href="#" target="_blank" rel="noopener">Connect on LinkedIn</a>
+        <a class="btn btn-ghost magnetic" id="hero-linkedin" href="#" target="_blank" rel="noopener"><span class="btn-long">Connect on </span>LinkedIn</a>
       </div>
       <ul class="stats" id="stats"></ul>
       <p class="hero-thesis">“Don’t just read my resume. Experience how I think.”</p>
@@ -139,7 +144,7 @@
   <!-- ===================== 04 USER STORY LAB ===================== -->
   <section class="section chapter" id="ch-stories" data-station="2">
     <div class="section-head">
-      <span class="section-num">04</span>
+      <span class="section-kicker">Lab</span>
       <h2 class="section-title">User story lab</h2>
       <p class="section-lede">Epic to story to acceptance criteria to task. Step through the breakdown.</p>
       <p class="illustrative">Illustrative worked example — structure, not a delivered ticket.</p>
@@ -150,7 +155,7 @@
   <!-- ===================== 05 DELIVERY ===================== -->
   <section class="section chapter" id="ch-agile" data-station="3">
     <div class="section-head">
-      <span class="section-num">05</span>
+      <span class="section-num">04</span>
       <h2 class="section-title">Delivery board</h2>
       <p class="section-lede">A backlog is a sequence of decisions, not a list. Move a card and watch the burndown respond.</p>
       <p class="illustrative">Illustrative mechanics. The burndown tracks <em>your</em> moves — no past sprint data is implied.</p>
@@ -170,7 +175,7 @@
   <!-- ===================== 06 DATA ===================== -->
   <section class="section chapter" id="ch-data" data-station="4">
     <div class="section-head">
-      <span class="section-num">06</span>
+      <span class="section-num">05</span>
       <h2 class="section-title">Data</h2>
       <p class="section-lede">Source to target, and proof that nothing was lost on the way.</p>
     </div>
@@ -181,7 +186,7 @@
   <!-- ===================== 07 AI ===================== -->
   <section class="section chapter" id="ch-ai" data-station="5">
     <div class="section-head">
-      <span class="section-num">07</span>
+      <span class="section-num">06</span>
       <h2 class="section-title">AI × business analysis</h2>
       <p class="section-lede" id="ai-stance"></p>
     </div>
@@ -193,7 +198,7 @@
   <!-- ===================== 08 VALIDATION ===================== -->
   <section class="section chapter" id="ch-uat" data-station="6">
     <div class="section-head">
-      <span class="section-num">08</span>
+      <span class="section-num">07</span>
       <h2 class="section-title">Validation</h2>
       <p class="section-lede">A requirement is not done until something proves it.</p>
     </div>
@@ -203,7 +208,7 @@
   <!-- ===================== 09 EXPERIENCE ===================== -->
   <section class="section" id="experience" data-station="6">
     <div class="section-head">
-      <span class="section-num">09</span>
+      <span class="section-num">08</span>
       <h2 class="section-title">Experience</h2>
       <p class="section-lede">Three roles, newest first.</p>
     </div>
@@ -213,7 +218,7 @@
   <!-- ===================== 10 CASE STUDIES ===================== -->
   <section class="section" id="cases" data-station="7">
     <div class="section-head">
-      <span class="section-num">10</span>
+      <span class="section-kicker">Evidence</span>
       <h2 class="section-title">Case studies</h2>
       <p class="section-lede">The same eight-stage frame applied to real work. Stages the resume does not cover are marked, not invented.</p>
     </div>
@@ -223,7 +228,7 @@
   <!-- ===================== 11 SKILLS AS EVIDENCE ===================== -->
   <section class="section" id="evidence" data-station="7">
     <div class="section-head">
-      <span class="section-num">11</span>
+      <span class="section-kicker">Evidence</span>
       <h2 class="section-title">Capabilities, with evidence</h2>
       <p class="section-lede">Not a list. Select a capability to see the role it was used in and the resume line that backs it.</p>
     </div>
@@ -246,7 +251,7 @@
   <!-- ===================== 12 IMPACT ===================== -->
   <section class="section chapter" id="ch-impact" data-station="7">
     <div class="section-head">
-      <span class="section-num">12</span>
+      <span class="section-num">09</span>
       <h2 class="section-title">Business impact</h2>
       <p class="section-lede">Only figures that appear in the resume. Nothing derived, rounded or estimated.</p>
     </div>
@@ -267,7 +272,7 @@
   <!-- ===================== ASK MY PORTFOLIO ===================== -->
   <section class="section" id="ask">
     <div class="section-head">
-      <span class="section-num">13</span>
+      <span class="section-kicker">Assistant</span>
       <h2 class="section-title">Ask my portfolio</h2>
       <p class="section-lede">Ask about the work. Answers come only from verified portfolio content.</p>
     </div>
@@ -286,7 +291,7 @@
   <!-- ===================== RESUME ===================== -->
   <section class="section" id="resume">
     <div class="section-head">
-      <span class="section-num">14</span>
+      <span class="section-kicker">Download</span>
       <h2 class="section-title">Resume</h2>
       <p class="section-lede">The conventional version — plain, complete and ATS-friendly.</p>
     </div>
@@ -294,7 +299,10 @@
       <a class="btn btn-primary magnetic" id="resume-download" href="#">Download PDF</a>
       <button type="button" class="btn btn-ghost magnetic" id="resume-print">Print / save as PDF</button>
     </div>
-    <div class="ats" id="ats"></div>
+    <details class="ats-wrap" id="ats-wrap">
+      <summary class="ats-toggle">Read the full resume inline</summary>
+      <div class="ats" id="ats"></div>
+    </details>
   </section>
 
   <!-- ===================== CONTACT ===================== -->

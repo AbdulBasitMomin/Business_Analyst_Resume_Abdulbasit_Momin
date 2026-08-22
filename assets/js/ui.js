@@ -65,24 +65,34 @@ function renderNav() {
     .join('');
 }
 
-/** Chapter rail, built from the sections actually present in the document. */
+/**
+ * Chapter rail. Only the nine numbered journey sections appear -- supporting
+ * sections carry a kicker instead of a number, which keeps the rail a story
+ * outline rather than a table of contents.
+ */
+const RAIL_LABELS = {
+  'ch-problem': 'Problem', 'ch-stakeholders': 'People', 'ch-requirements': 'Requirements',
+  'ch-agile': 'Agile', 'ch-data': 'Data', 'ch-ai': 'AI', 'ch-uat': 'UAT',
+  experience: 'Experience', 'ch-impact': 'Impact',
+};
+
 function renderRail() {
   const rail = el('rail');
   if (!rail) return;
   const items = [...document.querySelectorAll('main section[id]')]
-    .map((s) => ({
-      id: s.id,
-      num: s.querySelector('.section-num')?.textContent?.trim(),
-      title: s.querySelector('.section-title')?.textContent?.trim(),
+    .map((sec) => ({
+      id: sec.id,
+      num: sec.querySelector('.section-num')?.textContent?.trim(),
     }))
-    .filter((s) => s.num && s.title);
+    .filter((sec) => sec.num && RAIL_LABELS[sec.id]);
 
   rail.innerHTML = items
-    .map((s) => `<a class="rail-item" href="#${esc(s.id)}" data-rail="${esc(s.id)}">
-      <span class="rail-num">${esc(s.num)}</span>
-      <span class="rail-label">${esc(s.title)}</span>
+    .map((sec) => `<a class="rail-item" href="#${esc(sec.id)}" data-rail="${esc(sec.id)}">
+      <span class="rail-num">${esc(sec.num)}</span>
+      <span class="rail-label">${esc(RAIL_LABELS[sec.id])}</span>
     </a>`)
     .join('');
+  return items;
 }
 
 function renderHero() {
@@ -98,15 +108,52 @@ function renderHero() {
   if (m.linkedin) li.href = m.linkedin;
   else li.hidden = true;
 
+  // Every figure shows where it comes from. A number a recruiter cannot trace
+  // is a liability, not a selling point.
   el('stats').innerHTML = (resume.stats || [])
     .map((s) => `<li class="stat reveal">
       <span class="stat-value" data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || '')}">0</span>
       <span class="stat-label">${esc(s.label)}</span>
+      ${s.source ? `<span class="stat-source">${esc(s.source)}</span>` : ''}
     </li>`).join('');
+
+  renderHeroDiagram();
 
   el('scene-legend-chain').innerHTML = SYSTEM_CHAIN
     .map((label) => `<span class="chain-node">${esc(label)}</span>`)
     .join('<span class="chain-arrow">→</span>');
+}
+
+/**
+ * Compact ecosystem diagram for narrow screens: the same six domains as the
+ * desktop 3D scene, as crisp SVG. Cheaper than a second WebGL context and it
+ * never overlaps the copy.
+ */
+const DIAGRAM_NODES = [
+  { label: 'AI', x: 160, y: 26, ai: true },
+  { label: 'People', x: 46, y: 62 },
+  { label: 'Agile', x: 274, y: 62 },
+  { label: 'Data', x: 32, y: 128 },
+  { label: 'Systems', x: 288, y: 128 },
+  { label: 'Process', x: 160, y: 166 },
+];
+
+function renderHeroDiagram() {
+  const node = el('hero-diagram');
+  if (!node) return;
+  const CX = 160, CY = 96;
+  node.innerHTML = `<svg viewBox="0 0 320 192" aria-hidden="true">
+    <g class="hd-links">${DIAGRAM_NODES
+      .map((n) => `<line x1="${CX}" y1="${CY}" x2="${n.x}" y2="${n.y}" />`).join('')}</g>
+    ${DIAGRAM_NODES.map((n, i) => `<g class="hd-node${n.ai ? ' is-ai' : ''}" style="--i:${i}">
+      <circle cx="${n.x}" cy="${n.y}" r="5.5" />
+      <text x="${n.x}" y="${n.y - 11}" text-anchor="middle">${esc(n.label)}</text>
+    </g>`).join('')}
+    <g class="hd-core">
+      <circle cx="${CX}" cy="${CY}" r="15" />
+      <text x="${CX}" y="${CY + 4}" text-anchor="middle">BA</text>
+    </g>
+  </svg>`;
 }
 
 /* ---------- 01 problem ---------- */
@@ -128,9 +175,27 @@ function renderStakeholders() {
   const detail = el('stake-detail');
   if (!list || !detail) return;
 
+  // Radial layout: the analyst sits at the centre and the stakeholders ring
+  // it, which is the actual shape of the relationship. Positions are computed
+  // here so no CSS trigonometry is needed; narrow screens fall back to a
+  // column via the stylesheet, where a ring of eight labels would be unusable.
+  const N = stakeholders.length;
   list.innerHTML = `<li class="stake-hub">Business Analyst</li>` + stakeholders
-    .map((s) => `<li><button type="button" class="stake-btn" data-stake="${esc(s.id)}">${esc(s.name)}</button></li>`)
-    .join('');
+    .map((s, i) => {
+      const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+      const left = 50 + Math.cos(a) * 33;
+      const top = 50 + Math.sin(a) * 36;
+      return `<li class="stake-slot" style="--l:${left.toFixed(2)}%; --t:${top.toFixed(2)}%">
+        <button type="button" class="stake-btn" data-stake="${esc(s.id)}">${esc(s.name)}</button>
+      </li>`;
+    })
+    .join('') + `<li class="stake-web" aria-hidden="true">${(() => {
+      const lines = stakeholders.map((s, i) => {
+        const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+        return `<line x1="50" y1="50" x2="${(50 + Math.cos(a) * 33).toFixed(2)}" y2="${(50 + Math.sin(a) * 36).toFixed(2)}" />`;
+      }).join('');
+      return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>`;
+    })()}</li>`;
 
   const show = (id) => {
     const s = stakeholders.find((x) => x.id === id) || stakeholders[0];
@@ -238,24 +303,32 @@ function renderUAT() {
 
 /* ---------- 09 experience ---------- */
 
+/**
+ * Each role reads as a release: headline facts always visible, the detail one
+ * tap away. Previously every bullet was expanded by default, which made this
+ * the second-tallest section on the page.
+ */
 function renderExperience() {
-  el('timeline').innerHTML = (resume.experience || [])
+  const roles = resume.experience || [];
+  el('timeline').innerHTML = roles
     .map((r, i) => {
       const current = String(r.end).toLowerCase() === 'present';
-      return `<article class="tl-item reveal" style="--d:${i * 80}ms">
+      const release = String(roles.length - i).padStart(2, '0');
+      return `<article class="tl-item reveal" style="--d:${i * 70}ms">
         <div class="tl-marker"><span class="tl-dot${current ? ' is-live' : ''}"></span></div>
-        <div class="tl-card glass tilt">
-          <header class="tl-head">
-            <div>
-              <h3 class="tl-role">${esc(r.role)}</h3>
-              <p class="tl-company">${esc(r.company)}${r.location ? ` · ${esc(r.location)}` : ''}</p>
-            </div>
+        <details class="tl-card"${i === 0 ? ' open' : ''}>
+          <summary class="tl-head">
+            <span class="tl-release">Release ${release}</span>
+            <h3 class="tl-role">${esc(r.role)}</h3>
+            <p class="tl-company">${esc(r.company)}${r.location ? ` · ${esc(r.location)}` : ''}</p>
             <span class="tl-dates${current ? ' is-current' : ''}">${esc(r.start)} — ${esc(r.end)}</span>
-          </header>
-          ${r.summary ? `<p class="tl-summary">${esc(r.summary)}</p>` : ''}
-          ${r.achievements?.length ? `<ul class="tl-list">${r.achievements.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
-          ${r.tools?.length ? `<div class="chips">${r.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
-        </div>
+          </summary>
+          <div class="tl-body">
+            ${r.summary ? `<p class="tl-summary">${esc(r.summary)}</p>` : ''}
+            ${r.achievements?.length ? `<h4 class="tl-sub">What I owned</h4><ul class="tl-list">${r.achievements.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
+            ${r.tools?.length ? `<h4 class="tl-sub">Tools</h4><div class="chips">${r.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
+          </div>
+        </details>
       </article>`;
     }).join('');
 }
@@ -264,7 +337,7 @@ function renderExperience() {
 
 function renderCases() {
   el('case-list').innerHTML = caseStudies
-    .map((c, i) => `<details class="case glass reveal" id="${esc(c.id)}" style="--d:${i * 70}ms"${i === 0 ? ' open' : ''}>
+    .map((c, i) => `<details class="case glass reveal" id="${esc(c.id)}" style="--d:${i * 70}ms">
       <summary class="case-summary">
         <span class="case-org">${esc(c.org)}</span>
         <h3 class="case-title">${esc(c.title)}</h3>
@@ -467,6 +540,8 @@ export function initScrollSync(onProgress) {
   const navLinks = [...document.querySelectorAll('[data-nav]')];
   const railLinks = [...document.querySelectorAll('[data-rail]')];
   const railIds = new Set(railLinks.map((l) => l.dataset.rail));
+  const railOrder = railLinks.map((l) => l.dataset.rail);
+  const railMobile = el('rail-mobile-text');
   const bar = el('scroll-bar');
   let queued = false;
 
@@ -491,6 +566,15 @@ export function initScrollSync(onProgress) {
     }
     navLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.nav === active));
     railLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.rail === activeRail));
+
+    // Compact "03 / 09 — Requirements" readout for narrow screens.
+    if (railMobile) {
+      const idx = railOrder.indexOf(activeRail);
+      railMobile.textContent = idx >= 0
+        ? `${String(idx + 1).padStart(2, '0')} / ${String(railOrder.length).padStart(2, '0')} — ${RAIL_LABELS[activeRail]}`
+        : '';
+      railMobile.parentElement.classList.toggle('is-on', idx >= 0);
+    }
   };
 
   const onScroll = () => {

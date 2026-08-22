@@ -65,6 +65,16 @@ export function createJourney(canvas, { reducedMotion = false, onStation } = {})
     return { key, center, hue: HUES[i], ...built };
   });
 
+  // The hero owns the ecosystem; the journey stations take over from there.
+  // Declared here because the hero framing below positions it.
+  //
+  // Narrow screens get the SVG diagram in the hero markup instead: the 3D
+  // version collided with the copy at 390px, and skipping it saves the GPU
+  // work too.
+  const ecosystem = buildEcosystem(small);
+  if (!small) scene.add(ecosystem.group);
+  else ecosystem.group.visible = false;
+
   // Thin connectors between consecutive stations -- visible mainly in the
   // finale, where they are the whole message.
   const linkPts = [];
@@ -112,6 +122,18 @@ export function createJourney(canvas, { reducedMotion = false, onStation } = {})
     return stations[0].center.clone().addScaledVector(right, 44);
   })();
 
+  // Sit the ecosystem in front of the hero camera, offset to the side the copy
+  // does not occupy. On narrow screens it drops below the text instead.
+  {
+    const forward = heroLook.clone().sub(heroPose).normalize();
+    const right = new THREE.Vector3(0, 1, 0).cross(forward).normalize();
+    ecosystem.group.position
+      .copy(heroPose)
+      .addScaledVector(forward, small ? 46 : 52)
+      .addScaledVector(right, small ? 0 : -15)
+      .add(new THREE.Vector3(0, small ? -13 : 1, 0));
+  }
+
   scene.add(new THREE.AmbientLight(0x2b3a5c, 1.25));
   const key1 = new THREE.PointLight(0xbdd8ff, 2.4, 400, 1.2);
   scene.add(key1);
@@ -154,6 +176,7 @@ export function createJourney(canvas, { reducedMotion = false, onStation } = {})
   function render() {
     const t = clock.getElapsedTime();
     progress += (target - progress) * (reducedMotion ? 1 : 0.075);
+    const ecoFade = small ? 0 : Math.max(0, 1 - progress / 0.055);
     smoothPointer.lerp(pointer, reducedMotion ? 1 : 0.06);
 
     // Journey phase maps onto the rail; finale phase lifts away from it.
@@ -212,7 +235,9 @@ export function createJourney(canvas, { reducedMotion = false, onStation } = {})
       // through it" need direction, which `focus` alone cannot express.
       const pass = focusIdx - i;
       const s = stations[i];
-      s.group.visible = d < 3.2 || finaleP > 0.05;
+      // While the ecosystem still owns the hero, the journey stations stay
+      // out of frame -- both drawn at once made the hero unreadable.
+      s.group.visible = (d < 3.2 || finaleP > 0.05) && ecoFade < 0.5;
       if (s.group.visible && !reducedMotion) s.update(t, focus, pass);
       else if (s.group.visible) s.update(0, 1, 1);
     }
@@ -241,6 +266,158 @@ export function createJourney(canvas, { reducedMotion = false, onStation } = {})
     /** Jump the camera to a station -- used by the chapter rail. */
     stationProgress(index) {
       return (index / (stations.length - 1)) * FINALE_START;
+    },
+  };
+}
+
+/**
+ * Label sprite, sized from measured text so nothing is clipped or squashed.
+ * Camera-facing, so it stays readable from any angle.
+ */
+function labelSprite(text, color, { weight = 600, size = 40, ink = '#eef4ff' } = {}) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const font = `${weight} ${size}px Sora, system-ui, sans-serif`;
+  const height = 86;
+  const probe = document.createElement('canvas').getContext('2d');
+  probe.font = font;
+  const width = Math.ceil(probe.measureText(text).width) + 40;
+
+  const cv = document.createElement('canvas');
+  cv.width = width * dpr;
+  cv.height = height * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = color;
+  ctx.fillText(text, width / 2, height / 2);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = ink;
+  ctx.fillText(text, width / 2, height / 2);
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.anisotropy = 4;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  sprite.userData.aspect = width / height;
+  return sprite;
+}
+
+/**
+ * Hero centrepiece: the BA ecosystem.
+ *
+ * A labelled analyst node at the centre, six domain nodes around it on a
+ * tilted ring, and artefacts drifting through the space. This is the hero's
+ * own object -- it is not one of the journey stations, so it does not consume
+ * a categorical slot. Colour follows the brief's rule: blue throughout, violet
+ * reserved for AI.
+ */
+const ECOSYSTEM = [
+  { label: 'People', hue: '#5b9ff0' },
+  { label: 'Process', hue: '#5b9ff0' },
+  { label: 'Data', hue: '#5b9ff0' },
+  { label: 'AI', hue: '#a99bf2' },
+  { label: 'Agile', hue: '#5b9ff0' },
+  { label: 'Systems', hue: '#5b9ff0' },
+];
+
+const ARTEFACTS = ['User story', 'Requirement', 'SQL', 'KPI', 'Sprint', 'UAT', 'API', 'Dashboard'];
+
+function buildEcosystem(compact) {
+  const group = new THREE.Group();
+  const R = compact ? 9.5 : 13;
+
+  const core = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(compact ? 1.5 : 1.9, 2),
+    new THREE.MeshStandardMaterial({
+      color: 0xffffff, emissive: 0xbcd8ff, emissiveIntensity: 0.75,
+      roughness: 0.25, metalness: 0.5,
+    })
+  );
+  group.add(core);
+
+  const coreLabel = labelSprite('Business Analyst', '#7fb4f5', { weight: 700, size: 44, ink: '#ffffff' });
+  coreLabel.position.y = compact ? -3.1 : -4;
+  group.add(coreLabel);
+
+  const nodes = [];
+  const edgePts = [];
+  ECOSYSTEM.forEach((n, i) => {
+    const a = (i / ECOSYSTEM.length) * Math.PI * 2;
+    const pos = new THREE.Vector3(Math.cos(a) * R, Math.sin(a * 2) * (compact ? 1.6 : 2.4), Math.sin(a) * R * 0.72);
+    const dot = new THREE.Mesh(
+      new THREE.OctahedronGeometry(compact ? 0.7 : 0.85, 1),
+      new THREE.MeshStandardMaterial({
+        color: n.hue, emissive: n.hue, emissiveIntensity: 0.55, roughness: 0.35, metalness: 0.45,
+      })
+    );
+    dot.position.copy(pos);
+    group.add(dot);
+
+    const lab = labelSprite(n.label, n.hue, { size: compact ? 34 : 38 });
+    lab.position.copy(pos).add(new THREE.Vector3(0, compact ? 1.6 : 2, 0));
+    group.add(lab);
+
+    nodes.push({ dot, lab, home: pos.clone(), phase: i * 1.05 });
+    edgePts.push(new THREE.Vector3(), pos.clone());
+  });
+
+  const edges = new THREE.LineSegments(
+    new THREE.BufferGeometry().setFromPoints(edgePts),
+    new THREE.LineBasicMaterial({
+      color: 0x6f9fd8, transparent: true, opacity: 0.32,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    })
+  );
+  group.add(edges);
+
+  // Signal travelling inward: the analyst is where the domains meet.
+  const pulseGeo = new THREE.BufferGeometry();
+  pulseGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ECOSYSTEM.length * 3), 3));
+  const pulses = new THREE.Points(pulseGeo, new THREE.PointsMaterial({
+    color: 0xcfe4ff, size: compact ? 0.34 : 0.42, transparent: true,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  }));
+  group.add(pulses);
+
+  // Artefacts drifting through the space, slowly.
+  const artefacts = ARTEFACTS.slice(0, compact ? 4 : 8).map((text, i) => {
+    const sp = labelSprite(text, '#8fb2dc', { weight: 400, size: 26, ink: '#b9cde6' });
+    const a = (i / 8) * Math.PI * 2 + 0.4;
+    const rad = R * (1.5 + (i % 3) * 0.22);
+    sp.position.set(Math.cos(a) * rad, ((i % 4) - 1.5) * 3.4, Math.sin(a) * rad * 0.6);
+    sp.material.opacity = 0.5;
+    group.add(sp);
+    return { sp, phase: i * 0.8, home: sp.position.clone() };
+  });
+
+  const sizeSprite = (sp, h) => sp.scale.set(h * sp.userData.aspect, h, 1);
+  sizeSprite(coreLabel, compact ? 1.35 : 1.7);
+  nodes.forEach((n) => sizeSprite(n.lab, compact ? 1.0 : 1.2));
+  artefacts.forEach((a) => sizeSprite(a.sp, compact ? 0.62 : 0.72));
+
+  return {
+    group,
+    update(t) {
+      group.rotation.y = t * 0.045;
+      core.rotation.y = -t * 0.25;
+      core.rotation.x = t * 0.12;
+      const arr = pulseGeo.attributes.position.array;
+      nodes.forEach((n, i) => {
+        n.dot.position.y = n.home.y + Math.sin(t * 0.7 + n.phase) * 0.5;
+        n.dot.rotation.y = t * 0.4;
+        n.lab.position.y = n.dot.position.y + (compact ? 1.6 : 2);
+        const p = (t * 0.19 + i / ECOSYSTEM.length) % 1;
+        arr[i * 3] = n.dot.position.x * (1 - p);
+        arr[i * 3 + 1] = n.dot.position.y * (1 - p);
+        arr[i * 3 + 2] = n.dot.position.z * (1 - p);
+      });
+      pulseGeo.attributes.position.needsUpdate = true;
+      artefacts.forEach((a) => {
+        a.sp.position.y = a.home.y + Math.sin(t * 0.35 + a.phase) * 1.1;
+      });
     },
   };
 }

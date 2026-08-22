@@ -22,12 +22,15 @@ export const resume = {
     availability: 'Open to Business Analyst roles — Toronto, ON or remote',
   },
 
-  /** Every figure here is taken straight from the resume. */
+  /**
+   * Every figure is quoted verbatim from the source resume, and carries the
+   * line it came from. A number a reader cannot trace is a liability.
+   */
   stats: [
-    { value: 4, suffix: '+', label: 'Years as a Business Analyst' },
-    { value: 3, suffix: '+', label: 'Years in regulated delivery' },
-    { value: 8, suffix: '', label: 'Power BI dashboards built' },
-    { value: 20, suffix: '%', label: 'Process efficiency gained' },
+    { value: 4, suffix: '+', label: 'Years in business analysis', source: 'Resume summary' },
+    { value: 3, suffix: '+', label: 'Years in regulated delivery', source: 'Resume summary' },
+    { value: 8, suffix: '', label: 'Power BI dashboards built', source: 'Sarjen Systems' },
+    { value: 7, suffix: '+', label: 'Defect-free go-lives', source: 'Sarjen Systems' },
   ],
 
   about: {
