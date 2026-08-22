@@ -12,6 +12,7 @@ import { resume } from './data.js';
 import { stakeholders, pipeline, ai, uatChain, chapters } from './journey.js';
 import { caseStudies } from './evidence.js';
 import { SUGGESTED, answer } from './assistant.js';
+import { renderTimelineGraphic, renderCoverageGraphic } from './graphics.js';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -32,6 +33,8 @@ export function renderAll() {
   renderMasthead();
   renderSummary();
   renderExperience();
+  renderTimelineGraphic(el('gfx-timeline'));
+  renderCoverageGraphic(el('gfx-coverage'));
   renderProjects();
   renderEducation();
   renderMethod();
@@ -70,7 +73,7 @@ function renderHeroDiagram() {
   const CX = 160, CY = 96;
   node.innerHTML = `<svg viewBox="0 0 320 192" aria-hidden="true">
     <g class="hd-links">${DIAGRAM_NODES
-      .map((n) => `<line x1="${CX}" y1="${CY}" x2="${n.x}" y2="${n.y}" />`).join('')}</g>
+      .map((n, i) => `<line style="--i:${i}" x1="${CX}" y1="${CY}" x2="${n.x}" y2="${n.y}" />`).join('')}</g>
     ${DIAGRAM_NODES.map((n, i) => `<g class="hd-node${n.ai ? ' is-ai' : ''}" style="--i:${i}">
       <circle cx="${n.x}" cy="${n.y}" r="5.5" />
       <text x="${n.x}" y="${n.y - 11}" text-anchor="middle">${esc(n.label)}</text>
@@ -295,6 +298,17 @@ function renderContact() {
 /* ==================== interaction ==================== */
 
 export function initReveal() {
+  // Mark up the things worth revealing here rather than in the markup, so the
+  // animation layer stays out of the content templates.
+  document.querySelectorAll('.section-title, .section-lede').forEach((n) => n.classList.add('reveal'));
+  for (const sel of ['.role', '.proj', '.mf-step', '.edu-item', '.cert-item', '.ev-chip', '.stat']) {
+    document.querySelectorAll(sel).forEach((n, i) => {
+      n.classList.add('reveal');
+      // Cap the stagger so a long list never waits on a long queue.
+      n.style.setProperty('--stagger', String(Math.min(i, 8)));
+    });
+  }
+
   const targets = document.querySelectorAll('.reveal');
   if (!('IntersectionObserver' in window)) {
     targets.forEach((t) => t.classList.add('is-in'));

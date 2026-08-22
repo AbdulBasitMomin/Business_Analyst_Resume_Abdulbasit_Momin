@@ -388,10 +388,164 @@ body.recruiter-mode #method,
 body.recruiter-mode #ask { display: none; }
 body.recruiter-mode #bg-canvas { opacity: 0.1; }
 
-/* ---------- reveal ---------- */
+/* ==========================================================================
+   Motion
+   Purposeful only: an entrance sequence for the masthead, staggered reveals
+   as sections arrive, a heading rule that draws itself, and hover depth on
+   the cards worth touching. Everything here is disabled wholesale under
+   prefers-reduced-motion, further down.
+   ========================================================================== */
 
-.reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+/* --- masthead entrance: each line rises behind its own mask --- */
+
+.masthead .eyebrow,
+.masthead .hero-name,
+.masthead .hero-role,
+.masthead .hero-disciplines,
+.masthead .hero-tagline,
+.masthead .mast-contact,
+.masthead .hero-actions,
+.masthead .mast-side {
+  animation: riseIn 0.85s var(--ease) backwards;
+  animation-delay: calc(var(--seq, 0) * 90ms + 120ms);
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The name gets a mask wipe rather than a fade: it is the one line that
+   should feel deliberate. */
+.masthead .hero-name {
+  animation: nameWipe 1.05s var(--ease) backwards;
+  animation-delay: 190ms;
+}
+@keyframes nameWipe {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(10px); }
+  to { opacity: 1; clip-path: inset(0 0 -10% 0); transform: none; }
+}
+
+/* --- scroll reveals, with a per-item stagger --- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+  transition-delay: calc(var(--stagger, 0) * 55ms);
+}
 .reveal.is-in { opacity: 1; transform: none; }
+
+/* --- section heading rule draws itself --- */
+
+.section-title { position: relative; padding-bottom: 0.4rem; }
+.section-title::after {
+  content: '';
+  position: absolute; left: 0; bottom: 0; height: 2px; width: 46px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform 0.7s var(--ease) 0.1s;
+}
+.section-title.is-in::after { transform: scaleX(1); }
+
+/* --- experience spine grows as the role arrives --- */
+
+.role { position: relative; border-left-color: transparent; }
+.role::before {
+  content: '';
+  position: absolute; left: -2px; top: 0; width: 2px; height: 100%;
+  background: var(--line-2); transform: scaleY(0); transform-origin: 50% 0;
+  transition: transform 0.7s var(--ease);
+}
+.role:first-child::before { background: var(--accent); }
+.role.is-in::before { transform: scaleY(1); }
+
+/* --- hover depth on the cards worth touching --- */
+
+.proj, .mf-step, .ev-detail, .ai-block {
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease), background 0.3s;
+}
+.proj:hover { transform: translateY(-2px); border-color: rgba(57, 135, 229, 0.35); }
+.mf-step:hover { background: #131926; }
+.ev-chip { transition: transform 0.2s var(--ease), background 0.2s, border-color 0.2s, color 0.2s; }
+.ev-chip:hover { transform: translateY(-1px); }
+.btn { will-change: transform; }
+.btn:active { transform: scale(0.985); }
+.contact-link { transition: transform 0.25s var(--ease), border-color 0.25s, background 0.25s; }
+.contact-link:hover { transform: translateY(-2px); }
+
+/* --- masthead diagram: links draw in, then nodes breathe --- */
+
+.hd-links line {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: drawLink 1.1s var(--ease) forwards;
+  animation-delay: calc(700ms + var(--i, 0) * 70ms);
+}
+@keyframes drawLink { to { stroke-dashoffset: 0; } }
+.hd-node circle {
+  animation: nodePop 0.5s var(--ease) backwards,
+             hdPulse 3.6s ease-in-out 1.6s infinite;
+  animation-delay: calc(900ms + var(--i) * 80ms), calc(1.6s + var(--i) * 0.2s);
+}
+@keyframes nodePop { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: none; } }
+.hd-node text { animation: riseIn 0.6s var(--ease) backwards; animation-delay: calc(1s + var(--i) * 80ms); }
+.hd-core circle { animation: nodePop 0.6s var(--ease) backwards; animation-delay: 620ms; }
+.hd-core text { animation: riseIn 0.5s var(--ease) backwards; animation-delay: 760ms; }
+
+/* ==========================================================================
+   Data graphics
+   ========================================================================== */
+
+.gfx-slot { margin-bottom: 1.6rem; }
+#gfx-coverage { margin: 2rem 0 0; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.gfx { margin: 0; }
+.gfx svg { width: 100%; height: auto; display: block; overflow: visible; }
+.gfx-cap {
+  font-size: 0.8rem; color: var(--ink-3); margin-bottom: 0.55rem;
+}
+.gfx-note { margin: 0.5rem 0 0; font-size: 0.74rem; color: var(--ink-3); }
+
+/* --- career timeline --- */
+
+.gfx-timeline { max-width: 760px; }
+.gfx-axis line { stroke: var(--line); stroke-width: 1; }
+.gfx-axis text { fill: var(--ink-3); font-size: 10px; font-family: var(--mono); }
+.gfx-bar rect {
+  fill: #256abf;
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform 0.85s var(--ease);
+  transition-delay: calc(var(--i) * 130ms);
+}
+.gfx-bar.is-current rect { fill: var(--accent); }
+.gfx-slot.is-in .gfx-bar rect { transform: scaleX(1); }
+.gfx-bar.is-outside text { fill: var(--ink-2); font-weight: 500; }
+.gfx-bar text {
+  fill: #eaf2ff; font-size: 11px; font-weight: 600;
+  opacity: 0; transition: opacity 0.5s var(--ease);
+  transition-delay: calc(var(--i) * 130ms + 260ms);
+}
+.gfx-slot.is-in .gfx-bar text { opacity: 1; }
+
+/* --- coverage matrix --- */
+
+.gfx-matrix { max-width: 100%; }
+.gfx-head text { fill: var(--ink-3); font-size: 12px; }
+.gfx-rowlabel { fill: var(--ink-2); font-size: 13px; }
+.gfx-cell rect {
+  opacity: 0; transition: opacity 0.5s var(--ease);
+  transition-delay: calc(var(--i) * 70ms);
+  stroke: rgba(7, 9, 14, 0.9); stroke-width: 2; /* 2px surface gap between cells */
+}
+.gfx-cell rect.is-zero { stroke: var(--line); stroke-width: 1; }
+.gfx-slot.is-in .gfx-cell rect { opacity: 1; }
+.gfx-cell text {
+  fill: #eaf2ff; font-size: 14px; font-weight: 600;
+  opacity: 0; transition: opacity 0.45s var(--ease);
+  transition-delay: calc(var(--i) * 70ms + 140ms);
+}
+/* Numbers sitting on the lightest ramp step need dark ink. */
+.gfx-cell text.on-light { fill: #0b1320; }
+.gfx-slot.is-in .gfx-cell text { opacity: 1; }
 
 /* ---------- responsive ---------- */
 
@@ -403,6 +557,12 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
   .ev-layout, .method-cols, .edu-layout { grid-template-columns: 1fr; }
   .ev-detail { position: static; }
   .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* The coverage matrix needs three labelled columns; below ~360px it cannot
+   have them, and the capability chips already carry the same information. */
+@media (max-width: 359px) {
+  #gfx-coverage { display: none; }
 }
 
 @media (max-width: 680px) {
@@ -426,6 +586,15 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
     transition-duration: 0.001ms !important;
   }
   .reveal { opacity: 1; transform: none; }
+  /* Anything whose resting state is set by an animation or transition has to
+     be pinned to its finished state, not left at the "from" keyframe. */
+  .hd-links line { stroke-dashoffset: 0; }
+  .hd-node circle, .hd-core circle { opacity: 1; transform: none; }
+  .hd-node text, .hd-core text { opacity: 1; }
+  .section-title::after { transform: scaleX(1); }
+  .role::before { transform: scaleY(1); }
+  .gfx-bar rect { transform: scaleX(1); }
+  .gfx-bar text, .gfx-cell rect, .gfx-cell text { opacity: 1; }
 }
 
 /* ---------- print: a clean, short resume ----------
@@ -437,6 +606,10 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
   #bg-canvas, .grain, .loader, .nav, .scroll-progress, .recruiter-panel,
   .hero-actions, .hero-diagram, .footer, .noscript-note,
   #ask, #method, .ev-filters, .ev-detail, .ev-flag,
+  /* The career timeline earns its page in print -- it shows continuous
+     employment at a glance. The coverage matrix is a screen exploration aid
+     and cost a whole page. */
+  #gfx-coverage,
   .extra, .proj-more, .section-lede { display: none !important; }
 
   @page { margin: 14mm; }
@@ -480,5 +653,12 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
   .deliv-grid li, .ev-chip, .mast-contact { color: #222 !important; }
   .role-dates, .proj-dates, .edu-dates, .cert-meta, .role-tools, .proj-tools { color: #555 !important; }
   .reveal { opacity: 1 !important; transform: none !important; }
+  .gfx-bar rect { transform: none !important; fill: #666 !important; }
+  .gfx-bar text { opacity: 1 !important; fill: #fff !important; }
+  .gfx-bar.is-outside text { fill: #222 !important; }
+  .gfx-bar.is-current rect { fill: #333 !important; }
+  .gfx-cell rect, .gfx-cell text, .gfx-slot .gfx { opacity: 1 !important; }
+  .gfx-cell text { fill: #000 !important; }
+  .gfx-axis text, .gfx-rowlabel, .gfx-head text, .gfx-cap { fill: #333 !important; color: #333 !important; }
   a { color: #000 !important; border: 0 !important; }
 }
