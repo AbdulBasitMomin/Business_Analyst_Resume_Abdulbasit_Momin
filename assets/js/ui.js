@@ -1,15 +1,15 @@
 /**
- * DOM rendering and the 2D interaction layer.
+ * DOM rendering and interaction.
  *
- * Every section renders from the data modules -- no content is hardcoded here.
- * Structure mirrors the journey: hero, the nine chapters, then experience,
- * cases, evidence, impact, finale, ask, resume, contact.
+ * The page is a resume first: masthead, summary, experience, skills,
+ * projects, education. The business-analysis thinking follows as supporting
+ * evidence in one compact "How I work" section, rather than a multi-chapter
+ * walkthrough that buried the credentials.
+ *
+ * All content comes from the data modules -- nothing is hardcoded here.
  */
 import { resume } from './data.js';
-import {
-  problemInputs, discoveryMethods, stakeholders, elicitation, requirementTypes,
-  clarityLadder, board, pipeline, dataControls, ai, uatChain, impact, convergence,
-} from './journey.js';
+import { stakeholders, pipeline, ai, uatChain, chapters } from './journey.js';
 import { caseStudies } from './evidence.js';
 import { SUGGESTED, answer } from './assistant.js';
 
@@ -18,35 +18,24 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const NAV = [
-  ['ch-problem', 'Journey'],
   ['experience', 'Experience'],
-  ['cases', 'Cases'],
-  ['evidence', 'Capabilities'],
-  ['ch-impact', 'Impact'],
-  ['resume', 'Resume'],
+  ['skills', 'Skills'],
+  ['projects', 'Projects'],
+  ['education', 'Education'],
+  ['method', 'How I work'],
+  ['contact', 'Contact'],
 ];
-
-/** Named for the hero legend: what the visitor is about to travel through. */
-const SYSTEM_CHAIN = ['Problem', 'Stakeholders', 'Requirements', 'Delivery', 'Data', 'AI', 'Validation', 'Impact'];
 
 export function renderAll() {
   renderMeta();
   renderNav();
-  renderRail();
-  renderHero();
-  renderProblem();
-  renderStakeholders();
-  renderRequirements();
-  renderBoardExtras();
-  renderPipeline();
-  renderAI();
-  renderUAT();
+  renderMasthead();
+  renderSummary();
   renderExperience();
-  renderCases();
-  renderImpact();
-  renderFinale();
+  renderProjects();
+  renderEducation();
+  renderMethod();
   renderAsk();
-  renderATS();
   renderContact();
 }
 
@@ -54,81 +43,18 @@ export function renderAll() {
 
 function renderMeta() {
   const m = resume.meta;
-  document.title = `${m.name} | Business Analyst | AI, Data & Agile`;
+  document.title = `${m.name} — ${m.role} | ${m.location}`;
   el('nav-name').textContent = m.name;
   el('footer-name').textContent = `© ${new Date().getFullYear()} ${m.name}`;
 }
 
 function renderNav() {
   el('nav-links').innerHTML = NAV
-    .map(([id, label]) => `<a href="#${id}" data-nav="${id}">${label}</a>`)
-    .join('');
+    .map(([id, label]) => `<a href="#${id}" data-nav="${id}">${label}</a>`).join('');
 }
 
-/**
- * Chapter rail. Only the nine numbered journey sections appear -- supporting
- * sections carry a kicker instead of a number, which keeps the rail a story
- * outline rather than a table of contents.
- */
-const RAIL_LABELS = {
-  'ch-problem': 'Problem', 'ch-stakeholders': 'People', 'ch-requirements': 'Requirements',
-  'ch-agile': 'Agile', 'ch-data': 'Data', 'ch-ai': 'AI', 'ch-uat': 'UAT',
-  experience: 'Experience', 'ch-impact': 'Impact',
-};
+/* ---------- masthead ---------- */
 
-function renderRail() {
-  const rail = el('rail');
-  if (!rail) return;
-  const items = [...document.querySelectorAll('main section[id]')]
-    .map((sec) => ({
-      id: sec.id,
-      num: sec.querySelector('.section-num')?.textContent?.trim(),
-    }))
-    .filter((sec) => sec.num && RAIL_LABELS[sec.id]);
-
-  rail.innerHTML = items
-    .map((sec) => `<a class="rail-item" href="#${esc(sec.id)}" data-rail="${esc(sec.id)}">
-      <span class="rail-num">${esc(sec.num)}</span>
-      <span class="rail-label">${esc(RAIL_LABELS[sec.id])}</span>
-    </a>`)
-    .join('');
-  return items;
-}
-
-function renderHero() {
-  const m = resume.meta;
-  el('hero-availability').textContent = m.availability || '';
-  el('hero-name').innerHTML = m.name
-    .split(' ')
-    .map((word) => `<span class="word">${word.split('').map((ch, i) =>
-      `<span class="char" style="--i:${i}">${esc(ch)}</span>`).join('')}</span>`)
-    .join(' ');
-
-  const li = el('hero-linkedin');
-  if (m.linkedin) li.href = m.linkedin;
-  else li.hidden = true;
-
-  // Every figure shows where it comes from. A number a recruiter cannot trace
-  // is a liability, not a selling point.
-  el('stats').innerHTML = (resume.stats || [])
-    .map((s) => `<li class="stat reveal">
-      <span class="stat-value" data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || '')}">0</span>
-      <span class="stat-label">${esc(s.label)}</span>
-      ${s.source ? `<span class="stat-source">${esc(s.source)}</span>` : ''}
-    </li>`).join('');
-
-  renderHeroDiagram();
-
-  el('scene-legend-chain').innerHTML = SYSTEM_CHAIN
-    .map((label) => `<span class="chain-node">${esc(label)}</span>`)
-    .join('<span class="chain-arrow">→</span>');
-}
-
-/**
- * Compact ecosystem diagram for narrow screens: the same six domains as the
- * desktop 3D scene, as crisp SVG. Cheaper than a second WebGL context and it
- * never overlaps the copy.
- */
 const DIAGRAM_NODES = [
   { label: 'AI', x: 160, y: 26, ai: true },
   { label: 'People', x: 46, y: 62 },
@@ -149,231 +75,180 @@ function renderHeroDiagram() {
       <circle cx="${n.x}" cy="${n.y}" r="5.5" />
       <text x="${n.x}" y="${n.y - 11}" text-anchor="middle">${esc(n.label)}</text>
     </g>`).join('')}
-    <g class="hd-core">
-      <circle cx="${CX}" cy="${CY}" r="15" />
-      <text x="${CX}" y="${CY + 4}" text-anchor="middle">BA</text>
-    </g>
+    <g class="hd-core"><circle cx="${CX}" cy="${CY}" r="15" /><text x="${CX}" y="${CY + 4}" text-anchor="middle">BA</text></g>
   </svg>`;
 }
 
-/* ---------- 01 problem ---------- */
+function renderMasthead() {
+  const m = resume.meta;
+  el('hero-availability').textContent = m.availability || '';
+  el('hero-name').textContent = m.name;
 
-function renderProblem() {
-  el('problem-inputs').innerHTML = problemInputs
-    .map((p, i) => `<li class="chaos-item reveal" style="--d:${i * 45}ms">${esc(p)}</li>`).join('');
-  el('discovery-methods').innerHTML = discoveryMethods
-    .map((d, i) => `<div class="method-card glass reveal" style="--d:${i * 70}ms">
-      <h3 class="method-name">${esc(d.name)}</h3>
-      <p class="method-note">${esc(d.note)}</p>
+  // Contact details belong at the top of a resume, not only at the bottom.
+  el('mast-contact').innerHTML = [
+    m.location && { t: m.location },
+    m.email && { t: m.email, href: `mailto:${m.email}` },
+    m.phone && { t: m.phone, href: `tel:${m.phone.replace(/\s/g, '')}` },
+    m.linkedin && { t: 'linkedin.com/in/abmomin1', href: m.linkedin },
+  ].filter(Boolean)
+    .map((c) => `<li>${c.href ? `<a href="${esc(c.href)}">${esc(c.t)}</a>` : esc(c.t)}</li>`)
+    .join('');
+
+  const wire = (id, href, download) => {
+    const a = el(id);
+    if (!a) return;
+    if (!href) { a.hidden = true; return; }
+    a.href = href;
+    if (download) a.setAttribute('download', 'Abdulbasit-Momin-Business-Analyst.pdf');
+  };
+  wire('hero-resume', m.resumePdf, true);
+  wire('nav-resume', m.resumePdf, true);
+  wire('hero-linkedin', m.linkedin);
+  wire('hero-email', m.email ? `mailto:${m.email}` : '');
+
+  el('stats').innerHTML = (resume.stats || [])
+    .map((s) => `<li class="stat">
+      <span class="stat-value" data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || '')}">0</span>
+      <span class="stat-label">${esc(s.label)}</span>
+      ${s.source ? `<span class="stat-source">${esc(s.source)}</span>` : ''}
+    </li>`).join('');
+
+  renderHeroDiagram();
+}
+
+function renderSummary() {
+  const a = resume.about;
+  el('summary-body').innerHTML =
+    `<p class="summary-lead">${esc(a.headline)}</p>` +
+    a.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('');
+}
+
+/* ---------- experience: expanded, the way a resume reads ---------- */
+
+function renderExperience() {
+  el('timeline').innerHTML = (resume.experience || [])
+    .map((r) => {
+      const current = String(r.end).toLowerCase() === 'present';
+      return `<article class="role reveal">
+        <header class="role-head">
+          <div>
+            <h3 class="role-title">${esc(r.role)}</h3>
+            <p class="role-org">${esc(r.company)}${r.location ? ` · ${esc(r.location)}` : ''}</p>
+          </div>
+          <span class="role-dates${current ? ' is-current' : ''}">${esc(r.start)} – ${esc(r.end)}</span>
+        </header>
+        ${r.summary ? `<p class="role-summary">${esc(r.summary)}</p>` : ''}
+        ${r.achievements?.length ? `<ul class="role-list">${r.achievements.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${r.tools?.length ? `<p class="role-tools"><span>Tools</span>${r.tools.map(esc).join(' · ')}</p>` : ''}
+      </article>`;
+    }).join('');
+}
+
+/* ---------- projects: problem / action / result, detail on demand ---------- */
+
+function renderProjects() {
+  const pick = (c, key) => c.stages.find((s) => s.k === key)?.v || '';
+  el('case-list').innerHTML = caseStudies
+    .map((c) => `<article class="proj reveal" id="${esc(c.id)}">
+      <header class="proj-head">
+        <div>
+          <h3 class="proj-title">${esc(c.title)}</h3>
+          <p class="proj-org">${esc(c.org)} · ${esc(c.role)}</p>
+        </div>
+        <span class="proj-dates">${esc(c.period)}</span>
+      </header>
+      <dl class="proj-par">
+        <div><dt>Problem</dt><dd>${esc(pick(c, 'Problem'))}</dd></div>
+        <div><dt>What I did</dt><dd>${esc(pick(c, 'Solution'))}</dd></div>
+        <div><dt>Result</dt><dd>${esc(pick(c, 'Impact'))}</dd></div>
+      </dl>
+      <p class="proj-tools">${c.tags.map(esc).join(' · ')}</p>
+      <details class="proj-more">
+        <summary>Full breakdown</summary>
+        <ol class="proj-stages">
+          ${c.stages.map((s) => {
+            const gap = s.v.includes('[ADD');
+            return `<li class="${gap ? 'is-gap' : ''}"><span>${esc(s.k)}</span>${esc(s.v)}</li>`;
+          }).join('')}
+        </ol>
+      </details>
+    </article>`).join('');
+}
+
+function renderEducation() {
+  el('education-list').innerHTML = (resume.education || [])
+    .map((e) => `<div class="edu-item">
+      <h3 class="edu-degree">${esc(e.degree)}</h3>
+      <p class="edu-school">${esc(e.school)}</p>
+      <p class="edu-dates">${esc(e.start)} – ${esc(e.end)}</p>
+    </div>`).join('');
+
+  const creds = [
+    ...(resume.certifications || []).map((c) => ({ ...c, kind: 'cert' })),
+    ...(resume.awards || []).map((a) => ({ ...a, kind: 'award' })),
+  ];
+  el('cert-list').innerHTML = creds
+    .map((c) => `<div class="cert-item">
+      <span class="cert-tick">${c.kind === 'award' ? '★' : '✦'}</span>
+      <div><span class="cert-name">${esc(c.name)}</span><span class="cert-meta">${esc(c.issuer)}</span></div>
     </div>`).join('');
 }
 
-/* ---------- 02 stakeholders ---------- */
+/* ---------- how I work ---------- */
+
+function renderMethod() {
+  // The five-stage loop, drawn from the resume's own verbs.
+  el('method-flow').innerHTML = (resume.process || [])
+    .map((s, i) => `<li class="mf-step">
+      <span class="mf-num">${String(i + 1).padStart(2, '0')}</span>
+      <h4 class="mf-name">${esc(s.stage)}</h4>
+      <p class="mf-note">${esc(s.blurb)}</p>
+    </li>`).join('');
+
+  el('deliv-grid').innerHTML = (resume.deliverables || [])
+    .map((d) => `<li>${esc(d)}</li>`).join('');
+
+  const flow = (items, key) => items
+    .map((x) => `<li class="flow-step" title="${esc(x.note)}">${esc(x[key])}</li>`)
+    .join('<li class="flow-arrow" aria-hidden="true">→</li>');
+
+  el('uat-chain').innerHTML = flow(uatChain, 'step');
+  el('pipeline').innerHTML = flow(pipeline, 'stage');
+
+  renderStakeholders();
+
+  el('ai-stance').textContent = ai.stance;
+  el('ai-practices').innerHTML = ai.practices
+    .map((p) => `<li><strong>${esc(p.name)}</strong> — ${esc(p.note)}</li>`).join('');
+  el('ai-grounding').textContent = ai.grounding;
+}
 
 function renderStakeholders() {
   const list = el('stake-list');
   const detail = el('stake-detail');
   if (!list || !detail) return;
 
-  // Radial layout: the analyst sits at the centre and the stakeholders ring
-  // it, which is the actual shape of the relationship. Positions are computed
-  // here so no CSS trigonometry is needed; narrow screens fall back to a
-  // column via the stylesheet, where a ring of eight labels would be unusable.
-  const N = stakeholders.length;
-  list.innerHTML = `<li class="stake-hub">Business Analyst</li>` + stakeholders
-    .map((s, i) => {
-      const a = (i / N) * Math.PI * 2 - Math.PI / 2;
-      const left = 50 + Math.cos(a) * 33;
-      const top = 50 + Math.sin(a) * 36;
-      return `<li class="stake-slot" style="--l:${left.toFixed(2)}%; --t:${top.toFixed(2)}%">
-        <button type="button" class="stake-btn" data-stake="${esc(s.id)}">${esc(s.name)}</button>
-      </li>`;
-    })
-    .join('') + `<li class="stake-web" aria-hidden="true">${(() => {
-      const lines = stakeholders.map((s, i) => {
-        const a = (i / N) * Math.PI * 2 - Math.PI / 2;
-        return `<line x1="50" y1="50" x2="${(50 + Math.cos(a) * 33).toFixed(2)}" y2="${(50 + Math.sin(a) * 36).toFixed(2)}" />`;
-      }).join('');
-      return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>`;
-    })()}</li>`;
+  list.innerHTML = stakeholders
+    .map((s) => `<li><button type="button" class="stake-btn" data-stake="${esc(s.id)}">${esc(s.name)}</button></li>`)
+    .join('');
 
   const show = (id) => {
     const s = stakeholders.find((x) => x.id === id) || stakeholders[0];
-    detail.innerHTML = `
-      <h3 class="stake-name">${esc(s.name)}</h3>
-      <dl class="stake-facts">
-        <div><dt>Needs</dt><dd>${esc(s.needs)}</dd></div>
-        <div><dt>Provides</dt><dd>${esc(s.provides)}</dd></div>
-        <div><dt>Decides</dt><dd>${esc(s.decides)}</dd></div>
-      </dl>`;
-    list.querySelectorAll('.stake-btn').forEach((b) =>
-      b.classList.toggle('is-on', b.dataset.stake === s.id));
+    detail.innerHTML = `<dl class="stake-facts">
+      <div><dt>${esc(s.name)} needs</dt><dd>${esc(s.needs)}</dd></div>
+      <div><dt>Provides</dt><dd>${esc(s.provides)}</dd></div>
+      <div><dt>Decides</dt><dd>${esc(s.decides)}</dd></div>
+    </dl>`;
+    list.querySelectorAll('.stake-btn').forEach((b) => b.classList.toggle('is-on', b.dataset.stake === s.id));
   };
-
-  // Pointer and keyboard both work: hover previews, click/focus commits.
   list.addEventListener('click', (e) => {
     const b = e.target.closest('.stake-btn');
     if (b) show(b.dataset.stake);
   });
-  list.addEventListener('mouseover', (e) => {
-    const b = e.target.closest('.stake-btn');
-    if (b) show(b.dataset.stake);
-  });
-  list.addEventListener('focusin', (e) => {
-    const b = e.target.closest('.stake-btn');
-    if (b) show(b.dataset.stake);
-  });
-
   show(stakeholders[0].id);
-  el('elicitation').innerHTML = elicitation.map((x) => `<li class="chip">${esc(x)}</li>`).join('');
 }
 
-/* ---------- 03 requirements ---------- */
-
-function renderRequirements() {
-  el('clarity-ladder').innerHTML = clarityLadder
-    .map((step, i) => `<li class="ladder-step reveal" style="--d:${i * 90}ms"><span>${esc(step)}</span></li>`)
-    .join('');
-  el('requirement-types').innerHTML = requirementTypes
-    .map((r, i) => `<div class="req-card reveal" style="--d:${i * 45}ms">
-      <h3 class="req-name">${esc(r.name)}</h3>
-      <p class="req-note">${esc(r.note)}</p>
-    </div>`).join('');
-  el('deliv-grid').innerHTML = (resume.deliverables || [])
-    .map((d, i) => `<li class="deliv-item reveal" style="--d:${i * 30}ms">
-      <span class="deliv-tick" aria-hidden="true"></span>${esc(d)}
-    </li>`).join('');
-}
-
-/* ---------- 05 delivery ---------- */
-
-function renderBoardExtras() {
-  el('ceremonies').innerHTML = board.ceremonies
-    .map((c, i) => `<div class="ceremony glass reveal" style="--d:${i * 60}ms">
-      <h3 class="ceremony-name">${esc(c.name)}</h3>
-      <p class="ceremony-note">${esc(c.note)}</p>
-    </div>`).join('');
-  el('retro').innerHTML = board.retro
-    .map((r, i) => `<div class="retro-col reveal" style="--d:${i * 70}ms">
-      <h3 class="retro-head">${esc(r.heading)}</h3>
-      <ul>${r.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
-    </div>`).join('');
-}
-
-/* ---------- 06 data ---------- */
-
-function renderPipeline() {
-  el('pipeline').innerHTML = pipeline
-    .map((p, i) => `<li class="pipe-step reveal" style="--d:${i * 55}ms">
-      <span class="pipe-index">${String(i + 1).padStart(2, '0')}</span>
-      <h3 class="pipe-stage">${esc(p.stage)}</h3>
-      <p class="pipe-note">${esc(p.note)}</p>
-    </li>`).join('');
-  el('data-controls').innerHTML = dataControls.map((c) => `<li class="chip">${esc(c)}</li>`).join('');
-}
-
-/* ---------- 07 AI ---------- */
-
-function renderAI() {
-  el('ai-stance').textContent = ai.stance;
-  el('ai-loop').innerHTML = ai.loop
-    .map((s, i) => `<li class="ai-step reveal" style="--d:${i * 60}ms">
-      <span class="ai-index">${String(i + 1).padStart(2, '0')}</span>
-      <h3 class="ai-step-name">${esc(s.step)}</h3>
-      <p class="ai-step-note">${esc(s.note)}</p>
-    </li>`).join('');
-  el('ai-practices').innerHTML = ai.practices
-    .map((p, i) => `<div class="ai-practice glass reveal" style="--d:${i * 60}ms">
-      <h3 class="ai-practice-name">${esc(p.name)}</h3>
-      <p class="ai-practice-note">${esc(p.note)}</p>
-    </div>`).join('');
-  el('ai-grounding').innerHTML = `${esc(ai.grounding)}<br /><span class="ai-transfer">${esc(ai.transfer)}</span>`;
-}
-
-/* ---------- 08 validation ---------- */
-
-function renderUAT() {
-  el('uat-chain').innerHTML = uatChain
-    .map((u, i) => `<li class="uat-step reveal" style="--d:${i * 50}ms">
-      <span class="uat-index">${String(i + 1).padStart(2, '0')}</span>
-      <h3 class="uat-name">${esc(u.step)}</h3>
-      <p class="uat-note">${esc(u.note)}</p>
-    </li>`).join('');
-}
-
-/* ---------- 09 experience ---------- */
-
-/**
- * Each role reads as a release: headline facts always visible, the detail one
- * tap away. Previously every bullet was expanded by default, which made this
- * the second-tallest section on the page.
- */
-function renderExperience() {
-  const roles = resume.experience || [];
-  el('timeline').innerHTML = roles
-    .map((r, i) => {
-      const current = String(r.end).toLowerCase() === 'present';
-      const release = String(roles.length - i).padStart(2, '0');
-      return `<article class="tl-item reveal" style="--d:${i * 70}ms">
-        <div class="tl-marker"><span class="tl-dot${current ? ' is-live' : ''}"></span></div>
-        <details class="tl-card"${i === 0 ? ' open' : ''}>
-          <summary class="tl-head">
-            <span class="tl-release">Release ${release}</span>
-            <h3 class="tl-role">${esc(r.role)}</h3>
-            <p class="tl-company">${esc(r.company)}${r.location ? ` · ${esc(r.location)}` : ''}</p>
-            <span class="tl-dates${current ? ' is-current' : ''}">${esc(r.start)} — ${esc(r.end)}</span>
-          </summary>
-          <div class="tl-body">
-            ${r.summary ? `<p class="tl-summary">${esc(r.summary)}</p>` : ''}
-            ${r.achievements?.length ? `<h4 class="tl-sub">What I owned</h4><ul class="tl-list">${r.achievements.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
-            ${r.tools?.length ? `<h4 class="tl-sub">Tools</h4><div class="chips">${r.tools.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
-          </div>
-        </details>
-      </article>`;
-    }).join('');
-}
-
-/* ---------- 10 case studies ---------- */
-
-function renderCases() {
-  el('case-list').innerHTML = caseStudies
-    .map((c, i) => `<details class="case glass reveal" id="${esc(c.id)}" style="--d:${i * 70}ms">
-      <summary class="case-summary">
-        <span class="case-org">${esc(c.org)}</span>
-        <h3 class="case-title">${esc(c.title)}</h3>
-        <span class="case-period">${esc(c.period)}</span>
-        <div class="chips chips-sm">${c.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>
-      </summary>
-      <ol class="case-stages">
-        ${c.stages.map((s) => {
-          const gap = s.v.includes('[ADD');
-          return `<li class="case-stage${gap ? ' is-gap' : ''}">
-            <span class="case-n">${esc(s.n)}</span>
-            <span class="case-k">${esc(s.k)}</span>
-            <span class="case-v">${esc(s.v)}</span>
-          </li>`;
-        }).join('')}
-      </ol>
-    </details>`).join('');
-}
-
-/* ---------- 12 impact ---------- */
-
-function renderImpact() {
-  el('impact-grid').innerHTML = impact
-    .map((m, i) => `<li class="impact-card glass reveal" style="--d:${i * 60}ms">
-      <span class="impact-value">${esc(m.value)}</span>
-      <span class="impact-label">${esc(m.label)}</span>
-      <p class="impact-note">${esc(m.note)}</p>
-    </li>`).join('');
-}
-
-function renderFinale() {
-  el('converge').innerHTML = convergence
-    .map((c, i) => `<li class="converge-item reveal" style="--d:${i * 80}ms">${esc(c)}</li>`).join('');
-}
-
-/* ---------- 13 ask ---------- */
+/* ---------- ask ---------- */
 
 function renderAsk() {
   const form = el('ask-form');
@@ -382,22 +257,17 @@ function renderAsk() {
   const sugg = el('ask-suggested');
   if (!form || !input || !out) return;
 
-  sugg.innerHTML = SUGGESTED
-    .map((q) => `<button type="button" class="ask-chip" data-q="${esc(q)}">${esc(q)}</button>`).join('');
+  sugg.innerHTML = SUGGESTED.map((q) => `<button type="button" class="ask-chip" data-q="${esc(q)}">${esc(q)}</button>`).join('');
 
   const render = (a) => {
     if (!a) { out.innerHTML = ''; return; }
     out.innerHTML = `<div class="ask-card${a.unmatched ? ' is-unmatched' : ''}">
       <h3 class="ask-title">${esc(a.title)}</h3>
       <ul class="ask-lines">${a.lines.map((l) => l ? `<li>${esc(l)}</li>` : '<li class="ask-gap"></li>').join('')}</ul>
-      ${a.sources?.length ? `<p class="ask-sources">Sources: ${a.sources.map((s) => esc(s)).join(' · ')}</p>` : ''}
+      ${a.sources?.length ? `<p class="ask-sources">Sources: ${a.sources.map(esc).join(' · ')}</p>` : ''}
     </div>`;
   };
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    render(answer(input.value));
-  });
+  form.addEventListener('submit', (e) => { e.preventDefault(); render(answer(input.value)); });
   sugg.addEventListener('click', (e) => {
     const b = e.target.closest('.ask-chip');
     if (!b) return;
@@ -406,51 +276,14 @@ function renderAsk() {
   });
 }
 
-/* ---------- 14 resume (ATS) ---------- */
-
-function renderATS() {
-  const m = resume.meta;
-  const block = (h, body) => `<section class="ats-block"><h3>${esc(h)}</h3>${body}</section>`;
-
-  el('ats').innerHTML = `
-    <header class="ats-head">
-      <h2>${esc(m.name)}</h2>
-      <p>${esc(m.role)} — ${esc(m.location)}</p>
-      <p>${esc(m.email)} · ${esc(m.phone)} · ${esc(m.linkedin)}</p>
-    </header>
-    ${block('Professional summary', `<p>${esc(resume.about.headline)}</p>${resume.about.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}`)}
-    ${block('Experience', (resume.experience || []).map((r) => `
-      <div class="ats-role">
-        <h4>${esc(r.role)} — ${esc(r.company)}${r.location ? `, ${esc(r.location)}` : ''}</h4>
-        <p class="ats-dates">${esc(r.start)} – ${esc(r.end)}</p>
-        <ul>${(r.achievements || []).map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
-      </div>`).join(''))}
-    ${block('Skills', `<p>${(resume.skills || []).flatMap((g) => g.items.map((i) => i.name)).map(esc).join(', ')}</p>`)}
-    ${block('Projects', caseStudies.map((c) => `<p><strong>${esc(c.title)}</strong> — ${esc(c.org)}, ${esc(c.period)}</p>`).join(''))}
-    ${block('Education', (resume.education || []).map((e) => `<p>${esc(e.degree)} — ${esc(e.school)}, ${esc(e.start)}–${esc(e.end)}</p>`).join(''))}
-    ${block('Certifications', `<ul>${(resume.certifications || []).map((c) => `<li>${esc(c.name)} — ${esc(c.issuer)}</li>`).join('')}${(resume.awards || []).map((a) => `<li>Award: ${esc(a.name)} — ${esc(a.issuer)}</li>`).join('')}</ul>`)}
-  `;
-
-  const dl = el('resume-download');
-  if (m.resumePdf) {
-    dl.href = m.resumePdf;
-    dl.setAttribute('download', 'Abdulbasit-Momin-Business-Analyst.pdf');
-  } else {
-    dl.hidden = true;
-  }
-  el('resume-print')?.addEventListener('click', () => window.print());
-}
-
-/* ---------- contact ---------- */
-
 function renderContact() {
   const m = resume.meta;
   el('contact-sub').textContent = `${m.name} — Business Analyst, ${m.location}. ${m.availability}`;
   const links = [
     m.email && { label: 'Email', href: `mailto:${m.email}`, text: m.email },
+    m.phone && { label: 'Phone', href: `tel:${m.phone.replace(/\s/g, '')}`, text: m.phone },
     m.linkedin && { label: 'LinkedIn', href: m.linkedin, text: 'in/abmomin1' },
     m.resumePdf && { label: 'Resume', href: m.resumePdf, text: 'Download PDF' },
-    m.github && { label: 'GitHub', href: m.github, text: 'AbdulBasitMomin' },
   ].filter(Boolean);
   el('contact-links').innerHTML = links
     .map((l) => `<a class="contact-link magnetic" href="${esc(l.href)}"${l.href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>
@@ -473,7 +306,7 @@ export function initReveal() {
       e.target.classList.add('is-in');
       io.unobserve(e.target);
     }
-  }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   targets.forEach((t) => io.observe(t));
 }
 
@@ -485,7 +318,7 @@ export function initCounters({ reducedMotion = false } = {}) {
     if (reducedMotion || !target) { node.textContent = `${target}${suffix}`; return; }
     const start = performance.now();
     const tick = (now) => {
-      const p = Math.min((now - start) / 1300, 1);
+      const p = Math.min((now - start) / 1100, 1);
       node.textContent = `${Math.round(target * (1 - Math.pow(1 - p, 3)))}${suffix}`;
       if (p < 1) requestAnimationFrame(tick);
     };
@@ -501,23 +334,7 @@ export function initCounters({ reducedMotion = false } = {}) {
   nodes.forEach((n) => io.observe(n));
 }
 
-export function initTilt({ reducedMotion = false } = {}) {
-  if (reducedMotion || !window.matchMedia('(hover: hover)').matches) return;
-  const MAX = 6;
-  for (const card of document.querySelectorAll('.tilt')) {
-    card.addEventListener('pointermove', (e) => {
-      const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width - 0.5;
-      const py = (e.clientY - r.top) / r.height - 0.5;
-      card.style.transform = `perspective(900px) rotateY(${px * MAX}deg) rotateX(${-py * MAX}deg) translateZ(5px)`;
-      card.style.setProperty('--mx', `${(px + 0.5) * 100}%`);
-      card.style.setProperty('--my', `${(py + 0.5) * 100}%`);
-    });
-    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
-  }
-}
-
-/** Magnetic buttons: a small pull toward the cursor. Pointer devices only. */
+/** Small pull toward the cursor on primary actions. Pointer devices only. */
 export function initMagnetic({ reducedMotion = false } = {}) {
   if (reducedMotion || !window.matchMedia('(hover: hover)').matches) return;
   for (const b of document.querySelectorAll('.magnetic')) {
@@ -525,23 +342,16 @@ export function initMagnetic({ reducedMotion = false } = {}) {
       const r = b.getBoundingClientRect();
       const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
       const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-      b.style.transform = `translate(${dx * 7}px, ${dy * 7}px)`;
+      b.style.transform = `translate(${dx * 5}px, ${dy * 5}px)`;
     });
     b.addEventListener('pointerleave', () => { b.style.transform = ''; });
   }
 }
 
-/**
- * Drives nav state, the chapter rail and the scroll bar, and reports page
- * progress to the WebGL journey. Reads are batched into one rAF.
- */
+/** Nav state, progress bar, and page progress for the backdrop. */
 export function initScrollSync(onProgress) {
   const nav = el('nav');
   const navLinks = [...document.querySelectorAll('[data-nav]')];
-  const railLinks = [...document.querySelectorAll('[data-rail]')];
-  const railIds = new Set(railLinks.map((l) => l.dataset.rail));
-  const railOrder = railLinks.map((l) => l.dataset.rail);
-  const railMobile = el('rail-mobile-text');
   const bar = el('scroll-bar');
   let queued = false;
 
@@ -551,37 +361,17 @@ export function initScrollSync(onProgress) {
     const y = window.scrollY;
     const p = max > 0 ? Math.min(y / max, 1) : 0;
     onProgress(p);
-    nav.classList.toggle('is-stuck', y > 40);
+    nav.classList.toggle('is-stuck', y > 30);
     if (bar) bar.style.transform = `scaleX(${p})`;
 
-    const line = y + window.innerHeight * 0.35;
+    const line = y + window.innerHeight * 0.3;
     let active = '';
-    let activeRail = '';
-    for (const s of document.querySelectorAll('main section[id]')) {
-      if (s.offsetTop > line) continue;
-      active = s.id;
-      // Sections without a chapter number are absent from the rail; tracking
-      // them here would blank the highlight instead of holding the last one.
-      if (railIds.has(s.id)) activeRail = s.id;
+    for (const s of document.querySelectorAll('main > section[id]')) {
+      if (s.offsetTop <= line) active = s.id;
     }
     navLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.nav === active));
-    railLinks.forEach((l) => l.classList.toggle('is-active', l.dataset.rail === activeRail));
-
-    // Compact "03 / 09 — Requirements" readout for narrow screens.
-    if (railMobile) {
-      const idx = railOrder.indexOf(activeRail);
-      railMobile.textContent = idx >= 0
-        ? `${String(idx + 1).padStart(2, '0')} / ${String(railOrder.length).padStart(2, '0')} — ${RAIL_LABELS[activeRail]}`
-        : '';
-      railMobile.parentElement.classList.toggle('is-on', idx >= 0);
-    }
   };
-
-  const onScroll = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(update);
-  };
+  const onScroll = () => { if (queued) return; queued = true; requestAnimationFrame(update); };
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
   update();

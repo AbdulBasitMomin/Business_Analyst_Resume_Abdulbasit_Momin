@@ -1,143 +1,137 @@
+/**
+ * Functional audit. Run against a served copy and the standalone build, at
+ * desktop and two mobile widths.
+ *
+ *   npx http-server -p 8123 -s .
+ *   node tools/audit.mjs
+ *
+ * Checks the things that have actually broken before: a silently dead WebGL
+ * layer (reported as a warning, so warnings count as failures here), anchors
+ * that resolve nowhere, controls that are unreachable by real taps, and the
+ * two measurable design regressions -- page length and uppercase volume.
+ */
 import pw from '/opt/node22/lib/node_modules/playwright/index.js';
 const { chromium } = pw;
+
 const browser = await chromium.launch({
   executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
-  args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--no-sandbox'],
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'],
 });
 
 const fails = [];
-const ok = [];
-function check(name, cond, detail='') {
-  (cond ? ok : fails).push(`${name}${detail ? ' :: ' + detail : ''}`);
-}
+let passed = 0;
+const check = (name, cond, detail = '') => {
+  if (cond) passed++;
+  else fails.push(`${name}${detail ? ' :: ' + detail : ''}`);
+};
 
 async function run(label, url, viewport, isMobile) {
   const ctx = await browser.newContext({ viewport, isMobile, hasTouch: isMobile });
   const page = await ctx.newPage();
   const errs = [];
-  page.on('pageerror', e => errs.push(e.message));
-  // Warnings count: the 3D layer reports its own death as a warning.
-  page.on('console', m => { if (/error|warning/.test(m.type()) && !/fonts|ERR_CONNECTION_RESET/.test(m.text())) errs.push(m.type()+': '+m.text().slice(0,120)); });
+  page.on('pageerror', (e) => errs.push('pageerror: ' + e.message.slice(0, 120)));
+  page.on('console', (m) => {
+    if (/error|warning/.test(m.type()) && !/fonts|ERR_CONNECTION_RESET/.test(m.text())) {
+      errs.push(m.type() + ': ' + m.text().slice(0, 120));
+    }
+  });
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForTimeout(4200);
   const P = `[${label}]`;
 
-  check(`${P} no JS errors`, errs.length === 0, errs.slice(0,3).join(' | '));
-  const webgl = await page.evaluate(() => ({ has: document.body.classList.contains('has-webgl'), no: document.body.classList.contains('no-webgl') }));
-  check(`${P} WebGL layer initialised`, webgl.has && !webgl.no, JSON.stringify(webgl));
-  check(`${P} canvas has drawn pixels`, await page.evaluate(() => {
-    const c = document.getElementById('bg-canvas');
-    const gl = c.getContext('webgl2') || c.getContext('webgl');
-    return !!gl && !gl.isContextLost() && c.width > 0;
+  check(`${P} no JS errors or warnings`, errs.length === 0, errs.slice(0, 2).join(' | '));
+
+  const webgl = await page.evaluate(() => ({
+    has: document.body.classList.contains('has-webgl'),
+    no: document.body.classList.contains('no-webgl'),
   }));
+  check(`${P} WebGL backdrop initialised`, webgl.has && !webgl.no, JSON.stringify(webgl));
   check(`${P} loader dismissed`, await page.evaluate(() => document.getElementById('loader').classList.contains('is-done')));
-  check(`${P} no horizontal overflow`, await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
+  check(`${P} no horizontal overflow`,
+    await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
     String(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)));
 
-  // --- anchor links all resolve ---
+  // --- resume content is present ---
+  const content = await page.evaluate(() => ({
+    roles: document.querySelectorAll('#timeline > *').length,
+    bullets: document.querySelectorAll('.role-list li').length,
+    projects: document.querySelectorAll('.proj').length,
+    gaps: document.querySelectorAll('.proj-stages li.is-gap').length,
+    caps: document.querySelectorAll('.ev-chip').length,
+    education: document.querySelectorAll('.edu-item').length,
+    creds: document.querySelectorAll('.cert-item').length,
+    method: document.querySelectorAll('.mf-step').length,
+    contactTop: document.querySelectorAll('.mast-contact li').length,
+  }));
+  check(`${P} 3 roles with 12 bullets`, content.roles === 3 && content.bullets === 12, JSON.stringify(content));
+  check(`${P} projects, education, credentials present`,
+    content.projects === 4 && content.education === 1 && content.creds === 5, JSON.stringify(content));
+  check(`${P} contact details in masthead`, content.contactTop >= 3, String(content.contactTop));
+  check(`${P} placeholders still flagged`, content.gaps === 6, String(content.gaps));
+
+  // --- links ---
   const badAnchors = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')]
-    .map(a => a.getAttribute('href')).filter(h => h !== '#' && !document.querySelector(h)));
+    .map((a) => a.getAttribute('href')).filter((h) => h !== '#' && !document.querySelector(h)));
   check(`${P} all in-page anchors resolve`, badAnchors.length === 0, badAnchors.join(','));
 
-  // --- resume download wired ---
-  const dl = await page.evaluate(() => {
-    const a = document.getElementById('resume-download');
-    return { hidden: a?.hidden, href: (a?.getAttribute('href')||'').slice(0,40) };
-  });
-  check(`${P} resume download has href`, !dl.hidden && dl.href && dl.href !== '#', JSON.stringify(dl));
+  for (const [id, name] of [['hero-resume', 'resume download'], ['nav-resume', 'nav resume'],
+                            ['hero-linkedin', 'LinkedIn'], ['hero-email', 'email']]) {
+    const a = await page.evaluate((x) => {
+      const n = document.getElementById(x);
+      return { hidden: n?.hidden, href: (n?.getAttribute('href') || '').slice(0, 42) };
+    }, id);
+    check(`${P} ${name} link wired`, !a.hidden && a.href && a.href !== '#', JSON.stringify(a));
+  }
 
-  // --- linkedin ---
-  const li = await page.evaluate(() => {
-    const a = document.getElementById('hero-linkedin');
-    return { hidden: a?.hidden, href: a?.getAttribute('href') };
-  });
-  check(`${P} LinkedIn link set`, !li.hidden && li.href && li.href !== '#', JSON.stringify(li));
+  // --- interactions, via real taps so overlays are caught ---
+  const tap = async (sel, verify, name) => {
+    const h = await page.$(sel);
+    if (!h) { check(`${P} ${name}`, false, 'selector missing'); return; }
+    await h.scrollIntoViewIfNeeded();
+    try {
+      await (isMobile ? h.tap({ timeout: 4000 }) : h.click({ timeout: 4000 }));
+      await page.waitForTimeout(300);
+      check(`${P} ${name}`, await page.evaluate(verify));
+    } catch (e) { check(`${P} ${name}`, false, e.message.split('\n')[0].slice(0, 80)); }
+  };
 
-  // --- stakeholder interaction ---
-  if (await page.$('.stake-btn')) {
-    await page.click('.stake-btn[data-stake="qa"]', { force: true });
-    await page.waitForTimeout(200);
-    check(`${P} stakeholder click updates panel`,
-      (await page.evaluate(() => document.querySelector('.stake-name')?.textContent)) === 'QA');
-  } else check(`${P} stakeholder buttons exist`, false);
+  await tap('.stake-btn[data-stake="qa"]',
+    () => /QA needs/.test(document.querySelector('.stake-facts dt')?.textContent || ''), 'stakeholder select');
+  await tap('.ev-filter[data-cat="AI"]',
+    () => document.querySelector('.ev-filter.is-on')?.dataset.cat === 'AI', 'skills filter');
+  await tap('.ev-chip', () => !!document.querySelector('.ev-title'), 'capability evidence');
+  await tap('.ask-chip', () => !!document.querySelector('.ask-title'), 'ask suggestion');
+  await tap('.proj-more summary',
+    () => document.querySelector('.proj-more')?.open === true, 'project expands');
 
-  // --- story lab ---
-  if (await page.$('.sl-step[data-level="3"]')) {
-    await page.click('.sl-step[data-level="3"]', { force: true });
-    await page.waitForTimeout(200);
-    check(`${P} story lab switches to Tasks`, (await page.evaluate(() => document.querySelectorAll('.sl-tasks li').length)) > 0);
-  } else check(`${P} story lab steps exist`, false);
+  await tap('#recruiter-toggle', () => document.body.classList.contains('recruiter-mode'), 'condensed mode on');
+  check(`${P} condensed keeps experience + contact`, await page.evaluate(() =>
+    getComputedStyle(document.getElementById('experience')).display !== 'none'
+    && getComputedStyle(document.getElementById('contact')).display !== 'none'));
+  await tap('#recruiter-toggle', () => !document.body.classList.contains('recruiter-mode'), 'condensed mode off');
 
-  // --- board: drive a card to Done ---
-  if (await page.$('.bd-card[data-id="C1"]')) {
-    for (let i=0;i<4;i++){ await page.click('.bd-card[data-id="C1"]', { force: true }); await page.waitForTimeout(120); }
-    const txt = await page.evaluate(() => document.getElementById('board-readout').textContent);
-    check(`${P} board card reaches Done and burns points`, /1\/7 cards done/.test(txt) && /25 of 28/.test(txt), txt);
-  } else check(`${P} board cards exist`, false);
+  // --- design regressions ---
+  const btnH = await page.evaluate(() => [...document.querySelectorAll('.hero-actions .btn')]
+    .map((b) => Math.round(b.getBoundingClientRect().height)));
+  check(`${P} hero buttons 44-56px`, btnH.every((h) => h >= 44 && h <= 56), JSON.stringify(btnH));
 
-  // --- evidence explorer: filter + select ---
-  if (await page.$('.ev-filter[data-cat="AI"]')) {
-    await page.click('.ev-filter[data-cat="AI"]', { force: true });
-    await page.waitForTimeout(200);
-    const n = await page.evaluate(() => document.querySelectorAll('.ev-chip').length);
-    await page.click('.ev-chip', { force: true });
-    await page.waitForTimeout(200);
-    const t = await page.evaluate(() => document.querySelector('.ev-title')?.textContent);
-    check(`${P} evidence filter narrows list`, n > 0 && n < 34, `AI chips=${n}`);
-    check(`${P} evidence chip shows detail`, !!t, String(t));
-  } else check(`${P} evidence filters exist`, false);
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  check(`${P} page under 14000px`, height < 14000, `${height}px`);
 
-  // --- assistant ---
-  if (await page.$('#ask-input')) {
-    await page.fill('#ask-input', 'how have you used AI');
-    await page.click('#ask-form button[type="submit"]', { force: true });
-    await page.waitForTimeout(250);
-    check(`${P} assistant answers`, /AI/.test(await page.evaluate(() => document.querySelector('.ask-title')?.textContent || '')));
-  } else check(`${P} assistant input exists`, false);
-
-  // --- recruiter mode round trip ---
-  if (await page.$('#recruiter-toggle')) {
-    await page.click('#recruiter-toggle', { force: true });
-    await page.waitForTimeout(500);
-    const on = await page.evaluate(() => ({
-      cls: document.body.classList.contains('recruiter-mode'),
-      panel: !document.getElementById('recruiter-panel').hidden,
-      resumeReachable: !!document.getElementById('resume') && getComputedStyle(document.getElementById('resume')).display !== 'none',
-      contactReachable: getComputedStyle(document.getElementById('contact')).display !== 'none',
-    }));
-    check(`${P} recruiter mode on`, on.cls && on.panel, JSON.stringify(on));
-    check(`${P} recruiter mode keeps resume+contact`, on.resumeReachable && on.contactReachable, JSON.stringify(on));
-    await page.click('#recruiter-toggle', { force: true });
-    await page.waitForTimeout(400);
-    check(`${P} recruiter mode off restores hero`,
-      await page.evaluate(() => getComputedStyle(document.querySelector('.hero')).display !== 'none'));
-  } else check(`${P} recruiter toggle exists`, false);
-
-  // --- button sizes (spec: 44-52px) ---
-  const btnH = await page.evaluate(() => [...document.querySelectorAll('.hero-actions .btn')].map(b => Math.round(b.getBoundingClientRect().height)));
-  check(`${P} hero buttons within 44-56px`, btnH.every(h => h >= 40 && h <= 56), JSON.stringify(btnH));
-
-  // --- section heights (spec: not excessively tall) ---
-  const tall = await page.evaluate(() => [...document.querySelectorAll('main > section')]
-    .map(s => ({ id: s.id, h: Math.round(s.getBoundingClientRect().height) }))
-    .filter(s => s.h > 2200));
-  check(`${P} no section over 2200px tall`, tall.length === 0, JSON.stringify(tall));
-
-  // --- all-caps letter-spaced volume (spec complaint) ---
   const caps = await page.evaluate(() => [...document.querySelectorAll('*')]
-    .filter(n => n.children.length === 0 && n.textContent.trim().length > 2)
-    .filter(n => { const s = getComputedStyle(n); return s.textTransform === 'uppercase' && parseFloat(s.letterSpacing) > 1; }).length);
-  check(`${P} uppercase+tracked elements under 30`, caps < 30, `count=${caps}`);
+    .filter((n) => !n.children.length && n.textContent.trim().length > 2)
+    .filter((n) => { const s = getComputedStyle(n); return s.textTransform === 'uppercase' && parseFloat(s.letterSpacing) > 1; }).length);
+  check(`${P} uppercase+tracked under 15`, caps < 15, `count=${caps}`);
 
   await ctx.close();
 }
 
-await run('desk', 'http://localhost:8123/', { width:1440, height:900 }, false);
-await run('mob390', 'http://localhost:8123/', { width:390, height:844 }, true);
-await run('mob320', 'http://localhost:8123/', { width:320, height:640 }, true);
-await run('standalone', 'file:///home/user/ai-project/dist/resume-standalone.html', { width:390, height:844 }, true);
+await run('desk', 'http://localhost:8123/', { width: 1440, height: 900 }, false);
+await run('mob390', 'http://localhost:8123/', { width: 390, height: 844 }, true);
+await run('mob320', 'http://localhost:8123/', { width: 320, height: 640 }, true);
+await run('standalone', 'file:///home/user/ai-project/dist/resume-standalone.html', { width: 390, height: 844 }, true);
 
-console.log('\n=============== FAILURES (' + fails.length + ') ===============');
-fails.forEach(f => console.log('  ✗ ' + f));
-console.log('\nPASSED: ' + ok.length);
+console.log(`\n=============== FAILURES (${fails.length}) ===============`);
+fails.forEach((f) => console.log('  x ' + f));
+console.log(`\nPASSED: ${passed}`);
 await browser.close();

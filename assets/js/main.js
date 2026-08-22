@@ -1,61 +1,48 @@
 /**
  * Bootstrap.
  *
- * Content renders first, so the page is complete before any WebGL exists. The
- * 3D world and the interaction layer attach afterwards; a failure in either
- * leaves a fully readable resume behind.
+ * Resume content renders first and is complete before any WebGL exists. The
+ * backdrop is an enhancement attached afterwards; if it fails, the page is
+ * still a full resume.
  */
-import { renderAll, initReveal, initCounters, initTilt, initMagnetic, initScrollSync } from './ui.js';
-import { initRecruiterMode, initEvidence, initStoryLab, initBoard } from './interactive.js';
-import { resume } from './data.js';
+import { renderAll, initReveal, initCounters, initMagnetic, initScrollSync } from './ui.js';
+import { initRecruiterMode, initEvidence, initStoryLab } from './interactive.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 renderAll();
 initReveal();
 initCounters({ reducedMotion });
-initTilt({ reducedMotion });
 initMagnetic({ reducedMotion });
 initRecruiterMode();
 initEvidence();
 initStoryLab();
-initBoard();
 
-let journey = null;
-let orb = null;
+let backdrop = null;
 
-/** WebGL is an enhancement; never let it take the content down. */
 async function initThree() {
   try {
-    const [{ createJourney }, { createOrb }] = await Promise.all([
-      import('./chapters.js'),
-      import('./orb.js'),
-    ]);
+    const { createBackdrop } = await import('./backdrop.js');
+    backdrop = createBackdrop(document.getElementById('bg-canvas'), { reducedMotion });
 
-    journey = createJourney(document.getElementById('bg-canvas'), { reducedMotion });
-    orb = createOrb(document.getElementById('orb-canvas'), resume.skills, { reducedMotion });
-
-    window.addEventListener('resize', () => {
-      journey?.resize();
-      orb?.resize();
-    });
+    window.addEventListener('resize', () => backdrop?.resize());
     window.addEventListener('pointermove',
-      (e) => journey?.onPointerMove(e.clientX, e.clientY), { passive: true });
-
-    // Stop rendering entirely while the tab is hidden.
+      (e) => backdrop?.onPointerMove(e.clientX, e.clientY), { passive: true });
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { journey?.stop(); orb?.stop(); }
-      else { journey?.start(); orb?.start(); }
+      if (document.hidden) backdrop?.stop();
+      else backdrop?.start();
     });
 
     document.body.classList.add('has-webgl');
   } catch (err) {
-    console.warn('3D layer unavailable; content is unaffected.', err);
+    // Surfaced as an error, not a warning: a silent WebGL death once shipped
+    // a flat page that looked intentional.
+    console.error('Backdrop unavailable; resume content is unaffected.', err);
     document.body.classList.add('no-webgl');
   } finally {
     document.getElementById('loader').classList.add('is-done');
   }
 }
 
-initScrollSync((p) => journey?.setScroll(p));
+initScrollSync((p) => backdrop?.setScroll(p));
 initThree();

@@ -38,19 +38,17 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 await page.goto(url, { waitUntil: 'load' });
 
 // Wait for the render rather than a fixed sleep.
-await page.waitForFunction(() => document.querySelectorAll('.tl-item').length > 0, { timeout: 20000 });
+// Wait on rendered experience roles -- the surest sign renderAll() has run.
+await page.waitForFunction(() => document.querySelectorAll('#timeline > *').length > 0, { timeout: 20000 });
 
 const html = await page.evaluate(() => {
   // Freeze the page into its "already scrolled through" state, so the static
   // markup is fully visible without the JS that normally reveals it.
   document.getElementById('loader')?.classList.add('is-done');
   document.querySelectorAll('.reveal').forEach((n) => n.classList.add('is-in'));
-  document.querySelectorAll('.bar-fill').forEach((n) => { n.style.width = `${n.dataset.level}%`; });
   document.querySelectorAll('.stat-value').forEach((n) => {
     n.textContent = `${n.dataset.count}${n.dataset.suffix || ''}`;
   });
-  // Inline transforms from the tilt handler would freeze cards mid-tilt.
-  document.querySelectorAll('.tilt').forEach((n) => n.removeAttribute('style'));
   // Runtime-only flags must not be baked in -- the snapshot has no WebGL,
   // and a stored Recruiter Mode preference must not become the default page.
   document.body.classList.remove('has-webgl', 'no-webgl', 'recruiter-mode');

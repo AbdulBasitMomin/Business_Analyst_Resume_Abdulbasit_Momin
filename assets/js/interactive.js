@@ -1,14 +1,13 @@
 /**
- * The interactive layer: the parts a recruiter actually operates.
+ * The interactive layer: condensed mode, the skills-as-evidence explorer, and
+ * the worked user-story example.
  *
- * Recruiter Mode, the skills-as-evidence explorer, the user-story lab, and a
- * delivery board whose burndown responds to the visitor's own moves. That last
- * choice is deliberate: a burndown showing "Sprint 01" history would be
- * fabricated data. Driving it from clicks demonstrates the mechanic without
- * asserting anything about past sprints.
+ * The interactive sprint board that used to live here was retired along with
+ * the guided journey -- on a resume it read as a product demo rather than
+ * evidence, and the credentials are the point.
  */
 import { capabilities, CATEGORIES, recruiterProfile, caseStudies } from './evidence.js';
-import { storyLab, board } from './journey.js';
+import { storyLab } from './journey.js';
 
 const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -53,10 +52,10 @@ export function initRecruiterMode() {
   const apply = (on) => {
     document.body.classList.toggle('recruiter-mode', on);
     toggle.setAttribute('aria-pressed', String(on));
-    toggle.textContent = on ? 'Full experience' : 'Recruiter mode';
+    toggle.textContent = on ? 'Full resume' : 'Condensed';
     panel.hidden = !on;
-    // Section offsets all change when chapters are hidden or shown, so the
-    // scroll-driven nav/rail state has to be recalculated.
+    // Section offsets change when sections are hidden or shown, so the
+    // scroll-driven nav state has to be recalculated.
     window.dispatchEvent(new Event('resize'));
   };
 
@@ -200,90 +199,4 @@ export function initStoryLab() {
   });
 
   render();
-}
-
-/* ==================== Delivery board + live burndown ==================== */
-
-export function initBoard() {
-  const root = el('board-columns');
-  const chart = el('burndown');
-  const readout = el('board-readout');
-  if (!root) return;
-
-  const cols = board.columns;
-  const DONE = cols.length - 1;
-  // Working copy so the source data stays immutable.
-  const cards = board.cards.map((c) => ({ ...c, col: c.id === 'C1' || c.id === 'C2' ? 1 : 0 }));
-  const total = cards.reduce((n, c) => n + c.points, 0);
-  /** Remaining points after each visitor move -- the actual series. */
-  const history = [total];
-
-  function remaining() {
-    return cards.reduce((n, c) => (c.col === DONE ? n : n + c.points), 0);
-  }
-
-  function renderBoard() {
-    root.innerHTML = cols
-      .map((name, ci) => `<div class="bd-col" data-col="${ci}">
-        <h4 class="bd-col-head">${esc(name)}<span>${cards.filter((c) => c.col === ci).length}</span></h4>
-        <ul class="bd-list">${cards.filter((c) => c.col === ci).map((c) => `
-          <li><button type="button" class="bd-card" data-id="${esc(c.id)}"
-            aria-label="${esc(c.title)}, ${c.points} points, in ${esc(name)}. Activate to advance.">
-            <span class="bd-type">${esc(c.type)}</span>
-            <span class="bd-title">${esc(c.title)}</span>
-            <span class="bd-pts">${c.points}</span>
-          </button></li>`).join('')}</ul>
-      </div>`)
-      .join('');
-
-    const done = cards.filter((c) => c.col === DONE).length;
-    if (readout) {
-      readout.textContent = `${done}/${cards.length} cards done · ${remaining()} of ${total} points remaining`;
-    }
-  }
-
-  /**
-   * Burndown: remaining points over moves. Two series, so a legend is present
-   * and both are direct-labelled; ideal is a straight reference line.
-   */
-  function renderChart() {
-    if (!chart) return;
-    const W = 320, H = 130, PAD = 26;
-    const steps = Math.max(history.length - 1, 1);
-    const x = (i) => PAD + (i / Math.max(steps, 1)) * (W - PAD * 2);
-    const y = (v) => H - PAD - (v / Math.max(total, 1)) * (H - PAD * 2);
-
-    const actual = history.map((v, i) => `${x(i)},${y(v)}`).join(' ');
-    const ideal = `${x(0)},${y(total)} ${x(steps)},${y(0)}`;
-
-    chart.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Burndown: ${remaining()} of ${total} points remaining after ${history.length - 1} moves.">
-        <line class="bd-axis" x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" />
-        <line class="bd-axis" x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${H - PAD}" />
-        <polyline class="bd-ideal" points="${ideal}" />
-        <polyline class="bd-actual" points="${actual}" />
-        ${history.map((v, i) => `<circle class="bd-dot" cx="${x(i)}" cy="${y(v)}" r="3"><title>Move ${i}: ${v} points remaining</title></circle>`).join('')}
-        <text class="bd-lbl" x="${PAD}" y="${PAD - 8}">${total}</text>
-        <text class="bd-lbl" x="${PAD - 6}" y="${H - PAD + 4}" text-anchor="end">0</text>
-      </svg>
-      <p class="bd-legend">
-        <span class="bd-key bd-key--actual">Actual</span>
-        <span class="bd-key bd-key--ideal">Ideal</span>
-      </p>`;
-  }
-
-  root.addEventListener('click', (e) => {
-    const btn = e.target.closest('.bd-card');
-    if (!btn) return;
-    const card = cards.find((c) => c.id === btn.dataset.id);
-    if (!card || card.col >= DONE) return;
-    card.col += 1;
-    history.push(remaining());
-    renderBoard();
-    renderChart();
-  });
-
-  renderBoard();
-  renderChart();
 }
