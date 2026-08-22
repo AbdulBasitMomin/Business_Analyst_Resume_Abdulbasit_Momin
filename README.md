@@ -15,7 +15,10 @@ adding a role or a skill means editing the array and nothing else.
 - `experience` — roles, newest first (`end: 'Present'` renders a live badge)
 - `skills` — grouped proficiency bars (`level` is 0–100)
 - `skillCloud` — the labels that orbit inside the draggable 3D sphere
-- `projects`, `education`, `certifications`, `testimonials`
+- `process` — the five BA lifecycle stages driving the 3D flow and its cards
+- `deliverables` — artefacts produced, rendered as a two-column list
+- `domains` — settings the work happened in
+- `projects`, `education`, `certifications`, `awards`, `testimonials`
 
 `isPlaceholder` at the top of the file controls the amber "Draft" badge. Set it
 to `false` once the real content is in.
@@ -24,12 +27,36 @@ Empty arrays hide their section, so unused blocks cost nothing.
 
 ## What's 3D here
 
+The 3D is meant to *say something about business analysis*, not just decorate.
+
 | Layer | Detail |
 | --- | --- |
-| Background scene | Depth starfield with a twinkle shader, a noise-displaced icosahedron core, and octahedra orbiting on tilted rings |
-| Camera | Dollies forward on scroll progress and parallaxes toward the pointer |
-| Skill sphere | Labels on a Fibonacci sphere as camera-facing sprites; drag to spin, depth shown via scale and opacity |
+| **Backdrop** (`scene.js`) | A **requirements traceability network**: business need → requirement → user story → acceptance criteria → test case, as five layers along X. Edges only ever join adjacent layers — a link that skipped one would misrepresent traceability — and pulses travel downstream along them. A legend under the hero names each layer, tying its hue to its nodes. |
+| Camera | Rides along the chain as scroll advances, looking slightly ahead down the flow, parallaxing toward the pointer. Past the hero the canvas fades to 24% so it never competes with body copy. |
+| **Process flow** (`process.js`) | The BA lifecycle as five hexagonal plates on an arc, with a token that travels and dwells on each. Optimise loops back to Elicit along a dashed curve, because the lifecycle is a loop. The active plate lifts and brightens, and reports itself so the DOM cards highlight in sync. |
+| **Skill graph** (`orb.js`) | Clusters by discipline: each group gets a hub on a Fibonacci sphere with its skills orbiting it on staggered radii, joined by spokes. Labels are camera-facing sprites sized from measured text, so long names are neither clipped nor squashed. Drag to spin. |
 | Cards | Pointer-tracked `rotateX/rotateY` tilt with a sheen that follows the cursor |
+
+### Colour is validated, not chosen by eye
+
+Hues come from a documented categorical order and are taken **contiguously** —
+the ordering *is* the colour-vision-safety mechanism, so skipping a slot breaks
+it. Checked with a palette validator rather than judged by eye:
+
+- The traceability layers and process stages are **chains** (layer N only ever
+  sits beside N±1), so they use the adjacent pairlist: five contiguous slots
+  pass every gate.
+- The skill graph's clusters float freely in 3D, so any two can end up side by
+  side — the all-pairs case, where four hues **fail** (yellow vs orange at
+  normal-vision ΔE 10.6, under the 15 floor). So the graph uses **one** hue;
+  identity there comes from each cluster's named hub and its position, which is
+  stronger than colour anyway.
+- Skill bars are **meters**, not charts: a single ratio against a limit, so
+  track and fill come from one hue ramp. A two-hue gradient would imply a
+  second variable that isn't there.
+- The hero KPIs stay **stat tiles**. They're heterogeneous units (years,
+  dashboards, %, deployments); putting them on one axis would be a dual-scale
+  chart, which is the classic charting mistake.
 
 ## Running locally
 

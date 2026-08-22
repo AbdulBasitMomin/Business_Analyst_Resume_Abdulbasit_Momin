@@ -9,6 +9,17 @@
   --text: #e9eefb;
   --muted: #92a1c0;
   --dim: #5d6b88;
+  /* Validated categorical order (dark-surface steps), taken CONTIGUOUSLY from
+     the documented order -- the ordering is the CVD-safety mechanism, so
+     skipping slots breaks it. Verified with the palette validator: 5 slots
+     pass every gate on the adjacent pairlist, which is what a chain (the
+     traceability layers, the process stages) and a list both use. */
+  --slot-1: #3987e5;
+  --slot-2: #d95926;
+  --slot-3: #199e70;
+  --slot-4: #c98500;
+  --slot-5: #d55181;
+
   --cyan: #4de3ff;
   --violet: #8b6dff;
   --rose: #ff6ba8;
@@ -72,7 +83,7 @@ main, .nav, .footer { position: relative; z-index: 2; }
 a { color: inherit; text-decoration: none; }
 h1, h2, h3 { font-weight: 700; line-height: 1.15; margin: 0; letter-spacing: -0.02em; }
 p { margin: 0 0 1rem; }
-ul { margin: 0; padding: 0; list-style: none; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
 
 /* ---------- loader ---------- */
 
@@ -295,8 +306,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .scroll-hint {
   position: absolute;
   bottom: 1.8rem;
-  left: 50%;
-  transform: translateX(-50%);
+  right: var(--gutter);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -484,7 +494,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .skills-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 460px) 1fr;
+  grid-template-columns: minmax(280px, 520px) 1fr;
   gap: clamp(1.5rem, 4vw, 3.5rem);
   align-items: start;
 }
@@ -522,18 +532,21 @@ ul { margin: 0; padding: 0; list-style: none; }
   margin-bottom: 0.7rem;
 }
 .bar-name { font-size: 0.9rem; color: var(--muted); }
+/* Meter, not a chart: a single ratio against a limit, so track and fill come
+   from the same hue ramp -- a two-hue gradient would imply a second variable. */
 .bar-track {
-  height: 5px;
+  height: 6px;
   border-radius: 100px;
-  background: rgba(126, 160, 220, 0.12);
+  background: rgba(57, 135, 229, 0.16);
   overflow: hidden;
 }
 .bar-fill {
   display: block;
   height: 100%;
   width: 0;
-  border-radius: 100px;
-  background: linear-gradient(90deg, var(--cyan), var(--violet));
+  /* 4px rounded data-end, anchored to the baseline. */
+  border-radius: 0 4px 4px 0;
+  background: var(--slot-1);
   transition: width 1.2s var(--ease);
 }
 
@@ -669,16 +682,214 @@ a.cert-name:hover { color: var(--cyan); }
 }
 .reveal.is-in { opacity: 1; transform: none; }
 
+/* ---------- scroll progress ---------- */
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 65;
+  background: rgba(126, 160, 220, 0.12);
+}
+.scroll-progress span {
+  display: block;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--slot-1), var(--slot-5));
+}
+
+/* ---------- backdrop legend ---------- */
+
+.scene-legend {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 1.8rem;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.scene-legend-title {
+  padding-right: 0.5rem;
+  margin-right: 0.2rem;
+  border-right: 1px solid var(--glass-line);
+  color: #7f8ea8;
+}
+.chain-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #a9bcd8;
+}
+/* A dot in the layer's own hue ties the label to its nodes in the 3D scene. */
+.chain-node::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--slot-1);
+}
+.chain-node:nth-child(3)::before { background: var(--slot-2); }
+.chain-node:nth-child(5)::before { background: var(--slot-3); }
+.chain-node:nth-child(7)::before { background: var(--slot-4); }
+.chain-node:nth-child(9)::before { background: var(--slot-5); }
+.chain-arrow { opacity: 0.4; }
+
+/* ---------- section lede ---------- */
+
+.section-lede {
+  flex: 0 0 100%;
+  max-width: 62ch;
+  margin: 0.9rem 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+.section-head { flex-wrap: wrap; }
+
+/* ---------- process ---------- */
+
+.process-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+.process-canvas-wrap {
+  position: relative;
+  height: clamp(220px, 30vw, 340px);
+  border-radius: 20px;
+  border: 1px solid var(--glass-line);
+  background: linear-gradient(180deg, rgba(9, 14, 30, 0.92), rgba(6, 9, 20, 0.88));
+  overflow: hidden;
+}
+#process-canvas { width: 100%; height: 100%; display: block; }
+
+.process-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 1rem;
+  counter-reset: step;
+}
+.process-step {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.1rem 1.1rem 1.2rem;
+  border-radius: 16px;
+  border: 1px solid var(--glass-line);
+  background: rgba(14, 21, 40, 0.45);
+  transition: border-color 0.4s var(--ease), background 0.4s var(--ease),
+    transform 0.4s var(--ease);
+}
+/* Top rule in the stage's own hue, matching its plate in the 3D flow. */
+.process-step::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  border-radius: 16px 16px 0 0;
+  background: var(--step-color, var(--slot-1));
+  opacity: 0.45;
+  transition: opacity 0.4s;
+}
+/* Position in the list picks the hue -- keyed off nth-child rather than the
+   inline style attribute, which would break on any reformatting. */
+.process-step:nth-child(1) { --step-color: var(--slot-1); }
+.process-step:nth-child(2) { --step-color: var(--slot-2); }
+.process-step:nth-child(3) { --step-color: var(--slot-3); }
+.process-step:nth-child(4) { --step-color: var(--slot-4); }
+.process-step:nth-child(5) { --step-color: var(--slot-5); }
+
+.process-step.is-active {
+  border-color: color-mix(in srgb, var(--step-color) 55%, transparent);
+  background: color-mix(in srgb, var(--step-color) 10%, rgba(14, 21, 40, 0.6));
+  transform: translateY(-4px);
+}
+.process-step.is-active::before { opacity: 1; }
+
+.process-index {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--step-color, var(--slot-1));
+}
+.process-stage { font-size: 1.05rem; }
+.process-blurb { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.9rem; }
+.chips-sm .chip { font-size: 0.65rem; padding: 0.22rem 0.5rem; }
+
+/* ---------- deliverables & domains ---------- */
+
+.deliv-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.deliv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.6rem 1.2rem;
+}
+.deliv-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+  padding: 0.3rem 0;
+}
+.deliv-tick {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+  background: var(--slot-3);
+  opacity: 0.85;
+}
+
+.domain-list { display: grid; gap: 0.9rem; }
+.domain-item { padding: 1.1rem 1.3rem; }
+.domain-item:nth-child(1) { --step-color: var(--slot-1); }
+.domain-item:nth-child(2) { --step-color: var(--slot-2); }
+.domain-item:nth-child(3) { --step-color: var(--slot-3); }
+.domain-item:nth-child(4) { --step-color: var(--slot-4); }
+.domain-name {
+  font-size: 0.98rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.domain-name::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--step-color, var(--slot-1));
+}
+.domain-detail { margin: 0.5rem 0 0; color: var(--muted); font-size: 0.9rem; }
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 900px) {
-  .about-grid, .skills-layout, .edu-layout { grid-template-columns: 1fr; }
+  .about-grid, .skills-layout, .edu-layout, .deliv-layout { grid-template-columns: 1fr; }
   .orb-wrap { max-width: 420px; margin-inline: auto; }
   .bar-row { grid-template-columns: 1fr 90px; }
 }
 
 @media (max-width: 680px) {
   .nav-links { display: none; }
+  .scene-legend { display: none; }
+  .process-steps { grid-template-columns: 1fr; }
   .tl-item { grid-template-columns: 1fr; }
   .tl-marker { display: none; }
   .section-head { margin-bottom: 2rem; }
@@ -704,7 +915,8 @@ a.cert-name:hover { color: var(--cyan); }
 }
 
 @media print {
-  #bg-canvas, .grain, .loader, .nav, .scroll-hint, .orb-wrap, .draft-banner { display: none !important; }
+  #bg-canvas, .grain, .loader, .nav, .scroll-hint, .orb-wrap, .draft-banner,
+  .scroll-progress, .scene-legend, .process-canvas-wrap { display: none !important; }
   body { background: #fff; color: #000; }
   .glass { background: #fff; border-color: #ccc; box-shadow: none; backdrop-filter: none; }
   .hero-name .char, .hero-role, .section-title, .stat-value, .contact-title, .about-headline {
@@ -713,4 +925,6 @@ a.cert-name:hover { color: var(--cyan); }
     -webkit-text-fill-color: #000;
   }
   .reveal { opacity: 1 !important; transform: none !important; }
+  .process-step, .domain-item { border-color: #ccc; background: #fff; }
+  .process-step.is-active { transform: none; }
 }

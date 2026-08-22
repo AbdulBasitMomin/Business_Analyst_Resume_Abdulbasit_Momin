@@ -7,10 +7,15 @@
 const SECTIONS = [
   ['about', 'About'],
   ['experience', 'Experience'],
+  ['process', 'Process'],
   ['skills', 'Skills'],
   ['projects', 'Highlights'],
+  ['deliverables', 'Deliverables'],
   ['education', 'Education'],
 ];
+
+/** Layer names for the traceability backdrop legend. */
+const TRACE_CHAIN = ['Business need', 'Requirement', 'User story', 'Acceptance criteria', 'Test case'];
 
 const el = (id) => document.getElementById(id);
 const esc = (s) =>
@@ -24,6 +29,9 @@ export function renderAll(resume, { isPlaceholder = false } = {}) {
   renderHero(resume);
   renderAbout(resume.about);
   renderExperience(resume.experience);
+  renderProcess(resume.process);
+  renderDeliverables(resume.deliverables, resume.domains);
+  renderSceneLegend();
   renderSkills(resume.skills);
   renderProjects(resume.projects);
   renderEducation(resume.education, resume.certifications, resume.awards);
@@ -123,6 +131,62 @@ function renderExperience(roles) {
       </article>`;
     })
     .join('');
+}
+
+function renderSceneLegend() {
+  const node = el('scene-legend-chain');
+  if (!node) return;
+  node.innerHTML = TRACE_CHAIN.map(
+    (label, i) => `<span class="chain-node" style="--slot:${i}">${esc(label)}</span>`
+  ).join('<span class="chain-arrow">→</span>');
+}
+
+function renderProcess(stages) {
+  const node = el('process-steps');
+  if (!node) return;
+  node.innerHTML = (stages || [])
+    .map(
+      (s, i) => `<li class="process-step reveal" data-step="${i}" style="--slot:${i}; --d:${i * 70}ms">
+      <span class="process-index">0${i + 1}</span>
+      <div class="process-body">
+        <h3 class="process-stage">${esc(s.stage)}</h3>
+        <p class="process-blurb">${esc(s.blurb)}</p>
+        <div class="chips chips-sm">${(s.artifacts || []).map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div>
+      </div>
+    </li>`
+    )
+    .join('');
+}
+
+/** Highlights the step the 3D token is currently parked on. */
+export function setActiveStep(index) {
+  const steps = document.querySelectorAll('.process-step');
+  steps.forEach((n) => n.classList.toggle('is-active', Number(n.dataset.step) === index));
+}
+
+function renderDeliverables(deliverables, domains) {
+  const grid = el('deliv-grid');
+  if (grid) {
+    grid.innerHTML = (deliverables || [])
+      .map(
+        (d, i) => `<li class="deliv-item reveal" style="--d:${i * 35}ms">
+        <span class="deliv-tick" aria-hidden="true"></span>${esc(d)}
+      </li>`
+      )
+      .join('');
+  }
+
+  const list = el('domain-list');
+  if (list) {
+    list.innerHTML = (domains || [])
+      .map(
+        (d, i) => `<div class="domain-item glass reveal" style="--slot:${i}; --d:${i * 70}ms">
+        <h3 class="domain-name">${esc(d.name)}</h3>
+        <p class="domain-detail">${esc(d.detail)}</p>
+      </div>`
+      )
+      .join('');
+  }
 }
 
 function renderSkills(groups) {
@@ -325,8 +389,11 @@ export function initScrollSync(onProgress) {
     queued = false;
     const max = document.documentElement.scrollHeight - window.innerHeight;
     const y = window.scrollY;
-    onProgress(max > 0 ? Math.min(y / max, 1) : 0);
+    const progress = max > 0 ? Math.min(y / max, 1) : 0;
+    onProgress(progress);
     nav.classList.toggle('is-stuck', y > 40);
+    const bar = el('scroll-bar');
+    if (bar) bar.style.transform = `scaleX(${progress})`;
 
     // Active link = last section whose top has passed the 35% viewport mark.
     const line = y + window.innerHeight * 0.35;

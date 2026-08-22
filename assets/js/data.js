@@ -156,6 +156,76 @@ export const resume = {
     'Reconciliation', 'Root-Cause Analysis', 'Backlog', 'Governance',
   ],
 
+  /**
+   * How I work -- the BA lifecycle, rendered as an animated 3D process flow.
+   * Each stage is grounded in the verbs the resume actually uses.
+   */
+  process: [
+    {
+      stage: 'Elicit',
+      blurb: 'Facilitate stakeholder discussions to surface the real need, not the stated one.',
+      artifacts: ['Stakeholder interviews', 'Use cases', 'Success criteria'],
+    },
+    {
+      stage: 'Analyse',
+      blurb: 'Map the current state, find the gap, and trace the problem to its root cause.',
+      artifacts: ['Process flows', 'Gap analysis', 'Root-cause analysis'],
+    },
+    {
+      stage: 'Specify',
+      blurb: 'Turn the need into something a team can build and a tester can verify.',
+      artifacts: ['User stories', 'Acceptance criteria', 'Functional specs', 'Business rules'],
+    },
+    {
+      stage: 'Validate',
+      blurb: 'Prove the delivered thing matches the requirement — with data, not opinion.',
+      artifacts: ['Source-to-target checks', 'UAT', 'Defect tracking'],
+    },
+    {
+      stage: 'Optimise',
+      blurb: 'Measure what shipped, then feed the findings back into the next cycle.',
+      artifacts: ['KPI frameworks', 'Power BI dashboards', 'Process improvements'],
+    },
+  ],
+
+  /** Artefacts I actually produce. Straight from the resume. */
+  deliverables: [
+    'Business & functional requirements',
+    'User stories & acceptance criteria',
+    'Functional specifications',
+    'Process flows & business rules',
+    'Requirements traceability',
+    'Data mappings & schema docs',
+    'Source-to-target validation',
+    'UAT plans & test cases',
+    'Defect logs & triage',
+    'User personas & journey maps',
+    'Audience & segmentation logic',
+    'KPI & measurement frameworks',
+    'Power BI dashboards',
+    'Data governance artefacts',
+  ],
+
+  /** Where I have done it. */
+  domains: [
+    {
+      name: 'Regulated delivery',
+      detail: '3+ years where governance, traceability and audit-readiness are part of the requirement, not paperwork added later.',
+    },
+    {
+      name: 'Consumer data platform',
+      detail: 'Requirements and segmentation logic for a platform covering 50+ conditions, from persona through to activation.',
+    },
+    {
+      name: 'IT consulting',
+      detail: 'Client-facing analysis across multiple deliveries — requirements, data validation, UAT and go-live support.',
+    },
+    {
+      name: 'AI evaluation',
+      detail: 'Scoring model output on business and data tasks against defined rubrics, and documenting failure patterns.',
+    },
+  ],
+
   /** Quantified outcomes pulled from the roles above, for quick scanning. */
   projects: [
     {

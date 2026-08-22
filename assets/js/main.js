@@ -3,7 +3,7 @@
  * unavailable), then attach the 3D layers progressively.
  */
 import { resume, isPlaceholder } from './data.js';
-import { renderAll, initReveal, initBars, initCounters, initTilt, initScrollSync } from './ui.js';
+import { renderAll, initReveal, initBars, initCounters, initTilt, initScrollSync, setActiveStep } from './ui.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -15,21 +15,29 @@ initTilt({ reducedMotion });
 
 let scene = null;
 let orb = null;
+let process = null;
 
 /** WebGL is an enhancement -- a failure here must not take the content down. */
 async function initThree() {
   try {
-    const [{ createScene }, { createOrb }] = await Promise.all([
+    const [{ createScene }, { createOrb }, { createProcess }] = await Promise.all([
       import('./scene.js'),
       import('./orb.js'),
+      import('./process.js'),
     ]);
 
     scene = createScene(document.getElementById('bg-canvas'), { reducedMotion });
-    orb = createOrb(document.getElementById('orb-canvas'), resume.skillCloud, { reducedMotion });
+    // The graph clusters by discipline, so it takes the grouped skills.
+    orb = createOrb(document.getElementById('orb-canvas'), resume.skills, { reducedMotion });
+    process = createProcess(document.getElementById('process-canvas'), resume.process, {
+      reducedMotion,
+      onStage: setActiveStep,
+    });
 
     window.addEventListener('resize', () => {
       scene?.resize();
       orb?.resize();
+      process?.resize();
     });
 
     window.addEventListener(
@@ -43,9 +51,11 @@ async function initThree() {
       if (document.hidden) {
         scene?.stop();
         orb?.stop();
+        process?.stop();
       } else {
         scene?.start();
         orb?.start();
+        process?.start();
       }
     });
 

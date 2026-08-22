@@ -37,7 +37,7 @@ OUT = ROOT / 'dist' / 'resume-standalone.html'
 BASE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'index.html'
 
 # Order matters: a module's dependencies must be defined before it.
-MODULES = ['data.js', 'ui.js', 'scene.js', 'orb.js', 'main.js']
+MODULES = ['data.js', 'ui.js', 'scene.js', 'orb.js', 'process.js', 'main.js']
 
 IMPORT_RE = re.compile(
     r"^import\s+(?:\*\s+as\s+(?P<ns>\w+)|\{(?P<named>[^}]*)\})\s+from\s+"
@@ -106,10 +106,14 @@ def module_iife(name: str) -> str:
         # scene.js and orb.js are already built above; pull their factories
         # straight off the module objects instead of dynamically importing.
         src, n = re.subn(
-            r'const \[\{ createScene \}, \{ createOrb \}\] = await Promise\.all\(\[\s*'
-            r"import\('\./scene\.js'\),\s*import\('\./orb\.js'\),\s*\]\);",
-            'const createScene = %s.createScene;\n    const createOrb = %s.createOrb;'
-            % (module_var('./scene.js'), module_var('./orb.js')),
+            r'const \[\{ createScene \}, \{ createOrb \}, \{ createProcess \}\] = '
+            r'await Promise\.all\(\[\s*'
+            r"import\('\./scene\.js'\),\s*import\('\./orb\.js'\),\s*"
+            r"import\('\./process\.js'\),\s*\]\);",
+            'const createScene = %s.createScene;\n'
+            '    const createOrb = %s.createOrb;\n'
+            '    const createProcess = %s.createProcess;'
+            % (module_var('./scene.js'), module_var('./orb.js'), module_var('./process.js')),
             src,
         )
         if n != 1:

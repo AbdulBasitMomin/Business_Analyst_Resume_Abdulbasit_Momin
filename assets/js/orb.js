@@ -1,132 +1,187 @@
 /**
- * Draggable 3D skill sphere.
+ * Draggable 3D skill graph.
  *
- * Each skill becomes a canvas-rendered text sprite placed on a Fibonacci
- * sphere, so labels stay evenly spaced instead of clumping at the poles.
- * Sprites always face the camera, so every label stays readable at any angle;
- * depth is conveyed by scale and opacity rather than rotation.
+ * Rather than one undifferentiated cloud, skills cluster by discipline:
+ * each group gets a hub node placed on a Fibonacci sphere, its skills orbit
+ * that hub, and spokes join them. So the shape itself says "four disciplines"
+ * before a single label is read.
+ *
+ * Labels are camera-facing sprites, so every one stays readable at any angle;
+ * depth is carried by scale and opacity instead of rotation.
  */
 import * as THREE from 'three';
 
-export function createOrb(canvas, labels, { reducedMotion = false } = {}) {
-  if (!labels || !labels.length) return null;
+/**
+ * One hue, deliberately.
+ *
+ * The clusters float in 3D, so any two can end up side by side -- the
+ * all-pairs case. Four categorical hues fail there: the validator puts yellow
+ * against orange at normal-vision deltaE 10.6, below the 15 floor. Identity
+ * here is carried by each cluster's named hub and its position, not by colour,
+ * so a categorical palette would add risk and no information.
+ */
+const GRAPH_HUE = '#3987e5';
+
+export function createOrb(canvas, groups, { reducedMotion = false } = {}) {
+  if (!canvas || !groups?.length) return null;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  camera.position.z = 15;
 
-  const group = new THREE.Group();
-  scene.add(group);
+  const root = new THREE.Group();
+  scene.add(root);
 
-  const RADIUS = 5.2;
-  const sprites = [];
+  const HUB_RADIUS = 4.3;
+  const LEAF_RADIUS = 2.5;
   const golden = Math.PI * (3 - Math.sqrt(5));
+  const sprites = [];
+  const spokePoints = [];
 
-  labels.forEach((label, i) => {
-    // Fibonacci sphere: even coverage without clustering at the poles.
-    const y = 1 - (i / Math.max(labels.length - 1, 1)) * 2;
+  groups.forEach((group, gi) => {
+    const color = GRAPH_HUE;
+
+    // Hub direction: Fibonacci sphere over the group count, so hubs never clump.
+    const y = groups.length === 1 ? 0 : 1 - (gi / (groups.length - 1)) * 2;
     const r = Math.sqrt(Math.max(1 - y * y, 0));
-    const theta = golden * i;
-
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: makeLabelTexture(label, i),
-        transparent: true,
-        depthWrite: false,
-      })
+    const theta = golden * gi;
+    const hub = new THREE.Vector3(
+      Math.cos(theta) * r * HUB_RADIUS,
+      y * HUB_RADIUS,
+      Math.sin(theta) * r * HUB_RADIUS
     );
-    sprite.position.set(Math.cos(theta) * r * RADIUS, y * RADIUS, Math.sin(theta) * r * RADIUS);
-    sprite.scale.set(3.4, 0.85, 1);
-    group.add(sprite);
-    sprites.push(sprite);
+
+    // Hub marker plus its group label, larger than the leaves.
+    const hubDot = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.17, 1),
+      new THREE.MeshBasicMaterial({ color })
+    );
+    hubDot.position.copy(hub);
+    root.add(hubDot);
+
+    const hubLabel = makeSprite(group.group, color, true);
+    hubLabel.position.copy(hub).multiplyScalar(1.2);
+    root.add(hubLabel);
+    sprites.push({ sprite: hubLabel, base: 1.2, hub: true, aspect: hubLabel.userData.aspect });
+
+    // Leaves ring the hub on the plane perpendicular to its direction.
+    const items = group.items || [];
+    const axis = hub.clone().normalize();
+    const sideA = new THREE.Vector3(0, 1, 0).cross(axis);
+    if (sideA.lengthSq() < 0.001) sideA.set(1, 0, 0);
+    sideA.normalize();
+    const sideB = axis.clone().cross(sideA).normalize();
+
+    items.forEach((item, ii) => {
+      const angle = (ii / Math.max(items.length, 1)) * Math.PI * 2;
+      const wobble = 0.72 + ((ii % 3) * 0.3);
+      const pos = hub
+        .clone()
+        .add(sideA.clone().multiplyScalar(Math.cos(angle) * LEAF_RADIUS * wobble))
+        .add(sideB.clone().multiplyScalar(Math.sin(angle) * LEAF_RADIUS * wobble))
+        .add(axis.clone().multiplyScalar(0.6));
+
+      const sprite = makeSprite(shortLabel(item.name || item), color, false);
+      sprite.position.copy(pos);
+      root.add(sprite);
+      sprites.push({ sprite, base: 1, hub: false, aspect: sprite.userData.aspect });
+
+      spokePoints.push(hub.clone(), pos);
+    });
   });
 
-  // Wireframe cage so the sphere reads as a volume even when labels are sparse.
-  const cage = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(RADIUS * 0.98, 1),
-    new THREE.MeshBasicMaterial({ color: 0x4de3ff, wireframe: true, transparent: true, opacity: 0.1 })
+  root.add(
+    new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(spokePoints),
+      new THREE.LineBasicMaterial({
+        color: 0x7ea0dc,
+        transparent: true,
+        opacity: 0.16,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+    )
   );
-  group.add(cage);
 
   /* ---------- interaction ---------- */
 
-  const velocity = { x: 0.0016, y: 0.004 };
+  const velocity = { x: 0.0012, y: 0.0032 };
   let dragging = false;
   let last = { x: 0, y: 0 };
   let hovering = false;
 
-  function pointerDown(e) {
+  canvas.addEventListener('pointerdown', (e) => {
     dragging = true;
-    last = pointFrom(e);
+    last = { x: e.clientX, y: e.clientY };
     canvas.setPointerCapture?.(e.pointerId);
-  }
-
-  function pointerMove(e) {
+  });
+  canvas.addEventListener('pointermove', (e) => {
     if (!dragging) return;
-    const p = pointFrom(e);
-    // Drag distance maps straight to angular velocity, which then decays.
-    velocity.y = (p.x - last.x) * 0.0055;
-    velocity.x = (p.y - last.y) * 0.0055;
-    last = p;
-  }
-
-  function pointerUp(e) {
+    velocity.y = (e.clientX - last.x) * 0.005;
+    velocity.x = (e.clientY - last.y) * 0.005;
+    last = { x: e.clientX, y: e.clientY };
+  });
+  const release = (e) => {
     dragging = false;
     canvas.releasePointerCapture?.(e.pointerId);
-  }
-
-  function pointFrom(e) {
-    return { x: e.clientX, y: e.clientY };
-  }
-
-  canvas.addEventListener('pointerdown', pointerDown);
-  canvas.addEventListener('pointermove', pointerMove);
-  canvas.addEventListener('pointerup', pointerUp);
-  canvas.addEventListener('pointercancel', pointerUp);
+  };
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
   canvas.addEventListener('pointerenter', () => { hovering = true; });
   canvas.addEventListener('pointerleave', () => { hovering = false; dragging = false; });
 
   /* ---------- loop ---------- */
 
   let frame = 0;
-  let visible = true;
+  let running = false;
+  const world = new THREE.Vector3();
+
+  // Half-extent of the graph plus room for the widest label overhanging a
+  // node, so nothing clips at the canvas edge.
+  const CONTENT_HALF = HUB_RADIUS + LEAF_RADIUS + 1.5;
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
-    const size = Math.max(rect.width, 1);
+    const w = Math.max(rect.width, 1);
+    const h = Math.max(rect.height, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(size, Math.max(rect.height, 1), false);
-    camera.aspect = size / Math.max(rect.height, 1);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+
+    const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2;
+    const distV = CONTENT_HALF / Math.tan(halfFov);
+    const distH = CONTENT_HALF / (Math.tan(halfFov) * camera.aspect);
+    camera.position.z = Math.max(distV, distH);
     camera.updateProjectionMatrix();
   }
 
   function render() {
     if (!dragging) {
-      // Ease back to an idle spin; slow to a crawl while the cursor rests on it.
-      const target = hovering ? 0.0008 : 0.004;
+      // Ease back to an idle spin; nearly stop while the cursor rests on it.
+      const target = hovering ? 0.0006 : 0.0032;
       velocity.y += (target - velocity.y) * 0.03;
-      velocity.x += (0.0016 - velocity.x) * 0.03;
+      velocity.x += (0.0012 - velocity.x) * 0.03;
     }
-    group.rotation.y += velocity.y;
-    group.rotation.x = THREE.MathUtils.clamp(group.rotation.x + velocity.x, -0.9, 0.9);
+    root.rotation.y += velocity.y;
+    root.rotation.x = THREE.MathUtils.clamp(root.rotation.x + velocity.x, -0.85, 0.85);
 
-    // Fade and shrink sprites on the far side to sell the depth.
-    for (const sprite of sprites) {
-      const world = sprite.getWorldPosition(new THREE.Vector3());
-      const depth = (world.z / RADIUS + 1) / 2; // 0 = back, 1 = front
-      sprite.material.opacity = 0.22 + depth * 0.78;
-      const s = 0.7 + depth * 0.45;
-      sprite.scale.set(3.4 * s, 0.85 * s, 1);
+    for (const entry of sprites) {
+      entry.sprite.getWorldPosition(world);
+      const depth = (world.z / (HUB_RADIUS + LEAF_RADIUS) + 1) / 2; // 0 back, 1 front
+      entry.sprite.material.opacity = (entry.hub ? 0.5 : 0.2) + depth * 0.78;
+      // Height is uniform; width follows the label's own aspect so text is
+      // never stretched or squeezed to fit a fixed box.
+      const h = (0.62 + depth * 0.38) * entry.base;
+      entry.sprite.scale.set(h * entry.aspect, h, 1);
     }
 
     renderer.render(scene, camera);
   }
 
   function loop() {
-    if (!visible) return;
+    if (!running) return;
     frame = requestAnimationFrame(loop);
     render();
   }
@@ -137,49 +192,77 @@ export function createOrb(canvas, labels, { reducedMotion = false } = {}) {
     velocity.y = 0;
     render();
   } else {
+    running = true;
     loop();
   }
 
   return {
     resize,
-    stop() { visible = false; cancelAnimationFrame(frame); frame = 0; },
+    stop() {
+      running = false;
+      cancelAnimationFrame(frame);
+      frame = 0;
+    },
     start() {
-      if (reducedMotion || frame) return;
-      visible = true;
+      if (reducedMotion || running) return;
+      running = true;
       loop();
     },
   };
 }
 
-/** Renders one skill label to an offscreen canvas for use as a sprite texture. */
-function makeLabelTexture(text, index) {
+/**
+ * Graph labels have to stay short or the clusters become unreadable. The full
+ * skill names live in the meters next to the canvas, so trimming to the head
+ * of the phrase loses nothing: "Data Privacy, Consent & Compliance" reads as
+ * "Data Privacy" on a node.
+ */
+function shortLabel(text) {
+  let out = String(text).split(/\s*[,(]|\s+&\s+/)[0].trim();
+  const words = out.split(/\s+/);
+  if (out.length > 20 && words.length > 2) out = words.slice(0, 2).join(' ');
+  return out;
+}
+
+/** Renders a label to an offscreen canvas for use as a sprite texture. */
+function makeSprite(text, color, isHub) {
   const scale = Math.min(window.devicePixelRatio || 1, 2);
-  const width = 512;
-  const height = 128;
+  const font = `${isHub ? '700 44px' : '500 38px'} Sora, system-ui, sans-serif`;
+  const height = 96;
+
+  // Measure first, then size the canvas to the text. A fixed-width texture
+  // clipped long labels and squashed the glyphs.
+  const probe = document.createElement('canvas').getContext('2d');
+  probe.font = font;
+  const pad = 28;
+  const width = Math.ceil(probe.measureText(text).width) + pad * 2;
+
   const c = document.createElement('canvas');
   c.width = width * scale;
   c.height = height * scale;
   const ctx = c.getContext('2d');
   ctx.scale(scale, scale);
 
-  const accents = ['#4de3ff', '#8b6dff', '#ff6ba8', '#7dffc0'];
-  const color = accents[index % accents.length];
-
-  ctx.font = '600 46px Sora, system-ui, sans-serif';
+  ctx.font = font;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
+  // Glow pass in the group colour, then the glyph in near-white so the text
+  // itself stays legible -- colour carries identity, ink carries the reading.
   ctx.shadowColor = color;
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = isHub ? 22 : 14;
   ctx.fillStyle = color;
   ctx.fillText(text, width / 2, height / 2);
-  // Second pass without shadow keeps the glyph crisp on top of its own glow.
   ctx.shadowBlur = 0;
-  ctx.fillStyle = '#eaf2ff';
+  ctx.fillStyle = isHub ? '#ffffff' : '#dce8fb';
   ctx.fillText(text, width / 2, height / 2);
 
   const texture = new THREE.CanvasTexture(c);
   texture.anisotropy = 4;
-  texture.needsUpdate = true;
-  return texture;
+
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false })
+  );
+  sprite.userData.aspect = width / height;
+  return sprite;
 }
