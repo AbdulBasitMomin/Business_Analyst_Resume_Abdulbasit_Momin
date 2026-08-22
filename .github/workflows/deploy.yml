@@ -1,0 +1,66 @@
+name: Deploy resume site
+
+# Publishes the static site to GitHub Pages.
+on:
+  push:
+    branches: [claude/3d-resume-website-rqm1j9, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The site renders its sections from data.js at runtime, so a crawler
+      # would otherwise index an empty shell. Prerendering bakes the resume
+      # text into index.html. If it fails the deploy still goes ahead with the
+      # client-rendered page -- SEO is worth a step, not worth a broken deploy.
+      - name: Prerender content into index.html
+        id: prerender
+        continue-on-error: true
+        run: |
+          npm install --no-save playwright http-server
+          npx playwright install --with-deps chromium
+          npx http-server -p 8123 -s . &
+          npx wait-on -t 30000 http://127.0.0.1:8123/ || sleep 5
+          node tools/prerender.mjs http://127.0.0.1:8123/ dist/index.html
+          cp dist/index.html index.html
+
+      - name: Report prerender outcome
+        run: |
+          if [ "${{ steps.prerender.outcome }}" = "success" ]; then
+            echo "Prerendered: resume text is in the served markup."
+          else
+            echo "::warning::Prerender failed; deploying the client-rendered page instead."
+          fi
+
+      # Keep build tooling and dev deps out of the published site.
+      - name: Prune artefacts from the upload
+        run: rm -rf node_modules dist tools .github
+
+      # Requires Pages to be enabled once by hand, with Source set to
+      # "GitHub Actions" (Settings -> Pages). The workflow GITHUB_TOKEN cannot
+      # create the Pages site itself -- that needs repo admin rights.
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Abdulbasit Momin — Business Analyst | Toronto, ON</title>
+<meta name="description" content="Business Analyst with 4+ years across requirements, data validation, UAT and regulated delivery. SQL, Power BI, Jira, Confluence. Toronto, ON or remote." />
+<link rel="canonical" href="https://abdulbasitmomin.github.io/ai-project/" />
+<meta name="theme-color" content="#07090e" />
+<meta name="robots" content="index, follow" />
+
+<meta property="og:type" content="profile" />
+<meta property="og:title" content="Abdulbasit Momin — Business Analyst" />
+<meta property="og:url" content="https://abdulbasitmomin.github.io/ai-project/" />
+<meta property="og:description" content="Business Analyst — requirements, data validation, UAT and regulated delivery. Toronto, ON." />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+<link rel="stylesheet" href="./assets/css/style.css" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Abdulbasit Momin",
+  "jobTitle": "Business Analyst",
+  "email": "mailto:basitmomin01@gmail.com",
+  "telephone": "+1-416-526-8202",
+  "url": "https://abdulbasitmomin.github.io/ai-project/",
+  "address": { "@type": "PostalAddress", "addressLocality": "Toronto", "addressRegion": "ON", "addressCountry": "CA" },
+  "sameAs": ["https://linkedin.com/in/abmomin1", "https://github.com/AbdulBasitMomin", "https://bodywellnessai.com"],
+  "alumniOf": { "@type": "CollegeOrUniversity", "name": "Gujarat Technological University" },
+  "knowsAbout": ["Business Analysis", "Requirements Engineering", "SQL", "Power BI", "Source-to-target validation", "UAT", "Data Governance", "Agile delivery"],
+  "seeks": { "@type": "Demand", "name": "Business Analyst roles in Toronto, ON or remote" }
+}
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "./assets/vendor/three/three.module.min.js" } }
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="scroll-progress" aria-hidden="true"><span id="scroll-bar"></span></div>
+
+<div id="loader" class="loader"><div class="loader-ring"></div></div>
+
+<header class="nav" id="nav">
+  <a class="nav-mark" href="#top"><span class="nav-mark-dot"></span><span id="nav-name">Abdulbasit Momin</span></a>
+  <nav class="nav-links" id="nav-links" aria-label="Sections"></nav>
+  <div class="nav-actions">
+    <button type="button" class="btn btn-sm btn-recruiter" id="recruiter-toggle" aria-pressed="false">Condensed</button>
+    <a class="btn btn-sm btn-primary" id="nav-resume" href="#" download>Resume</a>
+  </div>
+</header>
+
+<section class="recruiter-panel" id="recruiter-panel" hidden aria-label="Condensed profile"></section>
+
+<main id="main">
+<div id="top"></div>
+
+  <!-- ============ HEADER: the resume masthead ============ -->
+  <header class="masthead" id="masthead">
+    <div class="mast-main">
+      <p class="eyebrow" id="hero-availability" style="--seq:0"></p>
+      <h1 class="hero-name" id="hero-name" style="--seq:1"></h1>
+      <p class="hero-role" style="--seq:2">Business Analyst</p>
+      <p class="hero-disciplines" style="--seq:3">Business Analysis · Data · AI · Agile · Process Improvement</p>
+      <p class="hero-tagline" style="--seq:4">Turning complex business problems into clear, measurable solutions.</p>
+      <ul class="mast-contact" id="mast-contact" style="--seq:5"></ul>
+      <div class="hero-actions" style="--seq:6">
+        <a class="btn btn-primary magnetic" id="hero-resume" href="#" download>Download resume (PDF)</a>
+        <a class="btn btn-ghost magnetic" id="hero-linkedin" href="#" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn btn-ghost magnetic" id="hero-email" href="#">Email</a>
+      </div>
+    </div>
+    <aside class="mast-side" style="--seq:7">
+      <div class="hero-diagram" id="hero-diagram" role="img"
+           aria-label="Business Analyst at the centre of People, Process, Data, AI, Agile and Systems."></div>
+      <ul class="stats" id="stats"></ul>
+    </aside>
+  </header>
+
+  <!-- ============ SUMMARY ============ -->
+  <section class="section" id="summary">
+    <h2 class="section-title">Professional summary</h2>
+    <div class="summary-body" id="summary-body"></div>
+  </section>
+
+  <!-- ============ EXPERIENCE ============ -->
+  <section class="section" id="experience">
+    <h2 class="section-title">Experience</h2>
+    <div class="gfx-slot reveal" id="gfx-timeline"></div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <!-- ============ SKILLS ============ -->
+  <section class="section" id="skills">
+    <h2 class="section-title">Skills &amp; tools</h2>
+    <p class="section-lede">Grouped as they appear on the resume. Select any capability to see the role it was used in and the line that supports it.</p>
+    <div class="ev-layout">
+      <div>
+        <div class="ev-filters" id="evidence-filters" role="group" aria-label="Filter capabilities by category"></div>
+        <div class="ev-grid" id="evidence-grid"></div>
+      </div>
+      <div class="ev-detail" id="evidence-detail" aria-live="polite"></div>
+    </div>
+    <div class="gfx-slot reveal" id="gfx-coverage"></div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="section" id="projects">
+    <h2 class="section-title">Selected projects</h2>
+    <p class="section-lede">Problem, what I did, and the outcome. Expand for the full breakdown.</p>
+    <div class="case-list" id="case-list"></div>
+  </section>
+
+  <!-- ============ BUSINESS IMPACT ============ -->
+  <section class="section" id="impact">
+    <h2 class="section-title">Business impact</h2>
+    <p class="section-lede">What measurably changed, and where. Each line traces to an achievement on the resume.</p>
+    <ul class="impact-list" id="impact-list"></ul>
+  </section>
+
+  <!-- ============ EDUCATION ============ -->
+  <section class="section" id="education">
+    <h2 class="section-title">Education &amp; certifications</h2>
+    <div class="edu-layout">
+      <div class="edu-list" id="education-list"></div>
+      <div class="cert-list" id="cert-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ METHOD: the BA thinking, kept compact ============ -->
+  <section class="section" id="method">
+    <h2 class="section-title">How I work</h2>
+    <p class="section-lede">The lifecycle of a business problem, end to end. This is the part a skills list cannot show.</p>
+
+    <nav class="lifecycle-rail" id="lifecycle-rail" aria-label="Lifecycle stages"></nav>
+
+    <div class="stage" id="st-problem">
+      <h3 class="stage-head"><span class="stage-num">01</span>Problem</h3>
+      <p class="stage-lede">Fragmented inputs, no shared definition of what is wrong. I turn ambiguity into clarity.</p>
+      <ol class="chain-list" id="clarity-chain"></ol>
+    </div>
+
+    <div class="stage" id="st-people">
+      <h3 class="stage-head"><span class="stage-num">02</span>People</h3>
+      <p class="stage-lede">Every requirement has an owner, a source, and a decision behind it.</p>
+      <ul class="stake-list" id="stake-list"></ul>
+      <div class="stake-detail" id="stake-detail"></div>
+    </div>
+
+    <div class="stage" id="st-requirements">
+      <h3 class="stage-head"><span class="stage-num">03</span>Requirements</h3>
+      <p class="stage-lede">Raw input becomes something a team can build and a tester can verify.</p>
+      <ol class="method-flow" id="method-flow"></ol>
+      <h4 class="sub-head">Artefacts I produce</h4>
+      <ul class="deliv-grid" id="deliv-grid"></ul>
+      <details class="extra">
+        <summary>Worked example: one user story, broken down</summary>
+        <p class="illustrative">Illustrative example — structure, not a delivered ticket.</p>
+        <div id="story-lab"></div>
+      </details>
+    </div>
+
+    <div class="stage" id="st-agile">
+      <h3 class="stage-head"><span class="stage-num">04</span>Agile delivery</h3>
+      <p class="stage-lede">Agile isn’t a skill I list. It’s a delivery system I work inside.</p>
+      <p class="illustrative">Illustrative mechanics — how work moves, not a record of a past sprint.</p>
+      <div class="sprint" id="sprint"></div>
+    </div>
+
+    <div class="stage" id="st-data">
+      <h3 class="stage-head"><span class="stage-num">05</span>Data</h3>
+      <p class="stage-lede">Source to target, and proof that nothing was lost on the way.</p>
+      <ol class="chain-list" id="pipeline"></ol>
+    </div>
+
+    <div class="stage" id="st-ai">
+      <h3 class="stage-head"><span class="stage-num">06</span>AI</h3>
+      <div class="ai-block">
+        <p class="ai-stance" id="ai-stance"></p>
+        <ol class="chain-list" id="ai-loop"></ol>
+        <ul class="ai-practices" id="ai-practices"></ul>
+        <p class="ai-grounding" id="ai-grounding"></p>
+      </div>
+    </div>
+
+    <div class="stage" id="st-uat">
+      <h3 class="stage-head"><span class="stage-num">07</span>UAT</h3>
+      <p class="stage-lede">A requirement is not done until something proves it.</p>
+      <ol class="chain-list" id="uat-chain"></ol>
+    </div>
+
+
+  </section>
+
+  <!-- ============ ASK ============ -->
+  <section class="section" id="ask">
+    <h2 class="section-title">Ask my experience</h2>
+    <p class="section-lede">Every answer is skill, project, and the resume line behind it. Nothing else.</p>
+    <div class="ask-wrap">
+      <form class="ask-form" id="ask-form" autocomplete="off">
+        <label class="sr-only" for="ask-input">Ask a question about this resume</label>
+        <input type="text" id="ask-input" placeholder="e.g. Where have you used SQL?" />
+        <button type="submit" class="btn btn-primary btn-sm">Ask</button>
+      </form>
+      <div class="ask-suggested" id="ask-suggested"></div>
+      <div class="ask-answer" id="ask-answer" role="status" aria-live="polite"></div>
+      <p class="ask-note">Searches this page's content and shows the source. Not a language model — it will not answer beyond what is documented here.</p>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section contact" id="contact">
+    <h2 class="contact-title">Let’s talk</h2>
+    <p class="contact-sub" id="contact-sub"></p>
+    <div class="contact-links" id="contact-links"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span id="footer-name"></span>
+  <span class="footer-sep">·</span>
+  <span>Built with Three.js — no frameworks, no trackers</span>
+</footer>
+
+<script type="module" src="./assets/js/main.js"></script>
+<noscript>
+  <div class="noscript-note">Interactive elements need JavaScript — the resume below is complete.</div>
+</noscript>
+</body>
+</html>
