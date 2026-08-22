@@ -8,7 +8,7 @@ const SECTIONS = [
   ['about', 'About'],
   ['experience', 'Experience'],
   ['skills', 'Skills'],
-  ['projects', 'Projects'],
+  ['projects', 'Highlights'],
   ['education', 'Education'],
 ];
 
@@ -26,7 +26,7 @@ export function renderAll(resume, { isPlaceholder = false } = {}) {
   renderExperience(resume.experience);
   renderSkills(resume.skills);
   renderProjects(resume.projects);
-  renderEducation(resume.education, resume.certifications);
+  renderEducation(resume.education, resume.certifications, resume.awards);
   renderTestimonials(resume.testimonials);
   renderContact(resume.meta);
 
@@ -36,7 +36,9 @@ export function renderAll(resume, { isPlaceholder = false } = {}) {
 /* ---------- head / chrome ---------- */
 
 function renderMeta(meta) {
-  document.title = `${meta.name} — ${meta.role}`;
+  // Keep the location in the tab title -- it matches the static <title> and
+  // is what recruiters searching by city actually see.
+  document.title = `${meta.name} — ${meta.role}${meta.location ? ` | ${meta.location}` : ''}`;
   el('nav-name').textContent = meta.name;
   el('footer-name').textContent = `© ${new Date().getFullYear()} ${meta.name}`;
 }
@@ -68,7 +70,7 @@ function renderHero(resume) {
   const resumeBtn = el('hero-resume');
   if (meta.resumePdf) {
     resumeBtn.href = meta.resumePdf;
-    resumeBtn.setAttribute('download', '');
+    resumeBtn.setAttribute('download', 'Abdulbasit-Momin-Business-Analyst.pdf');
   } else {
     resumeBtn.hidden = true;
   }
@@ -155,7 +157,7 @@ function renderProjects(projects) {
     .join('');
 }
 
-function renderEducation(education, certs) {
+function renderEducation(education, certs, awards) {
   el('education-list').innerHTML = (education || [])
     .map(
       (e, i) => `<div class="edu-item glass reveal" style="--d:${i * 80}ms">
@@ -167,10 +169,15 @@ function renderEducation(education, certs) {
     )
     .join('');
 
-  el('cert-list').innerHTML = (certs || [])
+  const credentials = [
+    ...(certs || []).map((c) => ({ ...c, kind: 'cert' })),
+    ...(awards || []).map((a) => ({ ...a, kind: 'award' })),
+  ];
+
+  el('cert-list').innerHTML = credentials
     .map(
       (c, i) => `<div class="cert-item reveal" style="--d:${i * 60}ms">
-      <span class="cert-tick">✦</span>
+      <span class="cert-tick">${c.kind === 'award' ? '★' : '✦'}</span>
       <div>
         ${c.link ? `<a href="${esc(c.link)}" target="_blank" rel="noopener" class="cert-name">${esc(c.name)}</a>` : `<span class="cert-name">${esc(c.name)}</span>`}
         <span class="cert-meta">${esc(c.issuer)}${c.year ? ` · ${esc(c.year)}` : ''}</span>
@@ -198,8 +205,9 @@ function renderContact(meta) {
   const links = [
     meta.email && { label: 'Email', href: `mailto:${meta.email}`, text: meta.email },
     meta.phone && { label: 'Phone', href: `tel:${meta.phone.replace(/\s/g, '')}`, text: meta.phone },
-    meta.linkedin && { label: 'LinkedIn', href: meta.linkedin, text: 'linkedin' },
-    meta.github && { label: 'GitHub', href: meta.github, text: 'github' },
+    meta.linkedin && { label: 'LinkedIn', href: meta.linkedin, text: 'in/abmomin1' },
+    meta.website && { label: 'Website', href: meta.website, text: meta.website.replace(/^https?:\/\//, '') },
+    meta.github && { label: 'GitHub', href: meta.github, text: 'AbdulBasitMomin' },
   ].filter(Boolean);
 
   el('contact-links').innerHTML = links

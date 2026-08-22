@@ -58,11 +58,22 @@ def main() -> None:
     css = (ROOT / 'assets' / 'css' / 'style.css').read_text()
     three = (ROOT / 'assets' / 'vendor' / 'three' / 'three.module.min.js').read_bytes()
     favicon = (ROOT / 'assets' / 'favicon.svg').read_bytes()
+    pdf_path = ROOT / 'assets' / 'Abdulbasit-Momin-Business-Analyst.pdf'
 
     three_url = 'data:text/javascript;base64,' + base64.b64encode(three).decode()
     favicon_url = 'data:image/svg+xml;base64,' + base64.b64encode(favicon).decode()
 
     bundle = "import * as THREE from 'three';\n\n" + '\n'.join(flatten(m) for m in MODULES)
+
+    # The resume PDF is a relative fetch too, so inline it or the download
+    # button dead-ends in the standalone file.
+    if pdf_path.exists():
+        pdf_url = ('data:application/pdf;base64,'
+                   + base64.b64encode(pdf_path.read_bytes()).decode())
+        marker = f"'./assets/{pdf_path.name}'"
+        if marker not in bundle:
+            sys.exit(f'data.js: resumePdf path {marker} not found -- update the bundler')
+        bundle = bundle.replace(marker, f"'{pdf_url}'")
 
     subs = [
         ('<link rel="stylesheet" href="./assets/css/style.css" />', f'<style>\n{css}\n</style>'),

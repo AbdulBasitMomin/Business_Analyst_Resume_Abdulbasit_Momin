@@ -2,127 +2,207 @@
  * SINGLE SOURCE OF TRUTH for all resume content.
  * Every section of the site renders from this object -- edit here, nowhere else.
  *
- * While `isPlaceholder` is true the site shows a visible draft banner so the
- * link can never be mistaken for a finished profile. Flip it to false once the
- * real content below is in place.
+ * Setting `isPlaceholder` to true shows a visible draft banner.
  */
-export const isPlaceholder = true;
+export const isPlaceholder = false;
 
 export const resume = {
   meta: {
-    name: 'Abdul Basit Momin',
+    name: 'Abdulbasit Momin',
     role: 'Business Analyst',
-    tagline: 'TODO — one line on what you do and the value you create',
-    location: 'TODO — City, Country',
-    email: 'TODO@example.com',
-    phone: '',
-    linkedin: '',
+    tagline:
+      'I bridge business, data, and technology teams — turning ambiguous business needs into requirements, working software, and delivery you can audit.',
+    location: 'Toronto, ON',
+    email: 'basitmomin01@gmail.com',
+    phone: '+1 (416) 526-8202',
+    linkedin: 'https://linkedin.com/in/abmomin1',
+    website: 'https://bodywellnessai.com',
     github: 'https://github.com/AbdulBasitMomin',
-    resumePdf: '',
-    availability: 'TODO — e.g. Open to Business Analyst roles',
+    resumePdf: './assets/Abdulbasit-Momin-Business-Analyst.pdf',
+    availability: 'Open to Business Analyst roles — Toronto, ON or remote',
   },
 
-  /** Big animated counters under the hero. Keep to 3-4. */
+  /** Every figure here is taken straight from the resume. */
   stats: [
-    { value: 0, suffix: '+', label: 'Years in analysis' },
-    { value: 0, suffix: '+', label: 'Projects delivered' },
-    { value: 0, suffix: '+', label: 'Stakeholders partnered' },
-    { value: 0, suffix: '%', label: 'Process efficiency gained' },
+    { value: 4, suffix: '+', label: 'Years as a Business Analyst' },
+    { value: 3, suffix: '+', label: 'Years in regulated delivery' },
+    { value: 8, suffix: '', label: 'Power BI dashboards built' },
+    { value: 20, suffix: '%', label: 'Process efficiency gained' },
   ],
 
   about: {
-    headline: 'TODO — short positioning statement',
+    headline:
+      'Business Analyst with 4+ years bridging business, data, and technology teams — including 3+ years in regulated environments where governance, traceability, and audit-readiness are built into every delivery.',
     paragraphs: [
-      'TODO — paragraph one: who you are, your domain, the kinds of problems you solve.',
-      'TODO — paragraph two: how you work (elicitation, data, stakeholder management) and what outcomes follow.',
+      'I translate business needs into requirements, user stories, acceptance criteria, and functional specs — then validate what actually got delivered through data checks, UAT, and defect tracking. The handoff is where most requirements quietly break, so I stay attached to a change until the data proves it works.',
+      'My strengths sit in data mapping, validation, and reporting with SQL, Power BI, and Excel, plus working knowledge of customer data platforms, data privacy, and data quality controls. In regulated delivery I have learned to treat lineage, consent, and sign-off as part of the requirement, not paperwork bolted on afterwards.',
     ],
   },
 
-  /**
-   * Roles render as a 3D depth timeline. Most recent first.
-   * `end: 'Present'` renders as a live/current badge.
-   */
   experience: [
     {
-      role: 'TODO — Job Title',
-      company: 'TODO — Company',
-      location: 'TODO — City',
-      start: 'MON YYYY',
+      role: 'AI Evaluator',
+      company: 'Mercor',
+      location: 'Remote',
+      start: 'May 2026',
       end: 'Present',
-      summary: 'TODO — one sentence framing the scope and business context of this role.',
+      summary: '',
       achievements: [
-        'TODO — achievement with a number attached (what you did, how, the measurable result).',
-        'TODO — achievement two.',
-        'TODO — achievement three.',
+        'Evaluate and score AI model outputs on business and data tasks against defined rubrics, checking accuracy, reasoning, and instruction adherence.',
+        'Test prompt variations and document failure patterns to tighten quality benchmarks and improve reliability.',
       ],
-      tools: ['TODO', 'TODO', 'TODO'],
+      tools: ['Rubric Evaluation', 'Prompt Testing', 'Quality Benchmarks', 'Failure Analysis'],
+    },
+    {
+      role: 'Product Owner / Business Analyst',
+      company: 'BodyWellnessAI',
+      location: 'Toronto, ON',
+      start: 'July 2025',
+      end: 'April 2026',
+      summary:
+        'End-to-end product ownership: from personas and journey maps through to segmentation logic validated in production.',
+      achievements: [
+        'Owned requirements and functional specifications for a consumer data platform covering 50+ conditions, including user personas and end-to-end journey maps that drove personalization and segmentation logic.',
+        'Translated business needs into user stories, acceptance criteria, process flows, and business rules; managed and prioritized the backlog across multiple release cycles.',
+        'Defined and validated audience and segmentation logic using customer, behavioral, and engagement data to support audience creation, testing, and activation to downstream experiences.',
+        'Validated outputs with data checks and root-cause analysis, tracking issues to resolution and improving segmentation accuracy and customer engagement over time.',
+      ],
+      tools: [
+        'User Stories',
+        'Acceptance Criteria',
+        'Journey Maps',
+        'Segmentation Logic',
+        'Backlog Prioritization',
+        'Root-Cause Analysis',
+      ],
+    },
+    {
+      role: 'Business Analyst, IT Consulting',
+      company: 'Sarjen Systems Pvt. Ltd.',
+      location: 'India',
+      start: 'January 2022',
+      end: 'June 2025',
+      summary:
+        'Requirements, data validation, and UAT across regulated client deliveries.',
+      achievements: [
+        'Gathered, analyzed, and prioritized business, functional, data, and technical requirements, facilitating stakeholder discussions to define use cases, KPIs, and success criteria.',
+        'Partnered with data architects and engineers to document data sources, schemas, mappings, integration points, APIs, and business rules across regulated deliveries.',
+        'Performed source-to-target data validation to ensure accuracy, completeness, and consistency, checking ingestion, transformation logic, and field-level mappings against requirements.',
+        'Built 8 Power BI dashboards using SQL and data extracts, giving leadership a real-time view of delivery and performance and supporting reconciliation and business sign-off.',
+        'Led UAT end to end (test case development, execution, defect tracking) plus production validation, supporting defect-free go-lives across 7+ deployments.',
+        'Documented data governance artifacts (quality controls, privacy, consent, lineage, data flows) in Jira and Confluence; delivered training and process improvements that increased efficiency by 20%.',
+      ],
+      tools: ['SQL', 'Power BI', 'Jira', 'Confluence', 'UAT', 'Data Mapping', 'Data Governance'],
     },
   ],
 
-  /** Grouped skill bars. Level 0-100. */
+  /**
+   * NOTE: `level` values are not on the resume -- they are an estimate of
+   * relative depth based on how prominently each area features in it.
+   * Adjust freely.
+   */
   skills: [
     {
-      group: 'Analysis & Requirements',
+      group: 'Requirements & Analysis',
       items: [
-        { name: 'Requirements Elicitation', level: 0 },
-        { name: 'BRD / FRD / User Stories', level: 0 },
-        { name: 'Process Mapping (BPMN)', level: 0 },
-        { name: 'Gap & Root Cause Analysis', level: 0 },
+        { name: 'Requirements Gathering & Validation', level: 95 },
+        { name: 'User Stories & Acceptance Criteria', level: 95 },
+        { name: 'Process Flows & Business Rules', level: 90 },
+        { name: 'Functional Specifications', level: 90 },
+        { name: 'Stakeholder Facilitation', level: 88 },
+        { name: 'Use Case & KPI Definition', level: 85 },
       ],
     },
     {
       group: 'Data & Reporting',
       items: [
-        { name: 'SQL', level: 0 },
-        { name: 'Power BI / Tableau', level: 0 },
-        { name: 'Excel (Advanced)', level: 0 },
-        { name: 'Python (pandas)', level: 0 },
+        { name: 'SQL', level: 88 },
+        { name: 'Power BI', level: 88 },
+        { name: 'Excel (Advanced)', level: 90 },
+        { name: 'Data Mapping & Schema Docs', level: 88 },
+        { name: 'Source-to-Target Validation', level: 90 },
+        { name: 'Reconciliation & Root-Cause Analysis', level: 88 },
       ],
     },
     {
-      group: 'Delivery & Tools',
+      group: 'Governance & Data Quality',
       items: [
-        { name: 'Jira / Confluence', level: 0 },
-        { name: 'Agile / Scrum', level: 0 },
-        { name: 'UAT & Test Planning', level: 0 },
-        { name: 'Stakeholder Management', level: 0 },
+        { name: 'Data Quality Controls', level: 88 },
+        { name: 'Data Privacy, Consent & Compliance', level: 85 },
+        { name: 'Data Lineage', level: 82 },
+        { name: 'Audience & Segmentation Logic', level: 85 },
+        { name: 'Customer Data Platforms (CDP)', level: 78 },
+      ],
+    },
+    {
+      group: 'Testing & Delivery',
+      items: [
+        { name: 'UAT & Test Case Development', level: 92 },
+        { name: 'Defect Tracking', level: 90 },
+        { name: 'Integration & A/B Testing', level: 80 },
+        { name: 'Jira & Confluence', level: 92 },
+        { name: 'Measurement Frameworks', level: 82 },
       ],
     },
   ],
 
-  /** Labels that orbit inside the draggable 3D skill sphere. 18-30 works best. */
+  /** Short labels for the draggable 3D sphere. */
   skillCloud: [
-    'SQL', 'Power BI', 'Tableau', 'Excel', 'Python', 'Jira', 'Confluence',
-    'BPMN', 'User Stories', 'BRD', 'FRD', 'UAT', 'Agile', 'Scrum', 'Kanban',
-    'Stakeholder Mgmt', 'Data Modeling', 'Wireframing', 'A/B Testing',
-    'KPI Design', 'Gap Analysis', 'Process Mapping', 'Figma', 'Salesforce',
+    'SQL', 'Power BI', 'Excel', 'Jira', 'Confluence', 'CDP',
+    'User Stories', 'Acceptance Criteria', 'Functional Specs', 'Process Flows',
+    'Business Rules', 'Data Mapping', 'Source-to-Target', 'Data Lineage',
+    'Data Quality', 'Data Privacy', 'Consent', 'Segmentation', 'Personas',
+    'Journey Maps', 'KPI Definition', 'UAT', 'Defect Tracking', 'A/B Testing',
+    'Reconciliation', 'Root-Cause Analysis', 'Backlog', 'Governance',
   ],
 
+  /** Quantified outcomes pulled from the roles above, for quick scanning. */
   projects: [
     {
-      name: 'TODO — Project name',
-      blurb: 'TODO — the problem and what you built or changed.',
-      impact: 'TODO — the quantified outcome.',
-      tags: ['TODO', 'TODO'],
+      name: 'Consumer Data Platform — 50+ Conditions',
+      blurb:
+        'Owned requirements and functional specs end to end, including user personas and journey maps that drove the personalization and segmentation logic.',
+      impact: 'Improved segmentation accuracy and customer engagement over successive releases.',
+      tags: ['Requirements', 'Segmentation', 'Journey Maps', 'Backlog'],
+      link: 'https://bodywellnessai.com',
+    },
+    {
+      name: 'Leadership Reporting Suite',
+      blurb:
+        'Built 8 Power BI dashboards on SQL and data extracts, giving leadership a real-time view of delivery and performance.',
+      impact: 'Became the basis for reconciliation and business sign-off.',
+      tags: ['SQL', 'Power BI', 'Reconciliation'],
+      link: '',
+    },
+    {
+      name: 'Regulated UAT & Governance Practice',
+      blurb:
+        'Led UAT end to end — test case development, execution, defect tracking — plus production validation, and documented the governance artifacts behind it in Jira and Confluence.',
+      impact: 'Defect-free go-lives across 7+ deployments; process improvements raised efficiency 20%.',
+      tags: ['UAT', 'Defect Tracking', 'Data Governance', 'Confluence'],
       link: '',
     },
   ],
 
   education: [
     {
-      degree: 'TODO — Degree',
-      school: 'TODO — University',
-      location: 'TODO — City',
-      start: 'YYYY',
-      end: 'YYYY',
-      detail: 'TODO — GPA, honours, or relevant coursework.',
+      degree: 'B.Eng, Information Technology',
+      school: 'Gujarat Technological University',
+      location: '',
+      start: '2018',
+      end: '2022',
+      detail: '',
     },
   ],
 
   certifications: [
-    { name: 'TODO — Certification', issuer: 'TODO — Issuer', year: 'YYYY', link: '' },
+    { name: 'Business Analysis & Process Management', issuer: 'Coursera', year: '', link: '' },
+    { name: 'Intro to SQL', issuer: 'University of Michigan / Coursera', year: '', link: '' },
+    { name: 'Agile Project Management', issuer: 'HP LIFE', year: '', link: '' },
+    { name: 'AI Fluency: Framework and Foundations', issuer: 'Anthropic Academy', year: '', link: '' },
   ],
 
-  /** Optional. Leave the array empty to hide the section entirely. */
+  awards: [{ name: 'Employee of the Month', issuer: 'Sarjen Systems', year: '' }],
+
   testimonials: [],
 };
