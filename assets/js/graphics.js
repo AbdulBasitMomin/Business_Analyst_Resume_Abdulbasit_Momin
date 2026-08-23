@@ -15,7 +15,7 @@ import { resume } from './data.js';
 import { capabilities, CATEGORIES } from './evidence.js';
 
 /** Blue sequential steps 600 -> 200, used low-to-high on the dark surface. */
-const RAMP = ['#184f95', '#256abf', '#3987e5', '#6da7ec', '#9ec5f4'];
+const RAMP = ['#184f95', '#256abf', '#5590d8', '#6da7ec', '#9ec5f4'];
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june',
   'july', 'august', 'september', 'october', 'november', 'december'];

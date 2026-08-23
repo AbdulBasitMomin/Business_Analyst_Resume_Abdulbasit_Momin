@@ -75,9 +75,17 @@ it. Checked with a palette validator rather than judged by eye.
   dashboards, deployments); putting them on one axis would be a dual-scale
   chart, which is the classic charting mistake.
 
-The theme is a **material, not a palette**. The accent and violet are slots 1
-and 7 of that same validated order, so repainting them would invalidate every
-chart at once. What carries the look is surface: an elevation ladder, a 1px
+The neutrals are **graphite**, near-neutral with only a faint cool cast rather
+than a saturated navy. On large areas low chroma reads as considered and high
+chroma reads as decorated, which is most of the distance between a
+professional dark interface and a themed one. The accent is a steel azure held
+back from the brighter blue it replaced, and it is the same colour the charts
+use for series 1, so the page carries one blue rather than two. Swapping it
+meant re-running the full gate: the two series clear all-pairs CVD ΔE 24.6 and
+normal-vision 28.6 against the new surface, and the sequential ramp still
+passes monotone lightness, step gaps and light-end contrast.
+
+Beyond hue, what carries the look is surface: an elevation ladder, a 1px
 catch of light on each card's top edge, three fixed ambient sources, and cards
 that hold a real position in space. Contrast is measured from the *composited*
 pixel behind each text run rather than from the token values, because the card

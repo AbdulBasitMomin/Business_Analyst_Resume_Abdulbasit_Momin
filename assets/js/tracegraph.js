@@ -35,7 +35,7 @@ import { CATEGORIES } from './evidence.js';
  * encoding excuses. Blue against orange measures 26.8 / 31.8.
  */
 const COL = {
-  bullet: 0x3987e5,   // an achievement from the resume
+  bullet: 0x5590d8,   // an achievement from the resume
   cap: 0xd95926,      // a capability it evidences
   gap: 0xd9a227,      // a capability nothing evidences (status, not a series)
   dim: 0x2a3446,

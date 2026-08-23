@@ -17,7 +17,7 @@
  */
 import * as THREE from 'three';
 
-const BLUE = 0x3987e5;
+const BLUE = 0x5590d8;
 const VIOLET = 0x9085e9;
 const PALE = 0x93a8c6;
 
