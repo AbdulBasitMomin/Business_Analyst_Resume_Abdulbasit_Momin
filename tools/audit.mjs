@@ -187,7 +187,61 @@ async function run(label, url, viewport, isMobile) {
     check(`${P} palette closes and acts`, await page.evaluate(
       () => document.getElementById('palette').hidden
         && !!document.querySelector('.ev-chip.is-on')));
+    // Each kind of palette result must actually take you somewhere, activated
+    // the way a reader does it: by clicking the row. Capability rows used to
+    // close the palette and leave the page exactly where it was, because
+    // selecting a chip rebuilds the grid and the detached element was the one
+    // being scrolled to. Section rows landed their heading under the sticky
+    // nav, which looks identical to nothing having happened.
+    const settle = () => page.evaluate(() => new Promise((res) => {
+      let last = -1, still = 0;
+      const tick = () => {
+        const y = Math.round(window.scrollY);
+        still = y === last ? still + 1 : 0;
+        last = y;
+        if (still > 20) return res(y);
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }));
+
+    for (const [query, kind] of [['lineage', 'Capability'], ['Regulated', 'Project'], ['Education', 'Section']]) {
+      // Start from nothing selected. An earlier check leaves a chip active,
+      // and an already-active chip skips the click that rebuilds the grid --
+      // which is the exact path that was broken, so testing it selected
+      // passes on broken code.
+      await page.evaluate(() => {
+        const on = document.querySelector('.ev-chip.is-on');
+        if (on) on.click();
+      });
+      await page.waitForTimeout(150);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await settle();
+      await page.click('#palette-open');
+      await page.waitForTimeout(200);
+      await page.fill('#palette-input', query);
+      await page.waitForTimeout(200);
+      const row = await page.evaluate(() => {
+        const li = document.querySelector('#palette-list li');
+        return li ? li.textContent.replace(/\s+/g, ' ').trim() : null;
+      });
+      await page.click('#palette-list li');
+      const y = await settle();
+      const landed = await page.evaluate(() => {
+        const navH = document.querySelector('.nav').getBoundingClientRect().height;
+        // Something meaningful must be visible below the nav, not behind it.
+        return [...document.querySelectorAll('.section-title, .proj-title, .ev-chip.is-on')]
+          .some((n) => {
+            const r = n.getBoundingClientRect();
+            return r.top >= navH && r.top < window.innerHeight * 0.8
+              && Number(getComputedStyle(n).opacity) > 0.5;
+          });
+      });
+      check(`${P} palette ${kind} row navigates`, y > 0 && landed,
+        JSON.stringify({ row: (row || '').slice(0, 30), y, landed }));
+    }
   }
+
   // A closed overlay must not sit over the page swallowing clicks.
   check(`${P} closed overlays do not block`, await page.evaluate(() => {
     const p = document.getElementById('palette');

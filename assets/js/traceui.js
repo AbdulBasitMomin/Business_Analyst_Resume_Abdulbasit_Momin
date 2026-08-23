@@ -111,7 +111,11 @@ export function activateCapability(name) {
   const chip = chipFor(name);
   if (!chip) return;
   if (!chip.classList.contains('is-on')) chip.click();
-  chip.scrollIntoView({ block: 'center' });
+  // Selecting a chip rebuilds the whole grid, so the element just clicked is
+  // detached and scrolling it is a silent no-op -- which is why choosing a
+  // capability from the search palette left the page where it was. Scroll the
+  // replacement, or the section if the rebuild dropped it from the filter.
+  (chipFor(name) || el('skills'))?.scrollIntoView({ block: 'center' });
 }
 
 /** The reverse direction: from an achievement to the capabilities it proves. */

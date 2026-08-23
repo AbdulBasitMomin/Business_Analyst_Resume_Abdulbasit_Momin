@@ -70,7 +70,16 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* The nav is sticky and about 65px tall, so any jump that lands an element
+     at the top of the viewport lands it underneath the nav. Set on the
+     scrollport, so it applies to in-page anchors and scrollIntoView alike:
+     picking "Education" from the search palette used to leave its heading
+     completely hidden behind the nav, which read as nothing having happened. */
+  scroll-padding-top: 5.5rem;
+}
 
 body {
   margin: 0;
@@ -420,7 +429,7 @@ dl, dd, dt { margin: 0; }
 .lifecycle-rail a.is-active { background: var(--accent-soft); border-color: rgba(85, 144, 216, 0.55); color: var(--ink); }
 .lifecycle-rail a.is-active span { color: var(--accent); }
 
-.stage { padding: 1.6rem 0; border-bottom: 1px solid var(--line); scroll-margin-top: 5rem; }
+.stage { padding: 1.6rem 0; border-bottom: 1px solid var(--line); }
 .stage:last-of-type { border-bottom: 0; }
 .stage-head { display: flex; align-items: baseline; gap: 0.6rem; font-size: 1.05rem; margin-bottom: 0.5rem; }
 .stage-num { font-family: var(--mono); font-size: 0.74rem; color: var(--accent); }
