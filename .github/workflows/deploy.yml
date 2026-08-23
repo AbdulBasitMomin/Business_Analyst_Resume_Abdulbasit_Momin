@@ -28,6 +28,14 @@ jobs:
         with:
           node-version: '22'
 
+      # Requires Pages to be enabled once by hand, with Source set to
+      # "GitHub Actions" (Settings -> Pages). The workflow GITHUB_TOKEN cannot
+      # create the Pages site itself -- that needs repo admin rights.
+      # Runs before the markup is stamped, because its base_url is the one
+      # thing here that knows where this site is actually published.
+      - uses: actions/configure-pages@v5
+        id: pages
+
       # The site renders its sections from data.js at runtime, so a crawler
       # would otherwise index an empty shell. Prerendering bakes the resume
       # text into index.html. If it fails the deploy still goes ahead with the
@@ -43,6 +51,25 @@ jobs:
           node tools/prerender.mjs http://127.0.0.1:8123/ dist/index.html
           cp dist/index.html index.html
 
+      # The canonical URL, og:url, JSON-LD, sitemap and robots all name the
+      # site's own address. Hardcoding it means a repo rename silently points
+      # every one of them at a 404, which is worse for SEO than having none.
+      # base_url is whatever Pages is really serving, so this self-corrects.
+      - name: Stamp the published URL into the markup
+        if: steps.pages.outputs.base_url != ''
+        env:
+          BASE: ${{ steps.pages.outputs.base_url }}
+        run: |
+          set -eu
+          SITE="${BASE%/}/"
+          echo "Publishing at $SITE"
+          # Any absolute github.io URL in these files becomes the real one.
+          for f in index.html sitemap.xml robots.txt; do
+            [ -f "$f" ] || continue
+            perl -pi -e 's{https://[a-z0-9.-]+\.github\.io/[^"<\s]*/}{$ENV{SITE}}gi' "$f"
+          done
+          grep -o 'https://[a-z0-9.-]*\.github\.io[^"<]*' index.html | sort -u
+
       - name: Report prerender outcome
         run: |
           if [ "${{ steps.prerender.outcome }}" = "success" ]; then
@@ -55,10 +82,6 @@ jobs:
       - name: Prune artefacts from the upload
         run: rm -rf node_modules dist tools .github
 
-      # Requires Pages to be enabled once by hand, with Source set to
-      # "GitHub Actions" (Settings -> Pages). The workflow GITHUB_TOKEN cannot
-      # create the Pages site itself -- that needs repo admin rights.
-      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .

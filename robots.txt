@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://abdulbasitmomin.github.io/Business_Analyst_Resume_Abdulbasit_Momin/sitemap.xml
+Sitemap: https://abdulbasitmomin.github.io/ai-project/sitemap.xml

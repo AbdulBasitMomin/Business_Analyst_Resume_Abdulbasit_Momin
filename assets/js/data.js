@@ -20,7 +20,7 @@ export const resume = {
     // The live version of this resume. Printed on the PDF, because the paper
     // copy drops the project breakdowns and the evidence explorer and a
     // reader should be able to get to them.
-    portfolio: 'abdulbasitmomin.github.io/Business_Analyst_Resume_Abdulbasit_Momin',
+    portfolio: 'abdulbasitmomin.github.io/ai-project',
     github: 'https://github.com/AbdulBasitMomin',
     resumePdf: './assets/Abdulbasit-Momin-Business-Analyst.pdf',
     availability: 'Open to Business Analyst roles in Toronto, ON or remote',
