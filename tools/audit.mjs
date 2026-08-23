@@ -231,6 +231,104 @@ async function run(label, url, viewport, isMobile) {
     return s.pointerEvents === 'none' && Number(s.zIndex) <= 0;
   }));
 
+  // --- theme material and 3D cards ---
+  const theme = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('.card3d')];
+    const lit = cards.filter((n) => {
+      const cs = getComputedStyle(n);
+      return cs.boxShadow.includes('inset') && cs.backgroundImage.includes('gradient');
+    });
+    return {
+      cards: cards.length,
+      lit: lit.length,
+      ambient: getComputedStyle(document.body, '::before').backgroundImage.includes('gradient'),
+      stray: cards.filter((n) => ['--rx', '--ry'].some((v) => n.style.getPropertyValue(v))).length,
+    };
+  });
+  check(`${P} cards carry the lit material`, theme.cards >= 12 && theme.lit === theme.cards,
+    JSON.stringify({ cards: theme.cards, lit: theme.lit }));
+  check(`${P} ambient light layer present`, theme.ambient);
+  // Nothing should be left mid-tilt when no pointer is on it.
+  check(`${P} no card holds stale tilt state`, theme.stray === 0, String(theme.stray));
+
+  if (!isMobile) {
+    // A tilt has to happen, release cleanly, and never hold two cards at once.
+    const card = await page.$('.outcome');
+    await card.scrollIntoViewIfNeeded();
+    // The sheet sets scroll-behavior: smooth, so the box read straight after a
+    // scrollIntoView is a coordinate the card has already left. Settle first,
+    // then measure, then move.
+    await page.waitForTimeout(700);
+    const r = await card.boundingBox();
+    await page.mouse.move(r.x + r.width * 0.25, r.y + r.height * 0.3);
+    await page.waitForTimeout(220);
+    const on = await page.evaluate(() => {
+      const n = document.querySelector('.outcome');
+      return {
+        tilting: n.classList.contains('is-tilting'),
+        rx: n.style.getPropertyValue('--rx'),
+        count: document.querySelectorAll('.is-tilting').length,
+        transformed: getComputedStyle(n).transform !== 'none',
+      };
+    });
+    check(`${P} card tilts towards the pointer`,
+      on.tilting && on.transformed && parseFloat(on.rx) > 0 && on.count === 1, JSON.stringify(on));
+    await page.mouse.move(2, 2);
+    await page.waitForTimeout(400);
+    check(`${P} card releases when the pointer leaves`, await page.evaluate(
+      () => document.querySelectorAll('.is-tilting').length === 0
+        && !document.querySelector('.outcome').style.getPropertyValue('--rx')));
+  }
+
+  // --- every text style clears WCAG AA against what is actually behind it ---
+  // Sampled from the composited stack, not from the token values: the card
+  // faces are translucent over a gradient, so a token's nominal contrast is
+  // not the contrast a reader gets. Raising the card opacity once lightened
+  // seven muted-ink styles to 4.48:1.
+  const lowContrast = await page.evaluate(() => {
+    const lum = ([r, g, b]) => {
+      const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const parse = (v) => (v.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+    const behind = (n) => {
+      const layers = [];
+      for (let el = n; el && el !== document.documentElement; el = el.parentElement) {
+        const m = getComputedStyle(el).backgroundColor.match(/rgba?\(([^)]+)\)/);
+        if (!m) continue;
+        const parts = m[1].split(',').map(Number);
+        const a = parts.length > 3 ? parts[3] : 1;
+        if (a > 0.001) { layers.push({ c: parts.slice(0, 3), a }); if (a >= 0.999) break; }
+      }
+      let base = parse(getComputedStyle(document.body).backgroundColor);
+      for (let i = layers.length - 1; i >= 0; i--) {
+        base = base.map((v, k) => layers[i].c[k] * layers[i].a + v * (1 - layers[i].a));
+      }
+      return base;
+    };
+    const seen = new Set();
+    const bad = [];
+    for (const n of document.querySelectorAll('p, li, span, dt, dd, h1, h2, h3, a, button, figcaption')) {
+      if (n.children.length || n.textContent.trim().length < 3) continue;
+      const r = n.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      const cs = getComputedStyle(n);
+      const key = cs.color + '|' + cs.fontSize + '|' + (n.className || n.tagName);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const px = parseFloat(cs.fontSize);
+      const large = px >= 24 || (px >= 18.66 && Number(cs.fontWeight) >= 700);
+      const [hi, lo] = [lum(parse(cs.color)), lum(behind(n))].sort((a, b) => b - a);
+      const cr = (hi + 0.05) / (lo + 0.05);
+      if (cr < (large ? 3 : 4.5)) {
+        bad.push({ c: String(n.className || n.tagName).split(' ')[0].slice(0, 18), cr: +cr.toFixed(2) });
+      }
+    }
+    return bad;
+  });
+  check(`${P} all text clears WCAG AA on its real background`,
+    lowContrast.length === 0, JSON.stringify(lowContrast.slice(0, 4)));
+
   // --- nothing a reader must read may fall under 11px ---
   const tiny = await page.evaluate(() => [...document.querySelectorAll('p, li, span, button, a, dt, dd')]
     .filter((n) => !n.children.length && n.textContent.trim().length > 1

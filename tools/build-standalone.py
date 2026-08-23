@@ -40,7 +40,7 @@ BASE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'index.html'
 MODULES = [
     'data.js', 'journey.js', 'evidence.js', 'assistant.js', 'graphics.js',
     'trace.js', 'tracegraph.js', 'traceui.js', 'ui.js', 'interactive.js',
-    'artifacts.js', 'backdrop.js', 'main.js',
+    'artifacts.js', 'cards3d.js', 'backdrop.js', 'main.js',
 ]
 
 IMPORT_RE = re.compile(

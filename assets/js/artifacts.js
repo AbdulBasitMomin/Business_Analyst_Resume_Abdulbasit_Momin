@@ -31,13 +31,16 @@ function makeKit() {
   });
 
   const kit = {
+    // Re-weighted when the theme gained ambient light: the room is brighter
+    // now, so the same alpha read stronger against the text than it did
+    // against a flat near-black page.
     mat: {
-      edge: line(PALE, 0.17),
-      edgeBlue: line(BLUE, 0.2),
-      edgeViolet: line(VIOLET, 0.19),
-      glass: fill(BLUE, 0.035),
-      paper: fill(PALE, 0.02),
-      node: fill(VIOLET, 0.16),
+      edge: line(PALE, 0.115),
+      edgeBlue: line(BLUE, 0.135),
+      edgeViolet: line(VIOLET, 0.13),
+      glass: fill(BLUE, 0.022),
+      paper: fill(PALE, 0.014),
+      node: fill(VIOLET, 0.11),
     },
     geo: {
       // A monitor: screen box, stand, and the plane that catches the glow.

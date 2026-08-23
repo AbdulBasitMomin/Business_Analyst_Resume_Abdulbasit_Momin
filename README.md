@@ -56,22 +56,52 @@ The 3D is meant to *say something about business analysis*, not just decorate.
 
 Hues come from a documented categorical order and are taken **contiguously**:
 the ordering *is* the colour-vision-safety mechanism, so skipping a slot breaks
-it. Checked with a palette validator rather than judged by eye:
+it. Checked with a palette validator rather than judged by eye.
 
-- The traceability layers and process stages are **chains** (layer N only ever
-  sits beside N±1), so they use the adjacent pairlist: five contiguous slots
-  pass every gate.
-- The skill graph's clusters float freely in 3D, so any two can end up side by
-  side, the all-pairs case, where four hues **fail** (yellow vs orange at
-  normal-vision ΔE 10.6, under the 15 floor). So the graph uses **one** hue;
-  identity there comes from each cluster's named hub and its position, which is
-  stronger than colour anyway.
-- Skill bars are **meters**, not charts: a single ratio against a limit, so
-  track and fill come from one hue ramp. A two-hue gradient would imply a
-  second variable that isn't there.
-- The hero KPIs stay **stat tiles**. They're heterogeneous units (years,
-  dashboards, %, deployments); putting them on one axis would be a dual-scale
+- The **traceability graph** carries two series plus a status: achievements on
+  slot 1 (blue), capabilities on slot 2 (orange), and the reserved warning
+  amber for a capability with nothing behind it. It first shipped with blue and
+  violet for the two series, which measure ΔE 1.9 under protanopia and 9.8
+  under normal vision against a floor of 15: a reader with full colour vision
+  could barely tell the two node kinds apart. Blue against orange measures 26.8
+  and 31.8. Position and node size carried the distinction either way, but the
+  normal-vision floor is not something secondary encoding excuses.
+- The **coverage matrix** is sequential, so it is one hue stepped light to
+  dark, revalidated against the current surface (monotone lightness, visible
+  step gaps, the pale end still clearing the surface).
+- The **career timeline** is a single series, so it needs no legend; the title
+  names it.
+- The **hero KPIs** stay stat tiles. They are heterogeneous units (years,
+  dashboards, deployments); putting them on one axis would be a dual-scale
   chart, which is the classic charting mistake.
+
+The theme is a **material, not a palette**. The accent and violet are slots 1
+and 7 of that same validated order, so repainting them would invalidate every
+chart at once. What carries the look is surface: an elevation ladder, a 1px
+catch of light on each card's top edge, three fixed ambient sources, and cards
+that hold a real position in space. Contrast is measured from the *composited*
+pixel behind each text run rather than from the token values, because the card
+faces are translucent over a gradient and a token's nominal contrast is not
+what a reader gets. Raising the card opacity once dropped seven muted-ink
+styles to 4.48:1; the audit now measures all of it on every run.
+
+### 3D cards
+
+A card turns towards the pointer, a specular highlight tracks across its face,
+and the elements on the face sit at their own depths, so the parallax is real
+rather than a flat image being skewed. Three constraints shape it:
+
+- **Rotation is capped at 5.5°.** Past roughly seven the type on the face reads
+  as distorted, and a transform costs subpixel antialiasing while it is
+  applied. Nothing is transformed at rest.
+- **Pointers only.** There is no hover on a touch screen, so a tilt there
+  either never fires or fires on a tap and sticks. Phones get the flat card,
+  which is the same card.
+- **One listener, one frame.** A `pointermove` handler per card is a dozen
+  handlers competing for the same frame. `cards3d.js` reads the pointer once,
+  coalesces to `requestAnimationFrame` (600 events collapse to ~30 writes), and
+  releases on leave, blur and scroll so a card is never left tilted at an angle
+  that no longer points anywhere.
 
 ## Running locally
 

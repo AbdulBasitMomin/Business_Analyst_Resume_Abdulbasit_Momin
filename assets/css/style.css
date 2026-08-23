@@ -1,23 +1,58 @@
 /* =========================================================================
-   Abdulbasit Momin — Business Analyst
-   A resume first. Dark, restrained, document-like: hairline rules, one
-   accent, generous line length. The 3D is atmosphere, not the subject.
+   Abdulbasit Momin - Business Analyst
+   A resume first. Dark, restrained, document-like: generous line length, one
+   accent, and depth carried by light rather than by decoration.
+
+   The theme is a MATERIAL, not a colour scheme. Hues are unchanged and
+   deliberately so: the accent and violet are slot 1 and slot 7 of the
+   validated categorical palette the charts draw from, so repainting them
+   would invalidate the timeline, the coverage matrix and the trace graph in
+   one go. What changed is the surface -- an elevation ladder, a top-edge
+   catch of light, ambient light in the room, and cards that hold a real
+   position in space. That is what separates an expensive dark interface from
+   a black rectangle with a hairline around it.
    ========================================================================= */
 
 :root {
-  --bg: #07090e;
-  --bg-2: #0b0e15;
-  --panel: rgba(19, 24, 34, 0.55);
-  --line: rgba(150, 172, 205, 0.14);
-  --line-2: rgba(150, 172, 205, 0.26);
+  /* Base. Blue-black rather than neutral, so the accent reads as part of the
+     same light instead of paint laid on top of it. */
+  --bg: #05070d;
+  --bg-2: #090d16;
 
-  --ink: #f2f5fa;
-  --ink-2: #aab7cc;
-  --ink-3: #71809a;
+  /* Elevation ladder. Real surfaces, so stacked panels do not accumulate haze
+     the way repeated translucency does. */
+  /* Translucent enough that the ambient light tints the face, opaque enough
+     that the backdrop artefacts do not read through it. At 0.72 a wireframe
+     monitor was visible inside a stat tile, behind the number. */
+  --panel: rgba(22, 29, 44, 0.93);
+  --panel-2: rgba(30, 39, 58, 0.95);
+  --panel-solid: #121826;
+
+  --line: rgba(155, 178, 214, 0.13);
+  --line-2: rgba(155, 178, 214, 0.24);
+  /* The 1px catch of light along a card's upper border. */
+  --edge: rgba(255, 255, 255, 0.06);
+  --edge-strong: rgba(255, 255, 255, 0.11);
+
+  /* Two shadow steps and one accent lift. Long, soft and offset downward:
+     a tight even shadow reads as a sticker, not as height. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 26px -14px rgba(0, 0, 0, 0.8);
+  --shadow-2: 0 2px 5px rgba(0, 0, 0, 0.5), 0 24px 56px -22px rgba(0, 0, 0, 0.9);
+  --shadow-accent: 0 22px 54px -22px rgba(57, 135, 229, 0.55);
+
+  --ink: #f4f7fc;
+  --ink-2: #adbacf;
+  /* Lifted when the card faces became more opaque: the faces got lighter, and
+     the old muted ink measured 4.48:1 on them against the 4.5 requirement. */
+  --ink-3: #808fa9;
 
   --accent: #3987e5;
   --accent-soft: rgba(57, 135, 229, 0.13);
+  --accent-line: rgba(57, 135, 229, 0.42);
   --violet: #9085e9;
+  /* Categorical slot 2. Used only where a data mark must be told apart from
+     the accent; see the note in tracegraph.js. */
+  --series-2: #d95926;
   --success: #4ec98a;
   --warn: #d9a227;
 
@@ -41,7 +76,18 @@ body {
   font-weight: 300;
   line-height: 1.65;
   overflow-x: hidden;
-  background-image: radial-gradient(1000px 640px at 78% 2%, rgba(57, 135, 229, 0.07), transparent 62%);
+}
+
+/* Ambient light. Three soft sources, fixed rather than scrolling, so the room
+   is lit from consistent directions and the gradients paint once. Kept under
+   11% alpha: any stronger and the body copy starts sitting in coloured haze. */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1150px 720px at 84% -8%, rgba(57, 135, 229, 0.11), transparent 62%),
+    radial-gradient(920px 640px at 4% 30%, rgba(144, 133, 233, 0.08), transparent 64%),
+    radial-gradient(1250px 820px at 62% 106%, rgba(57, 135, 229, 0.06), transparent 66%);
 }
 
 #bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
@@ -536,7 +582,7 @@ dl, dd, dt { margin: 0; }
 }
 .tg-label strong { display: block; font-size: 0.79rem; font-weight: 400; color: var(--ink); }
 .tg-label span { display: block; margin-top: 0.15rem; font-size: 0.7rem; color: var(--ink-3); }
-.tg-label--cap { border-left-color: var(--violet); }
+.tg-label--cap { border-left-color: var(--series-2); }
 .tg-label--gap { border-left-color: var(--warn); }
 
 .tg-legend {
@@ -546,7 +592,7 @@ dl, dd, dt { margin: 0; }
 .tg-legend li { display: flex; align-items: center; gap: 0.42rem; }
 .tg-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .tg-dot--bullet { background: var(--accent); }
-.tg-dot--cap { background: var(--violet); }
+.tg-dot--cap { background: var(--series-2); }
 .tg-dot--gap { background: var(--warn); }
 .tg-hint { margin: 0.45rem 0 0; font-size: 0.72rem; color: var(--ink-3); }
 
@@ -733,13 +779,115 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
 .role:first-child::before { background: var(--accent); }
 .role.is-in::before { transform: scaleY(1); }
 
-/* --- hover depth on the cards worth touching --- */
+/* ==========================================================================
+   Card material
+   One surface treatment, shared by everything that behaves like a card. The
+   gradient is the light falling on the face; the inset highlight is the top
+   edge catching it; the shadow puts the card above the page rather than
+   printed on it.
+   ========================================================================== */
 
-.proj, .mf-step, .ev-detail, .ai-block {
-  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease), background 0.3s;
+.proj, .outcome, .ask-card, .sl-panel, .ev-detail, .ai-block, .rm-inner,
+.mf-step, .stat, .trace-chain, .tg-stage, .stake-panel {
+  background-image: linear-gradient(180deg, var(--edge), rgba(255, 255, 255, 0) 42%);
+  box-shadow: inset 0 1px 0 var(--edge-strong), var(--shadow-1);
 }
-.proj:hover { transform: translateY(-2px); border-color: rgba(57, 135, 229, 0.35); }
-.mf-step:hover { background: #131926; }
+
+/* The stat tiles were bare numbers on the page. As tiles they read as a
+   readout, which is what they are, and they gain a face for the light. */
+.stat {
+  padding: 0.72rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background-color: var(--panel);
+}
+/* The tile padding costs about 30px of measure, so these labels now wrap.
+   Balanced rather than ragged: a two-line label split evenly reads as a
+   caption, split 4:1 it reads as a mistake. */
+.stat-label, .stat-source { text-wrap: balance; }
+.mf-step { border: 1px solid var(--line); border-radius: 10px; }
+
+/* ==========================================================================
+   3D cards
+   A card tracks the pointer: it turns towards it, a specular highlight
+   follows across the face, and the shadow lengthens away from the light. The
+   inner elements sit at their own depths, so the face has real parallax
+   rather than a flat image being skewed.
+
+   Rotation is capped low on purpose. Past about seven degrees the text on the
+   face starts to read as distorted, and on a resume the text always wins.
+   ========================================================================== */
+
+.card3d {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  /* Set by cards3d.js while the pointer is over the card. */
+  --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
+  transition: transform 0.55s var(--ease), box-shadow 0.55s var(--ease),
+              border-color 0.35s var(--ease);
+}
+
+/* While tracking, the transition is off: a transition here would lag the
+   pointer by its own duration and feel like drag rather than contact. */
+.card3d.is-tilting {
+  transition: box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(6px);
+  border-color: var(--accent-line);
+  box-shadow: inset 0 1px 0 var(--edge-strong), var(--shadow-2), var(--shadow-accent);
+  z-index: 3;
+}
+
+/* Specular highlight, tracking the pointer across the face. */
+.card3d::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx) var(--my),
+    rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.03) 45%, transparent 70%);
+  opacity: 0; transition: opacity 0.35s var(--ease);
+}
+.card3d.is-tilting::after { opacity: 1; }
+
+/* A brighter edge on the side the light is coming from. */
+.card3d::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(260px circle at var(--mx) var(--my),
+    rgba(57, 135, 229, 0.22), transparent 72%);
+  opacity: 0; transition: opacity 0.4s var(--ease);
+  mix-blend-mode: screen;
+}
+.card3d.is-tilting::before { opacity: 1; }
+
+/* Depth on the face. Only while tilting, so text is rendered flat at rest:
+   a permanent Z translation costs subpixel antialiasing for nothing. */
+.card3d .proj-title, .card3d .outcome-metric, .card3d .stat-value,
+.card3d .mf-title, .card3d .ask-title {
+  transition: transform 0.5s var(--ease);
+}
+.card3d.is-tilting .proj-title,
+.card3d.is-tilting .outcome-metric,
+.card3d.is-tilting .stat-value,
+.card3d.is-tilting .mf-title,
+.card3d.is-tilting .ask-title { transform: translateZ(26px); }
+.card3d.is-tilting .proj-org, .card3d.is-tilting .proj-dates,
+.card3d.is-tilting .outcome-unit, .card3d.is-tilting .stat-label {
+  transform: translateZ(14px);
+}
+.card3d .proj-org, .card3d .proj-dates, .card3d .outcome-unit, .card3d .stat-label {
+  transition: transform 0.5s var(--ease);
+}
+
+/* --- hover depth on the cards that are not tilt targets --- */
+
+.mf-step, .ev-detail, .ai-block, .sl-panel {
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease),
+              background 0.3s, box-shadow 0.3s var(--ease);
+}
+.mf-step:hover, .ai-block:hover, .sl-panel:hover {
+  border-color: var(--accent-line);
+  box-shadow: inset 0 1px 0 var(--edge-strong), var(--shadow-2);
+}
 .ev-chip { transition: transform 0.2s var(--ease), background 0.2s, border-color 0.2s, color 0.2s; }
 .ev-chip:hover { transform: translateY(-1px); }
 .btn { will-change: transform; }
@@ -891,6 +1039,10 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
   .role-list li, .proj-par dd, .summary-body { font-size: 0.88rem; }
   .outcome-metric { font-size: 1.35rem; }
   .ev-chip { font-size: 0.76rem; padding: 0.32rem 0.55rem; }
+  /* The tile faces cost real height at this width; the surface still reads
+     with less of it. */
+  .stat { padding: 0.55rem 0.65rem; }
+  .outcome { padding: 0.8rem 0.9rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -941,6 +1093,21 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
 
   @page { margin: 13mm; }
   html, body { background: #fff !important; color: #000; font-size: 10pt; line-height: 1.34; }
+
+  /* The screen theme is a lit dark room. On paper none of it survives
+     usefully: the ambient gradients tint the page, and a dark elevation
+     shadow prints as a grey smear around every card. */
+  body::before { display: none !important; }
+  .card3d, .proj, .outcome, .ask-card, .sl-panel, .ev-detail, .ai-block,
+  .rm-inner, .mf-step, .stat, .trace-chain, .tg-stage, .stake-panel {
+    /* `background`, not `background-image`: the tile surfaces are a colour as
+       well as a gradient, and the colour alone printed as a grey box. */
+    background: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  .card3d::before, .card3d::after { display: none !important; }
+  .stat { padding: 0 !important; border: 0 !important; border-radius: 0 !important; }
 
   .masthead {
     display: block; padding: 0 0 0.5rem; border-bottom: 1px solid #999;

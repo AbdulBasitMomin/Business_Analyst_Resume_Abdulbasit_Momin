@@ -8,6 +8,7 @@
 import { renderAll, initReveal, initCounters, initMagnetic, initScrollSync } from './ui.js';
 import { initRecruiterMode, initEvidence, initStoryLab } from './interactive.js';
 import { initTrace, initTraceGraph } from './traceui.js';
+import { initCards3D } from './cards3d.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -20,6 +21,8 @@ initEvidence();
 initStoryLab();
 // After the evidence chips and bullets exist, so the matrix can bind to them.
 initTrace();
+// After every card is rendered, since this binds to the cards themselves.
+initCards3D({ reducedMotion });
 
 let backdrop = null;
 

@@ -22,10 +22,22 @@
 import * as THREE from 'three';
 import { CATEGORIES } from './evidence.js';
 
+/**
+ * Node colours. Two series plus a status, taken contiguously from the
+ * validated categorical order (slot 1 blue, slot 2 orange) with the reserved
+ * warning amber for the gap state.
+ *
+ * The first version used blue and violet for the two series. Those measure
+ * ΔE 1.9 under protanopia and 9.8 under normal vision, against a floor of 15:
+ * a reader with full colour vision could barely tell an achievement node from
+ * a capability node, and a colourblind reader could not at all. Position and
+ * size carried it, but the normal-vision floor is not something secondary
+ * encoding excuses. Blue against orange measures 26.8 / 31.8.
+ */
 const COL = {
   bullet: 0x3987e5,   // an achievement from the resume
-  cap: 0x9085e9,      // a capability it evidences
-  gap: 0xd9a227,      // a capability nothing evidences
+  cap: 0xd95926,      // a capability it evidences
+  gap: 0xd9a227,      // a capability nothing evidences (status, not a series)
   dim: 0x2a3446,
 };
 
