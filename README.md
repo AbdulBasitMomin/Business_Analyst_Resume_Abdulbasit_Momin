@@ -111,6 +111,39 @@ rather than a flat image being skewed. Three constraints shape it:
   releases on leave, blur and scroll so a card is never left tilted at an angle
   that no longer points anywhere.
 
+## Two addresses, one codebase
+
+The resume answers on two URLs:
+
+| URL | Repository |
+| --- | --- |
+| `https://abdulbasitmomin.github.io/` | `abdulbasitmomin.github.io` |
+| `https://abdulbasitmomin.github.io/Business_Analyst_Resume_Abdulbasit_Momin/` | this one |
+
+The long one is already printed on a resume that has been sent out, so it
+cannot break. Renaming this repository to `abdulbasitmomin.github.io` would
+break it, because the rename turns a project site into a user site and the old
+path stops resolving.
+
+So both stay, and the second copy is **generated, never hand-edited**:
+`tools/build-user-site.mjs` writes `dist/user-site/`, rewriting everything that
+names the site's own address and rebuilding the PDF so the URL printed on paper
+matches the copy the reader came from. It carries the workflow and `tools/`, so
+the user site prerenders and stamps its own URLs on each push rather than
+decaying into a snapshot, and ships a prerendered `index.html` so it still
+serves complete markup under plain branch deployment.
+
+Three things that build gets wrong if written by hand, all of which it now
+guards:
+
+- `assets/js/data.js` carries the address printed on the PDF, so it has to be
+  rewritten *before* the PDF is built and restored afterwards, or this
+  repository's own copy ends up printing the other URL.
+- Copying `assets/` after that restore reinstates the wrong address at runtime
+  even though the prerendered markup is right.
+- The PDF must go to a scratch path, never over this repository's committed
+  copy.
+
 ## Running locally
 
 ES modules need a real HTTP origin. Opening `index.html` from the filesystem
@@ -136,6 +169,11 @@ python3 tools/build-standalone.py dist/index.html
 # 4. regenerate the downloadable resume PDF from the site's own print view
 node tools/build-resume-pdf.mjs http://localhost:8123/ \
   assets/Abdulbasit-Momin-Business-Analyst.pdf
+```
+
+```bash
+# 5. build the deployable bundle for the bare-domain user site
+node tools/build-user-site.mjs          # -> dist/user-site/
 ```
 
 Run step 4 after any content edit. The PDF used to be a separate export from a

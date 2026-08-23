@@ -48,7 +48,20 @@ await page.emulateMedia({ media: 'print' });
 await page.waitForTimeout(300);
 const text = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
 
+// The masthead prints the site's own address, and the paper copy is the one
+// place nothing downstream can correct it. Assert the printed URL is the one
+// this build was configured for.
+const portfolio = await page.evaluate(() => {
+  const m = [...document.querySelectorAll('.mast-contact a')]
+    .map((a) => a.getAttribute('href') || '')
+    .find((h) => /github\.io/.test(h));
+  return m || null;
+});
+
 const problems = [];
+if (portfolio && !text.includes(portfolio.replace(/^https?:\/\//, ''))) {
+  problems.push(`printed URL missing: ${portfolio}`);
+}
 if (/—/.test(text)) problems.push('em dash in printed copy');
 for (const want of ['AWS for SAP Cloud ERP Essentials', 'PMP', 'In progress', 'Abdulbasit Momin']) {
   if (!text.includes(want)) problems.push(`missing from print: ${want}`);
