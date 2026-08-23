@@ -39,7 +39,8 @@ BASE = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'index.html'
 # Order matters: a module's dependencies must be defined before it.
 MODULES = [
     'data.js', 'journey.js', 'evidence.js', 'assistant.js', 'graphics.js',
-    'trace.js', 'tracegraph.js', 'traceui.js', 'ui.js', 'interactive.js', 'backdrop.js', 'main.js',
+    'trace.js', 'tracegraph.js', 'traceui.js', 'ui.js', 'interactive.js',
+    'artifacts.js', 'backdrop.js', 'main.js',
 ]
 
 IMPORT_RE = re.compile(

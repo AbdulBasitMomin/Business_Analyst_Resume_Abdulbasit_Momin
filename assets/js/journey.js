@@ -106,7 +106,7 @@ export const storyLab = {
     { given: 'no application on record', when: 'the customer opens the status view', then: 'an empty state explains how to start one' },
   ],
   meta: [
-    { label: 'Priority', value: 'High — blocks the top support-contact reason' },
+    { label: 'Priority', value: 'High: blocks the top support-contact reason' },
     { label: 'Business value', value: 'Fewer status-chasing contacts; less manual handling' },
     { label: 'Dependencies', value: 'Status source of truth; notification service' },
     { label: 'Assumptions', value: 'Stage names are stable and customer-facing' },
@@ -160,7 +160,7 @@ export const pipeline = [
   { stage: 'Transformation', note: 'Validate the logic, not just the output row count.' },
   { stage: 'Data model', note: 'Definitions that survive being reported on.' },
   { stage: 'SQL', note: 'Query the model directly to test the requirement.' },
-  { stage: 'Power BI', note: 'Dashboards leadership can act on — 8 built at Sarjen Systems.' },
+  { stage: 'Power BI', note: 'Dashboards leadership can act on. 8 built at Sarjen Systems.' },
   { stage: 'Business insight', note: 'Reconciliation and business sign-off.' },
 ];
 
@@ -195,7 +195,7 @@ export const ai = {
   ],
   // Kept explicitly separate from the practices above: this is the analogy,
   // not a claim of delivered work.
-  transfer: 'The same discipline a BA already applies to requirements — define the criteria, test one variable, write down how it failed — is what makes model output reviewable.',
+  transfer: 'The same discipline a BA already applies to requirements (define the criteria, test one variable, write down how it failed) is what makes model output reviewable.',
 };
 
 /** Chapter 08 -- validation chain. All steps named in the resume. */
@@ -232,13 +232,13 @@ export const convergence = ['People', 'Process', 'Data', 'AI', 'Technology'];
  */
 export const outcomes = [
   { metric: '7+', unit: 'deployments',
-    what: 'Defect-free go-lives, with UAT led end to end — test case development, execution, defect tracking, plus production validation.',
+    what: 'Defect-free go-lives, with UAT led end to end: test case development, execution, defect tracking, plus production validation.',
     org: 'Sarjen Systems' },
   { metric: '20%', unit: 'efficiency gain',
     what: 'Training delivered and process improvements made alongside the governance artefacts they documented.',
     org: 'Sarjen Systems' },
   { metric: '8', unit: 'dashboards',
-    what: 'Power BI on SQL and data extracts, giving leadership a real-time view of delivery and performance — and the basis for reconciliation and business sign-off.',
+    what: 'Power BI on SQL and data extracts, giving leadership a real-time view of delivery and performance, and the basis for reconciliation and business sign-off.',
     org: 'Sarjen Systems' },
   { metric: '50+', unit: 'conditions',
     what: 'Requirements and functional specifications owned for a consumer data platform at that scope, personas and journey maps included.',

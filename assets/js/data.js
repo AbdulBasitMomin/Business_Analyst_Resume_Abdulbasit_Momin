@@ -11,15 +11,19 @@ export const resume = {
     name: 'Abdulbasit Momin',
     role: 'Business Analyst',
     tagline:
-      'I bridge business, data, and technology teams — turning ambiguous business needs into requirements, working software, and delivery you can audit.',
+      'I bridge business, data, and technology teams, turning ambiguous business needs into requirements, working software, and delivery you can audit.',
     location: 'Toronto, ON',
     email: 'basitmomin01@gmail.com',
     phone: '+1 (416) 526-8202',
     linkedin: 'https://linkedin.com/in/abmomin1',
     website: 'https://bodywellnessai.com',
+    // The live version of this resume. Printed on the PDF, because the paper
+    // copy drops the project breakdowns and the evidence explorer and a
+    // reader should be able to get to them.
+    portfolio: 'abdulbasitmomin.github.io/Business_Analyst_Resume_Abdulbasit_Momin',
     github: 'https://github.com/AbdulBasitMomin',
     resumePdf: './assets/Abdulbasit-Momin-Business-Analyst.pdf',
-    availability: 'Open to Business Analyst roles — Toronto, ON or remote',
+    availability: 'Open to Business Analyst roles in Toronto, ON or remote',
   },
 
   /**
@@ -27,17 +31,17 @@ export const resume = {
    * line it came from. A number a reader cannot trace is a liability.
    */
   stats: [
-    { value: 4, suffix: '+', label: 'Years in business analysis', source: 'Resume summary' },
-    { value: 3, suffix: '+', label: 'Years in regulated delivery', source: 'Resume summary' },
+    { value: 4, suffix: '+', label: 'Years in business analysis', source: 'Since January 2022' },
+    { value: 3, suffix: '+', label: 'Years in regulated delivery', source: 'Sarjen Systems, 2022 to 2025' },
     { value: 8, suffix: '', label: 'Power BI dashboards built', source: 'Sarjen Systems' },
     { value: 7, suffix: '+', label: 'Defect-free go-lives', source: 'Sarjen Systems' },
   ],
 
   about: {
     headline:
-      'Business Analyst with 4+ years bridging business, data, and technology teams — including 3+ years in regulated environments where governance, traceability, and audit-readiness are built into every delivery.',
+      'Business Analyst with 4+ years bridging business, data, and technology teams, including 3+ years in regulated environments where governance, traceability, and audit-readiness are built into every delivery.',
     paragraphs: [
-      'I translate business needs into requirements, user stories, acceptance criteria, and functional specs — then validate what actually got delivered through data checks, UAT, and defect tracking. The handoff is where most requirements quietly break, so I stay attached to a change until the data proves it works.',
+      'I translate business needs into requirements, user stories, acceptance criteria, and functional specs, then validate what actually got delivered through data checks, UAT, and defect tracking. The handoff is where most requirements quietly break, so I stay attached to a change until the data proves it works.',
       'My strengths sit in data mapping, validation, and reporting with SQL, Power BI, and Excel, plus working knowledge of customer data platforms, data privacy, and data quality controls. In regulated delivery I have learned to treat lineage, consent, and sign-off as part of the requirement, not paperwork bolted on afterwards.',
     ],
   },
@@ -184,7 +188,7 @@ export const resume = {
     },
     {
       stage: 'Validate',
-      blurb: 'Prove the delivered thing matches the requirement — with data, not opinion.',
+      blurb: 'Prove the delivered thing matches the requirement, with data rather than opinion.',
       artifacts: ['Source-to-target checks', 'UAT', 'Defect tracking'],
     },
     {
@@ -224,7 +228,7 @@ export const resume = {
     },
     {
       name: 'IT consulting',
-      detail: 'Client-facing analysis across multiple deliveries — requirements, data validation, UAT and go-live support.',
+      detail: 'Client-facing analysis across multiple deliveries: requirements, data validation, UAT and go-live support.',
     },
     {
       name: 'AI evaluation',
@@ -235,7 +239,7 @@ export const resume = {
   /** Quantified outcomes pulled from the roles above, for quick scanning. */
   projects: [
     {
-      name: 'Consumer Data Platform — 50+ Conditions',
+      name: 'Consumer Data Platform: 50+ Conditions',
       blurb:
         'Owned requirements and functional specs end to end, including user personas and journey maps that drove the personalization and segmentation logic.',
       impact: 'Improved segmentation accuracy and customer engagement over successive releases.',
@@ -253,7 +257,7 @@ export const resume = {
     {
       name: 'Regulated UAT & Governance Practice',
       blurb:
-        'Led UAT end to end — test case development, execution, defect tracking — plus production validation, and documented the governance artifacts behind it in Jira and Confluence.',
+        'Led UAT end to end (test case development, execution, defect tracking) plus production validation, and documented the governance artifacts behind it in Jira and Confluence.',
       impact: 'Defect-free go-lives across 7+ deployments; process improvements raised efficiency 20%.',
       tags: ['UAT', 'Defect Tracking', 'Data Governance', 'Confluence'],
       link: '',
@@ -273,9 +277,13 @@ export const resume = {
 
   certifications: [
     { name: 'Business Analysis & Process Management', issuer: 'Coursera', year: '', link: '' },
-    { name: 'Intro to SQL', issuer: 'University of Michigan / Coursera', year: '', link: '' },
+    { name: 'AWS for SAP Cloud ERP Essentials', issuer: 'Amazon Web Services', year: '', link: '' },
     { name: 'Agile Project Management', issuer: 'HP LIFE', year: '', link: '' },
     { name: 'AI Fluency: Framework and Foundations', issuer: 'Anthropic Academy', year: '', link: '' },
+    // Not yet held, so it carries a status and never renders as a completed
+    // credential. A certification claimed early is the fastest way to lose a
+    // recruiter's trust.
+    { name: 'PMP', issuer: 'Project Management Institute', year: '', link: '', status: 'In progress' },
   ],
 
   awards: [{ name: 'Employee of the Month', issuer: 'Sarjen Systems', year: '' }],

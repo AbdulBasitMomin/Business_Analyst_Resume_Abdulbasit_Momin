@@ -1,29 +1,44 @@
-# Interactive 3D Resume — Abdul Basit Momin
+# Business Analyst Resume: Abdulbasit Momin
 
-A single-page, WebGL-driven resume site for a Business Analyst profile.
-No build step, no framework: plain ES modules plus Three.js from a CDN.
+A single-page resume site for a Business Analyst profile, with a WebGL layer.
+No build step and no framework: plain ES modules plus a vendored copy of
+Three.js r169.
+
+Live: https://abdulbasitmomin.github.io/Business_Analyst_Resume_Abdulbasit_Momin/
 
 ## Editing content
 
-**All content lives in one file: [`assets/js/data.js`](assets/js/data.js).**
-Nothing is hardcoded in the markup — every section renders from that object, so
-adding a role or a skill means editing the array and nothing else.
+**All resume content lives in one file:
+[`assets/js/data.js`](assets/js/data.js).** Nothing is hardcoded in the markup,
+so adding a role or a certification means editing the array and nothing else.
 
-- `meta` — name, role, tagline, contact links, optional resume PDF path
-- `stats` — the animated counters under the hero
-- `about` — headline plus body paragraphs
-- `experience` — roles, newest first (`end: 'Present'` renders a live badge)
-- `skills` — grouped proficiency bars (`level` is 0–100)
-- `skillCloud` — the labels that orbit inside the draggable 3D sphere
-- `process` — the five BA lifecycle stages driving the 3D flow and its cards
-- `deliverables` — artefacts produced, rendered as a two-column list
-- `domains` — settings the work happened in
+- `meta`: name, role, tagline, contact links, resume PDF path, portfolio URL
+- `stats`: the counters beside the hero. Each carries a `source`, because a
+  number a reader cannot trace is a liability
+- `about`: headline plus body paragraphs
+- `experience`: roles, newest first (`end: 'Present'` renders a live badge)
+- `skills`, `skillCloud`, `deliverables`, `domains`: the capability lists
+- `process`: the BA lifecycle stages
 - `projects`, `education`, `certifications`, `awards`, `testimonials`
 
-`isPlaceholder` at the top of the file controls the amber "Draft" badge. Set it
-to `false` once the real content is in.
+A certification carrying `status: 'In progress'` renders with a hollow mark and
+an amber status pill, and never as a completed credential.
+
+Three further files hold the derived layers, all of them built from the content
+above rather than asserting anything new:
+
+- [`journey.js`](assets/js/journey.js): the lifecycle walkthrough, stakeholder
+  views and attributed outcomes
+- [`evidence.js`](assets/js/evidence.js): each capability mapped to the resume
+  line that evidences it, plus the case studies
+- [`trace.js`](assets/js/trace.js): the traceability matrix, derived by
+  matching capability quotes against achievement bullets
+
+`isPlaceholder` at the top of `data.js` controls the amber "Draft" badge.
 
 Empty arrays hide their section, so unused blocks cost nothing.
+
+After any content edit, regenerate the downloadable PDF (step 4 under Build).
 
 ## What's 3D here
 
@@ -31,15 +46,15 @@ The 3D is meant to *say something about business analysis*, not just decorate.
 
 | Layer | Detail |
 | --- | --- |
-| **Backdrop** (`scene.js`) | A **requirements traceability network**: business need → requirement → user story → acceptance criteria → test case, as five layers along X. Edges only ever join adjacent layers — a link that skipped one would misrepresent traceability — and pulses travel downstream along them. A legend under the hero names each layer, tying its hue to its nodes. |
-| Camera | Rides along the chain as scroll advances, looking slightly ahead down the flow, parallaxing toward the pointer. Past the hero the canvas fades to 24% so it never competes with body copy. |
-| **Process flow** (`process.js`) | The BA lifecycle as five hexagonal plates on an arc, with a token that travels and dwells on each. Optimise loops back to Elicit along a dashed curve, because the lifecycle is a loop. The active plate lifts and brightens, and reports itself so the DOM cards highlight in sync. |
-| **Skill graph** (`orb.js`) | Clusters by discipline: each group gets a hub on a Fibonacci sphere with its skills orbiting it on staggered radii, joined by spokes. Labels are camera-facing sprites sized from measured text, so long names are neither clipped nor squashed. Drag to spin. |
-| Cards | Pointer-tracked `rotateX/rotateY` tilt with a sheen that follows the cursor |
+| **Traceability matrix** (`tracegraph.js`) | The one piece of 3D that is not atmosphere. The real matrix, drawn: achievement bullets clustered by employer on the left, capabilities fanning out by category on the right, one edge per link `trace.js` could actually derive. Hover a node for its text, click it to open its evidence, and selecting a capability anywhere isolates its subgraph. A capability nothing evidences is drawn amber and unlinked, because that gap is true. |
+| **Backdrop** (`backdrop.js`) | A particle field on a shell, parallaxing toward the pointer, receding to a quarter opacity once there is body copy on screen. |
+| **Artefacts** (`artifacts.js`) | Workstations, documents and the delivery loop, drifting far behind the reading column as wireframe blueprints. Deliberately faint: at this opacity a solid model becomes a grey smudge while an outline stays legible, and if it ever competes with a line of text the text wins. |
+| **Data graphics** (`graphics.js`) | SVG, not WebGL: the career timeline and the capability coverage matrix. Both need to be legible at every width and readable in print, which rules out a canvas. |
+| Cards | Pointer-tracked tilt with a sheen that follows the cursor. |
 
 ### Colour is validated, not chosen by eye
 
-Hues come from a documented categorical order and are taken **contiguously** —
+Hues come from a documented categorical order and are taken **contiguously**:
 the ordering *is* the colour-vision-safety mechanism, so skipping a slot breaks
 it. Checked with a palette validator rather than judged by eye:
 
@@ -47,7 +62,7 @@ it. Checked with a palette validator rather than judged by eye:
   sits beside N±1), so they use the adjacent pairlist: five contiguous slots
   pass every gate.
 - The skill graph's clusters float freely in 3D, so any two can end up side by
-  side — the all-pairs case, where four hues **fail** (yellow vs orange at
+  side, the all-pairs case, where four hues **fail** (yellow vs orange at
   normal-vision ΔE 10.6, under the 15 floor). So the graph uses **one** hue;
   identity there comes from each cluster's named hub and its position, which is
   stronger than colour anyway.
@@ -60,7 +75,7 @@ it. Checked with a palette validator rather than judged by eye:
 
 ## Running locally
 
-ES modules need a real HTTP origin — opening `index.html` from the filesystem
+ES modules need a real HTTP origin. Opening `index.html` from the filesystem
 will fail on CORS. Serve the directory instead:
 
 ```bash
@@ -79,30 +94,42 @@ node tools/prerender.mjs http://localhost:8123/ dist/index.html
 
 # 3. inline everything into one portable file
 python3 tools/build-standalone.py dist/index.html
+
+# 4. regenerate the downloadable resume PDF from the site's own print view
+node tools/build-resume-pdf.mjs http://localhost:8123/ \
+  assets/Abdulbasit-Momin-Business-Analyst.pdf
 ```
 
+Run step 4 after any content edit. The PDF used to be a separate export from a
+word processor, which meant every change had to be made twice and the two
+drifted: the site listed one set of certifications and the download listed
+another. It is now generated from `data.js` through the `@media print` block,
+so the download and the page cannot disagree, and Ctrl-P gives the same two
+pages. The script fails rather than writing a file if the printed copy is
+missing an expected credential.
+
 **`tools/prerender.mjs`** drives a real browser, waits for the render, then
-snapshots the DOM. Without this a crawler — or any viewer where scripts are
-blocked — sees an empty shell. The scripts stay in the snapshot and re-render
+snapshots the DOM. Without this a crawler, or any viewer where scripts are
+blocked, sees an empty shell. The scripts stay in the snapshot and re-render
 the same sections on load, which is idempotent, so the 3D still attaches.
 
-**`tools/build-standalone.py`** produces `dist/resume-standalone.html` (~790 KB):
+**`tools/build-standalone.py`** produces `dist/resume-standalone.html` (~1 MB):
 one file, no server, no network, no relative requests. Email it or AirDrop it.
 
 Two hard-won constraints are encoded in that bundler:
 
 - **No `data:` URL for three.js.** The obvious build maps the bare `three`
   specifier to a base64 `data:` URL via an importmap. Any CSP that omits
-  `data:` from `script-src` refuses it — which is what in-app preview panels,
+  `data:` from `script-src` refuses it, which is what in-app preview panels,
   email clients and corporate proxies all send. The failure is total: the
   module never runs and the page sits on its spinner forever.
 - **No flat concatenation either.** Merging the modules into one shared scope
   collides identifiers: minified three.js declares `el`, and so does `ui.js`
   (`Identifier 'el' has already been declared`). Each module therefore gets
   its own IIFE returning its exports, with imports rebound from the enclosing
-  module objects — real module scoping in a classic script.
+  module objects: real module scoping in a classic script.
 
-Verified in a real browser across four environments — normal `file://`, a CSP
+Verified in a real browser across four environments: normal `file://`, a CSP
 without `data:` scripts, `script-src 'none'`, and JavaScript disabled outright.
 All four show the complete resume; the last two simply lose the 3D.
 
@@ -114,7 +141,7 @@ back to the system sans-serif and looks essentially the same.
 `.github/workflows/deploy.yml` publishes the repo root to GitHub Pages on every
 push to `main` or `claude/3d-resume-website-rqm1j9`.
 
-One-time setup, done by hand — the workflow's `GITHUB_TOKEN` cannot create the
+One-time setup, done by hand. The workflow's `GITHUB_TOKEN` cannot create the
 Pages site, as that needs repo admin rights:
 
 1. **Settings → Pages → Build and deployment → Source: GitHub Actions**
@@ -128,7 +155,7 @@ This repo is currently **private**, and that blocks a publicly shareable link:
 
 - On the **free** plan, Pages only serves **public** repositories.
 - On a **paid** plan, a private repo can serve Pages, but the site inherits
-  access control — only collaborators can open it, so the link cannot be sent
+  access control: only collaborators can open it, so the link cannot be sent
   to a recruiter.
 
 For a link anyone can open, make the repository public

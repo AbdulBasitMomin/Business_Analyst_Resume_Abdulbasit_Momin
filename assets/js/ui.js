@@ -18,6 +18,15 @@ const el = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+/**
+ * A dialable tel: URI. Only digits and a leading +, because parentheses and
+ * separators are not reliably handled by every dialer.
+ */
+const telHref = (phone) => {
+  const digits = String(phone).replace(/[^\d]/g, '');
+  return (String(phone).trim().startsWith('+') ? '+' : '') + digits;
+};
+
 const NAV = [
   ['experience', 'Experience'],
   ['skills', 'Proof'],
@@ -58,7 +67,7 @@ export function renderAll() {
 
 function renderMeta() {
   const m = resume.meta;
-  document.title = `${m.name} — ${m.role} | ${m.location}`;
+  document.title = `${m.name} | ${m.role} | ${m.location}`;
   el('nav-name').textContent = m.name;
   el('footer-name').textContent = `© ${new Date().getFullYear()} ${m.name}`;
 }
@@ -103,10 +112,14 @@ function renderMasthead() {
   el('mast-contact').innerHTML = [
     m.location && { t: m.location },
     m.email && { t: m.email, href: `mailto:${m.email}` },
-    m.phone && { t: m.phone, href: `tel:${m.phone.replace(/\s/g, '')}` },
+    m.phone && { t: m.phone, href: `tel:${telHref(m.phone)}` },
     m.linkedin && { t: 'linkedin.com/in/abmomin1', href: m.linkedin },
+    // Print only: on paper this is the way back to the projects and the
+    // evidence explorer, which the printed copy leaves out.
+    m.portfolio && { t: m.portfolio, href: `https://${m.portfolio}`, printOnly: true },
   ].filter(Boolean)
-    .map((c) => `<li>${c.href ? `<a href="${esc(c.href)}">${esc(c.t)}</a>` : esc(c.t)}</li>`)
+    .map((c) => `<li${c.printOnly ? ' class="print-only"' : ''}>${
+      c.href ? `<a href="${esc(c.href)}">${esc(c.t)}</a>` : esc(c.t)}</li>`)
     .join('');
 
   const wire = (id, href, download) => {
@@ -202,9 +215,13 @@ function renderEducation() {
     ...(resume.awards || []).map((a) => ({ ...a, kind: 'award' })),
   ];
   el('cert-list').innerHTML = creds
-    .map((c) => `<div class="cert-item">
-      <span class="cert-tick">${c.kind === 'award' ? '★' : '✦'}</span>
-      <div><span class="cert-name">${esc(c.name)}</span><span class="cert-meta">${esc(c.issuer)}</span></div>
+    .map((c) => `<div class="cert-item${c.status ? ' is-pending' : ''}">
+      <span class="cert-tick">${c.status ? '◌' : c.kind === 'award' ? '★' : '✦'}</span>
+      <div>
+        <span class="cert-name">${esc(c.name)}${
+          c.status ? `<span class="cert-status">${esc(c.status)}</span>` : ''}</span>
+        <span class="cert-meta">${esc(c.issuer)}</span>
+      </div>
     </div>`).join('');
 }
 
@@ -265,7 +282,7 @@ function renderMethod() {
 
   el('ai-stance').textContent = ai.stance;
   el('ai-practices').innerHTML = ai.practices
-    .map((p) => `<li><strong>${esc(p.name)}</strong> — ${esc(p.note)}</li>`).join('');
+    .map((p) => `<li><strong>${esc(p.name)}</strong>: ${esc(p.note)}</li>`).join('');
   el('ai-grounding').textContent = ai.grounding;
 }
 
@@ -294,7 +311,7 @@ function renderSprint() {
             </button>`).join('')}
         </div>`).join('')}
       </div>
-      <p class="sprint-readout" role="status" aria-live="polite">${done} of ${cards.length} done — tap a card to advance it.</p>`;
+      <p class="sprint-readout" role="status" aria-live="polite">${done} of ${cards.length} done. Tap a card to advance it.</p>`;
   };
 
   node.addEventListener('click', (e) => {
@@ -369,15 +386,20 @@ function renderAsk() {
 
 function renderContact() {
   const m = resume.meta;
-  el('contact-sub').textContent = `${m.name} — Business Analyst, ${m.location}. ${m.availability}`;
+  el('contact-sub').textContent = `${m.name}, Business Analyst in ${m.location}. ${m.availability}`;
   const links = [
     m.email && { label: 'Email', href: `mailto:${m.email}`, text: m.email },
-    m.phone && { label: 'Phone', href: `tel:${m.phone.replace(/\s/g, '')}`, text: m.phone },
+    m.phone && { label: 'Phone', href: `tel:${telHref(m.phone)}`, text: m.phone },
     m.linkedin && { label: 'LinkedIn', href: m.linkedin, text: 'in/abmomin1' },
-    m.resumePdf && { label: 'Resume', href: m.resumePdf, text: 'Download PDF' },
+    m.resumePdf && {
+      label: 'Resume', href: m.resumePdf, text: 'Download PDF',
+      file: 'Abdulbasit-Momin-Business-Analyst.pdf',
+    },
   ].filter(Boolean);
   el('contact-links').innerHTML = links
-    .map((l) => `<a class="contact-link magnetic" href="${esc(l.href)}"${l.href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>
+    .map((l) => `<a class="contact-link magnetic${l.file ? ' contact-link--file' : ''}" href="${esc(l.href)}"${
+      l.href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}${
+      l.file ? ` download="${esc(l.file)}"` : ''}>
       <span class="contact-link-label">${esc(l.label)}</span>
       <span class="contact-link-text">${esc(l.text)}</span>
     </a>`).join('');

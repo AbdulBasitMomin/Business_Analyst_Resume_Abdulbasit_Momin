@@ -255,11 +255,13 @@ export async function initTraceGraph({ reducedMotion = false } = {}) {
     });
 
     // Report the space the tags really need, once per size change. Only the
-    // DOM knows how wide a name renders at this font and viewport.
+    // DOM knows how wide a name renders at this font and viewport. When the
+    // tags are hidden (narrow screens) the answer is zero, and the graph
+    // should have that room back rather than holding it empty.
     const widest = (side) => Math.max(0, ...list
       .map((t, i) => (t.side === side ? tagNodes[i].getBoundingClientRect().width : 0)));
     const need = widest('left') + widest('right');
-    if (need > 0 && Math.abs(need - measured) > 2) {
+    if (Math.abs(need - measured) > 2) {
       measured = need;
       graph?.setTextReserve(need);
     }

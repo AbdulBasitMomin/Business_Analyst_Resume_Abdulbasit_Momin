@@ -33,7 +33,7 @@ function proofRows(caps) {
     const ev = c.evidence[0];
     return {
       skill: c.name,
-      project: projectsFor(c).map((p) => p.title).join('; ') || (ev ? ev.company : '—'),
+      project: projectsFor(c).map((p) => p.title).join('; ') || (ev ? ev.company : '·'),
       evidence: ev ? ev.quote : 'Listed in the resume skills section, with no supporting achievement bullet.',
       weak: !ev,
     };
@@ -72,7 +72,7 @@ const INTENTS = [
         '',
         'Backed by: ' + recruiterProfile.results.join(' · '),
       ],
-      sources: ['Resume summary', 'Sarjen Systems', 'BodyWellnessAI'],
+      sources: ['Professional summary', 'Sarjen Systems', 'BodyWellnessAI'],
     }),
   },
   {
@@ -120,7 +120,7 @@ const INTENTS = [
     keys: 'project projects case study studies portfolio work example examples built',
     build: () => ({
       title: 'Case studies',
-      lines: caseStudies.map((c) => `${c.title} — ${c.org}, ${c.period}`),
+      lines: caseStudies.map((c) => `${c.title} · ${c.org}, ${c.period}`),
       sources: caseStudies.map((c) => c.org),
     }),
   },
@@ -129,7 +129,7 @@ const INTENTS = [
     keys: 'impact result results metric metrics outcome achievement achievements numbers roi efficiency',
     build: () => ({
       title: 'Measured outcomes',
-      lines: impact.map((i) => `${i.value} — ${i.label}: ${i.note}`),
+      lines: impact.map((i) => `${i.value} · ${i.label}: ${i.note}`),
       sources: ['Sarjen Systems', 'BodyWellnessAI'],
     }),
   },
@@ -142,7 +142,7 @@ const INTENTS = [
         '3+ of 4+ years were in regulated environments where governance, traceability and audit-readiness were built into delivery.',
         'Sarjen Systems: “Documented data governance artifacts (quality controls, privacy, consent, lineage, data flows) in Jira and Confluence.”',
       ],
-      sources: ['Resume summary', 'Sarjen Systems'],
+      sources: ['Professional summary', 'Sarjen Systems'],
     }),
   },
   {
@@ -150,7 +150,7 @@ const INTENTS = [
     keys: 'experience years roles role history career worked employer company companies background',
     build: () => ({
       title: 'Roles',
-      lines: resume.experience.map((r) => `${r.role} — ${r.company}, ${r.start} to ${r.end}`),
+      lines: resume.experience.map((r) => `${r.role} · ${r.company}, ${r.start} to ${r.end}`),
       sources: resume.experience.map((r) => r.company),
     }),
   },
@@ -160,9 +160,9 @@ const INTENTS = [
     build: () => ({
       title: 'Education and certifications',
       lines: [
-        ...resume.education.map((e) => `${e.degree} — ${e.school}, ${e.start}–${e.end}`),
-        ...resume.certifications.map((c) => `${c.name} — ${c.issuer}`),
-        ...(resume.awards || []).map((a) => `Award: ${a.name} — ${a.issuer}`),
+        ...resume.education.map((e) => `${e.degree} · ${e.school}, ${e.start} to ${e.end}`),
+        ...resume.certifications.map((c) => `${c.name}${c.status ? ` (${c.status})` : ''} · ${c.issuer}`),
+        ...(resume.awards || []).map((a) => `Award: ${a.name} · ${a.issuer}`),
       ],
       sources: ['Resume'],
     }),
@@ -173,7 +173,7 @@ const INTENTS = [
     build: () => ({
       title: 'What is different here',
       lines: [
-        'Requirements and validation in the same pair of hands: the person who wrote the spec also ran the UAT that proved it — “Led UAT end to end … supporting defect-free go-lives across 7+ deployments.”',
+        'Requirements and validation in the same pair of hands: the person who wrote the spec also ran the UAT that proved it. “Led UAT end to end … supporting defect-free go-lives across 7+ deployments.”',
         'Regulated delivery as a default, not an exception: 3+ years where traceability and audit-readiness were part of the requirement.',
         'Data literacy at the field level: “Checking ingestion, transformation logic, and field-level mappings against requirements.”',
         'Evaluating AI output against explicit rubrics, which is the same discipline as writing testable acceptance criteria.',
@@ -189,7 +189,7 @@ const INTENTS = [
       lines: [
         `${resume.meta.email}`,
         `${resume.meta.phone}`,
-        `${resume.meta.location} — ${resume.meta.availability}`,
+        `${resume.meta.location}. ${resume.meta.availability}`,
         `LinkedIn: ${resume.meta.linkedin}`,
       ],
       sources: ['Resume'],

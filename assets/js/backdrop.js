@@ -1,15 +1,18 @@
 /**
  * Backdrop.
  *
- * Deliberately minimal: a slow particle field that parallaxes with the pointer
- * and recedes once the reader is into the resume. That is all.
+ * A slow particle field plus a drifting set of blueprint artefacts -- the
+ * workstations, documents and delivery loop a business analyst works with. It
+ * parallaxes with the pointer and recedes once the reader is into the resume.
  *
- * It used to carry a 3D "BA ecosystem" object too, but the masthead's SVG
- * diagram says the same thing more legibly, at every width, for none of the
- * GPU cost -- and having both on screen made them collide. On a resume the 3D
- * is atmosphere, not the subject.
+ * It once carried a solid 3D "BA ecosystem" object in the centre of the
+ * masthead, and that was a mistake: it collided with the SVG diagram that says
+ * the same thing more legibly. The rule that came out of it still holds and
+ * artifacts.js is built to it -- the 3D lives out at the sides, behind the
+ * reading column, and fades away as soon as there is text to read.
  */
 import * as THREE from 'three';
+import { buildArtifacts } from './artifacts.js';
 
 export function createBackdrop(canvas, { reducedMotion = false } = {}) {
   const renderer = new THREE.WebGLRenderer({
@@ -24,6 +27,9 @@ export function createBackdrop(canvas, { reducedMotion = false } = {}) {
 
   const field = buildField(small ? 500 : 1600);
   scene.add(field);
+
+  const artifacts = buildArtifacts({ small });
+  scene.add(artifacts.group);
 
   const pointer = new THREE.Vector2();
   const smooth = new THREE.Vector2();
@@ -55,7 +61,13 @@ export function createBackdrop(canvas, { reducedMotion = false } = {}) {
 
     camera.position.set(smooth.x * 3, smooth.y * 2 - progress * 12, 46);
     camera.lookAt(0, -progress * 9, 0);
-    if (!reducedMotion) field.rotation.y = t * 0.012;
+    if (!reducedMotion) {
+      field.rotation.y = t * 0.012;
+      // Counter-rotated against the particles, so the two layers separate in
+      // depth instead of moving as one sheet.
+      artifacts.group.rotation.y = -t * 0.006;
+      artifacts.update(t);
+    }
 
     // Recede once the reader is past the masthead.
     const dim = 1 - Math.min(progress / 0.09, 1) * 0.75;
@@ -81,6 +93,7 @@ export function createBackdrop(canvas, { reducedMotion = false } = {}) {
     resize, onPointerMove, setScroll,
     stop() { running = false; cancelAnimationFrame(frame); frame = 0; },
     start() { if (reducedMotion || running) return; running = true; loop(); },
+    dispose() { running = false; cancelAnimationFrame(frame); artifacts.dispose(); renderer.dispose(); },
   };
 }
 

@@ -44,10 +44,10 @@ export function initRecruiterMode() {
         <ul class="rm-results">${recruiterProfile.topCases
           .map((id) => caseStudies.find((c) => c.id === id))
           .filter(Boolean)
-          .map((c) => `<li><a href="#${esc(c.id)}">${esc(c.title)}</a> — ${esc(c.org)}</li>`)
+          .map((c) => `<li><a href="#${esc(c.id)}">${esc(c.title)}</a> · ${esc(c.org)}</li>`)
           .join('')}</ul>
       </div>
-      <p class="rm-note">Full interactive walkthrough is still there — turn Recruiter Mode off any time.</p>
+      <p class="rm-note">Full interactive walkthrough is still there. Turn Recruiter Mode off any time.</p>
     </div>`;
 
   const apply = (on) => {
@@ -106,13 +106,13 @@ export function initEvidence() {
   function renderDetail() {
     const cap = capabilities.find((c) => c.name === activeCap);
     if (!cap) {
-      detail.innerHTML = `<p class="ev-empty">Pick a capability to see where it was actually used — role, and the line from the resume that supports it.</p>`;
+      detail.innerHTML = `<p class="ev-empty">Pick a capability to see where it was actually used: the role, and the line from the resume that supports it.</p>`;
       return;
     }
     const badge = {
       bullet: 'Evidenced by an achievement bullet',
       cert: 'Evidenced by a certification',
-      listed: 'Listed in the resume skills section — no achievement bullet',
+      listed: 'Listed in the resume skills section, no achievement bullet',
     }[cap.sourced];
 
     // Skill -> project -> evidence. The project link is what turns a listed

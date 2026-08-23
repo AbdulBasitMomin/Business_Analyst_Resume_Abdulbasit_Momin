@@ -148,7 +148,7 @@ export const caseStudies = [
       { n: '01', k: 'Problem', v: 'Regulated deliveries needed go-lives that held up to audit, not just to a test pass.' },
       { n: '03', k: 'Requirements', v: 'Requirements captured with the traceability and evidence a regulated delivery has to produce.' },
       { n: '04', k: 'Analysis', v: 'Documented governance artefacts: quality controls, privacy, consent, lineage and data flows.' },
-      { n: '05', k: 'Solution', v: 'UAT run end to end — test case development, execution and defect tracking — plus production validation.' },
+      { n: '05', k: 'Solution', v: 'UAT run end to end (test case development, execution and defect tracking) plus production validation.' },
       { n: '06', k: 'Delivery', v: 'Artefacts maintained in Jira and Confluence; training delivered alongside.' },
       { n: '07', k: 'Validation', v: 'Production validation after each release, with defects tracked to resolution.' },
       { n: '08', k: 'Impact', v: 'Defect-free go-lives across 7+ deployments; process improvements increased efficiency by 20%.' },
@@ -187,9 +187,9 @@ export function projectsFor(capability) {
 
 /** The 30-second version, for Condensed mode. */
 export const recruiterProfile = {
-  headline: 'Business Analyst — requirements, data validation and regulated delivery',
+  headline: 'Business Analyst: requirements, data validation and regulated delivery',
   years: '4+ years, including 3+ in regulated environments',
-  location: 'Toronto, ON — open to onsite or remote',
+  location: 'Toronto, ON. Open to onsite or remote',
   core: ['Requirements & functional specs', 'SQL & Power BI', 'Source-to-target validation', 'UAT & defect tracking', 'Backlog & release cycles', 'AI output evaluation'],
   results: [
     'Defect-free go-lives across 7+ deployments (UAT led end to end)',

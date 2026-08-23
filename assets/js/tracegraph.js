@@ -345,7 +345,7 @@ export function createTraceGraph(canvas, trace, capabilities, { reducedMotion = 
      * camera, so the measurement does not move when the frame does.
      */
     setTextReserve(px) {
-      const want = px * unitsPerPixel();
+      const want = Math.max(0, px) * unitsPerPixel();
       if (!Number.isFinite(want) || Math.abs(want - reserve) < 0.5) return;
       reserve = want;
       resize();

@@ -69,7 +69,21 @@ async function run(label, url, viewport, isMobile) {
   }));
   check(`${P} 3 roles with 12 bullets`, content.roles === 3 && content.bullets === 12, JSON.stringify(content));
   check(`${P} projects, education, credentials present`,
-    content.projects === 4 && content.education === 1 && content.creds === 5, JSON.stringify(content));
+    content.projects === 4 && content.education === 1 && content.creds === 6, JSON.stringify(content));
+
+  // The specific credentials, not just how many: a count passes happily while
+  // the wrong certification is on display.
+  const creds = await page.evaluate(() => ({
+    text: [...document.querySelectorAll('.cert-item')].map((n) => n.innerText.replace(/\s+/g, ' ')),
+    pending: [...document.querySelectorAll('.cert-item.is-pending')]
+      .map((n) => n.innerText.replace(/\s+/g, ' ')),
+  }));
+  const credText = creds.text.join(' | ');
+  check(`${P} AWS certification listed`, /AWS for SAP Cloud ERP Essentials/.test(credText), credText.slice(0, 120));
+  check(`${P} retired certification gone`, !/Intro to SQL/.test(credText));
+  check(`${P} PMP shown as in progress, not held`,
+    creds.pending.length === 1 && /PMP/.test(creds.pending[0]) && /In progress/.test(creds.pending[0]),
+    JSON.stringify(creds.pending));
   check(`${P} contact details in masthead`, content.contactTop >= 3, String(content.contactTop));
   // Brief SS3: placeholders are gone for good. Any reappearance is a defect.
   check(`${P} no placeholder text anywhere`, content.gaps === 0, String(content.gaps));
@@ -140,16 +154,22 @@ async function run(label, url, viewport, isMobile) {
     const c = document.getElementById('trace-canvas');
     if (!c) return null;
     const r = c.getBoundingClientRect();
+    const layer = document.getElementById('tg-tags');
+    const shown = !!layer && getComputedStyle(layer).display !== 'none';
     const tags = [...document.querySelectorAll('.tg-tag')].map((t) => {
       const b = t.getBoundingClientRect();
       return { in: b.left >= r.left - 1 && b.right <= r.right + 1, w: Math.round(b.width) };
     });
-    return { w: Math.round(r.width), h: Math.round(r.height), drawn: c.width > 0, tags };
+    return { w: Math.round(r.width), h: Math.round(r.height), drawn: c.width > 0, shown, tags };
   });
   check(`${P} trace graph canvas sized`, tg && tg.drawn && tg.h > 200, JSON.stringify(tg && { w: tg.w, h: tg.h }));
+  // Below 400px the standing tags are deliberately off: they need more of the
+  // canvas than they leave for the graph. Shown, they must fit.
   check(`${P} trace graph tags fit the canvas`,
-    tg && tg.tags.length >= 9 && tg.tags.every((t) => t.in && t.w > 8),
-    JSON.stringify(tg && tg.tags.filter((t) => !t.in)));
+    tg && (tg.shown
+      ? tg.tags.length >= 9 && tg.tags.every((t) => t.in && t.w > 8)
+      : tg.tags.every((t) => t.w === 0)),
+    JSON.stringify(tg && { shown: tg.shown, bad: tg.tags.filter((t) => tg.shown ? !t.in : t.w > 0).length }));
 
   // --- command palette: keyboard only, so desktop only ---
   if (!isMobile) {
@@ -180,6 +200,46 @@ async function run(label, url, viewport, isMobile) {
     && getComputedStyle(document.getElementById('contact')).display !== 'none'));
   await tap('#recruiter-toggle', () => !document.body.classList.contains('recruiter-mode'), 'condensed mode off');
 
+  // --- the resume download actually downloads ---
+  // Found by class, not by file extension: the standalone build inlines the
+  // PDF as a data: URL, so an href ending in .pdf finds nothing there.
+  const dl = await page.evaluate(() => {
+    const a = document.querySelector('#contact-links .contact-link--file');
+    return a && {
+      download: a.hasAttribute('download'),
+      pdf: /\.pdf$|^data:application\/pdf/i.test(a.getAttribute('href') || ''),
+    };
+  });
+  check(`${P} contact resume link downloads`, !!dl && dl.download && dl.pdf, JSON.stringify(dl));
+  const tel = await page.evaluate(() => [...document.querySelectorAll('a[href^="tel:"]')]
+    .map((n) => n.getAttribute('href')));
+  check(`${P} tel: URIs are dialable`,
+    tel.length > 0 && tel.every((t) => /^tel:\+?\d+$/.test(t)), JSON.stringify(tel));
+
+  // --- no em dash anywhere in the rendered copy ---
+  check(`${P} no em dash in visible text`, await page.evaluate(
+    () => !document.body.innerText.includes('\u2014')),
+    (await page.evaluate(() => {
+      const i = document.body.innerText.indexOf('\u2014');
+      return i < 0 ? '' : document.body.innerText.slice(Math.max(0, i - 50), i + 50);
+    })));
+
+  // --- background artefacts are present and stay behind the page ---
+  check(`${P} backdrop canvas sits behind content`, await page.evaluate(() => {
+    const c = document.getElementById('bg-canvas');
+    const s = getComputedStyle(c);
+    return s.pointerEvents === 'none' && Number(s.zIndex) <= 0;
+  }));
+
+  // --- nothing a reader must read may fall under 11px ---
+  const tiny = await page.evaluate(() => [...document.querySelectorAll('p, li, span, button, a, dt, dd')]
+    .filter((n) => !n.children.length && n.textContent.trim().length > 1
+      && n.getBoundingClientRect().height > 0)
+    .map((n) => ({ px: +parseFloat(getComputedStyle(n).fontSize).toFixed(2),
+                   t: n.textContent.trim().slice(0, 24) }))
+    .filter((x) => x.px < 11));
+  check(`${P} no visible text under 11px`, tiny.length === 0, JSON.stringify(tiny.slice(0, 4)));
+
   // --- design regressions ---
   const btnH = await page.evaluate(() => [...document.querySelectorAll('.hero-actions .btn')]
     .map((b) => Math.round(b.getBoundingClientRect().height)));
@@ -188,7 +248,7 @@ async function run(label, url, viewport, isMobile) {
   // A 320px viewport stacks every grid to one column, so the same content is
   // legitimately taller there. The budget scales with that rather than
   // pretending one number fits both.
-  const budget = viewport.width < 360 ? 17000 : 15000;
+  const budget = viewport.width < 360 ? 17000 : 15500;
   check(`${P} landing page under ${budget}px`, landingHeight < budget, `${landingHeight}px`);
 
   const caps = await page.evaluate(() => [...document.querySelectorAll('*')]
