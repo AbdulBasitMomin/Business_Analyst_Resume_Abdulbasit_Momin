@@ -4,7 +4,7 @@ A single-page resume site for a Business Analyst profile, with a WebGL layer.
 No build step and no framework: plain ES modules plus a vendored copy of
 Three.js r169.
 
-Live: https://abdulbasitmomin.github.io/ai-project/
+Live: https://abdulbasitmomin.github.io/Business_Analyst_Resume_Abdulbasit_Momin/
 
 ## Editing content
 
