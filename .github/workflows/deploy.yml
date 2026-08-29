@@ -80,7 +80,7 @@ jobs:
 
       # Keep build tooling and dev deps out of the published site.
       - name: Prune artefacts from the upload
-        run: rm -rf node_modules dist tools .github
+        run: rm -rf node_modules dist tools .github portfolio-landing
 
       - uses: actions/upload-pages-artifact@v3
         with:
