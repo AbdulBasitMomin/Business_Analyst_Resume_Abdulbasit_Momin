@@ -2,7 +2,7 @@ import pw from '/opt/node22/lib/node_modules/playwright/index.js';
 const { chromium } = pw;
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
   args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'] });
-const EMS = ['1.05em'];
+const EMS = ['1em'];
 const WIDTHS = [1920, 1600, 1440, 1366, 1280, 1152, 1024, 820, 640, 390, 320];
 const grid = {};
 for (const w of WIDTHS) {

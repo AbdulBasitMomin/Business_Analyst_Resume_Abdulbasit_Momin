@@ -54,9 +54,15 @@ const [ROLE_1, ROLE_2] = resume.meta.role.toUpperCase().split(' ');
 // The two headline words that break out of Inter into the bitmap face. 1.25em
 // keeps them optically level with the Inter caps around them, which sit on a
 // larger body relative to their cap height.
-// 1.05em, not the reference's 1.25em: Silkscreen sets wider than the basis33
-// it stands in for, and at 1.25em DELIVERABLES ran past the column edge.
-const PIXEL_WORD = 'font-display font-normal text-[1.05em] inline-block leading-none align-baseline';
+// The reference sets these two words in the bitmap face. Rendered at this size
+// Silkscreen's M has a shallow middle vertex that reads as an H -- AMBIGUOUS
+// comes out as AHBIGUOUS the same way MOMIN came out as MOHIN. The face is
+// legible at label sizes and not at display sizes, so the two-tone rhythm the
+// headline depends on comes from weight here instead of from face.
+//
+// If the pixel headline is wanted back, UNCLEAR and DELIVERABLES both work:
+// neither contains an M.
+const PIXEL_WORD = 'font-extrabold inline-block leading-none align-baseline';
 
 const META_LABEL = 'text-base tracking-widest text-white/50 uppercase mb-3 font-display';
 
@@ -109,7 +115,7 @@ export default function Me() {
           <div>
             <h2 className="text-lg md:text-xl tracking-wide leading-tight">
               <span className="block font-normal">{FIRST}</span>
-              <span className="block font-display text-2xl md:text-3xl">{LAST}</span>
+              <span className="block font-extrabold text-xl md:text-2xl">{LAST}</span>
             </h2>
             <div className="text-[10px] text-white/50 mt-3">*</div>
             <p className="font-display mt-1 text-xs text-white/60 leading-relaxed">
@@ -126,7 +132,7 @@ export default function Me() {
           <div className="text-right lg:text-left">
             <h2 className="text-lg md:text-xl tracking-wide leading-tight">
               <span className="block font-normal">{ROLE_1}</span>
-              <span className="block font-display text-2xl md:text-3xl">{ROLE_2}</span>
+              <span className="block font-extrabold text-xl md:text-2xl">{ROLE_2}</span>
             </h2>
           </div>
 
@@ -157,7 +163,7 @@ export default function Me() {
             {/* 0.72 leading is tighter than any Tailwind step and is the whole
                 look of the headline -- the lines interlock rather than stack. */}
             <h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] xl:text-[3.75rem] 2xl:text-[4.25rem] tracking-wide uppercase font-normal"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] xl:text-[4.25rem] tracking-wide uppercase font-normal"
               style={{ lineHeight: 0.72 }}
             >
               I TURN THE

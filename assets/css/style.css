@@ -252,14 +252,15 @@ dl, dd, dt { margin: 0; }
    ========================================================================== */
 
 .hero-heading {
-  font-family: var(--font-display);
-  /* A bitmap face has two weights and no optical compensation, so the negative
-     tracking a variable display face wanted here closes the counters up. It
-     needs the opposite: air between the glyphs, and leading a fraction looser
-     because the letterforms sit tall in their box. */
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  line-height: 1.02;
+  /* Inter, not the display face. Silkscreen's M has a shallow middle vertex,
+     so at display size with open tracking MOMIN reads as MOHIN -- the one word
+     on this site that cannot be ambiguous. The rule now: the bitmap face gets
+     small labels, where it is texture; anything a reader has to parse gets
+     Inter. */
+  font-family: var(--font);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.94;
   background: linear-gradient(180deg, #8E9AA8 0%, #E8EFF6 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -268,11 +269,9 @@ dl, dd, dt { margin: 0; }
 }
 
 .hero-name {
-  /* Stepped down from clamp(2.15rem, 10.5vw, 8.4rem). Silkscreen sets about
-     14% wider than Kanit did, and ABDULBASIT is ten characters: at the old cap
-     it needed 1112px inside a 976px column and lost its last letter off the
-     right edge. The audit measures this now rather than trusting the clamp. */
-  font-size: clamp(2rem, 9vw, 7rem);
+  /* The audit measures this against its column, so the cap is checked rather
+     than trusted -- a bitmap face here once cost the name its last letter. */
+  font-size: clamp(2.15rem, 10vw, 8rem);
   text-transform: uppercase;
   margin-bottom: 0.15em;
 }
@@ -316,10 +315,12 @@ dl, dd, dt { margin: 0; }
 .section:last-of-type { border-bottom: 0; }
 /* Large, but nine of them at full display scale is a shouting match. */
 .section-title {
-  /* Stepped down from 2.9rem. Silkscreen sets appreciably wider than Kanit at
-     the same size, and the longest heading here is PROFESSIONAL SUMMARY. */
-  font-size: clamp(1.35rem, 3vw, 2.15rem);
-  letter-spacing: 0.01em;
+  /* Inter, for the same reason the name is: PROFESSIONAL SUMMARY set in a
+     bitmap face is a word a reader decodes rather than reads. */
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3.6vw, 2.7rem);
+  letter-spacing: -0.015em;
   text-transform: uppercase;
   margin-bottom: 1rem;
 }

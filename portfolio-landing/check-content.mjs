@@ -14,7 +14,9 @@ const text = await page.evaluate(() => document.body.innerText);
 const d = await page.evaluate(() => ({
   title: document.title,
   h1: document.querySelector('h1').innerText.replace(/\n/g, ' '),
-  pixel: [...document.querySelectorAll('h1 .font-display')].map(e => e.textContent),
+  // The two words the headline sets apart. They were the bitmap face until it
+  // turned out to render M as H at display size; the distinction is weight now.
+  pixel: [...document.querySelectorAll('h1 .font-extrabold')].map(e => e.textContent),
   chips: [...document.querySelectorAll('.bg-\\[\\#0B0B0B\\]')].map(e => ({ t: e.innerText.replace(/\n/g, ' '), title: e.title })),
   navHrefs: [...document.querySelectorAll('nav a')].map(a => a.getAttribute('href')),
   cta: { href: document.querySelector('a[download]')?.getAttribute('href'), text: document.querySelector('a[download]')?.innerText },
@@ -51,7 +53,7 @@ ck('nav points at real sections', d.navHrefs.slice(1, 7).every(h => /#(summary|e
 
 // --- Structure carried over from the reference. ---
 ck('headline 0.72 leading', d.lh === 0.72, String(d.lh));
-ck('two pixel words in headline', d.pixel.length === 2, d.pixel.join('+'));
+ck('two words set apart in headline', d.pixel.length === 2, d.pixel.join('+'));
 ck('fits the viewport at 1440x900', d.over <= 0, `${d.over}px`);
 
 // --- Nothing borrowed from the reference persona. ---
