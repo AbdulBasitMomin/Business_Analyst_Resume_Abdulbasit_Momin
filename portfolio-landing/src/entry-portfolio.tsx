@@ -1,12 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import Me from './Me';
+import Portfolio from './Portfolio';
 import './index.css';
 import './fonts-inter.css';
-import './me.css';
+import './portfolio.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Me />
+    <Portfolio />
   </StrictMode>,
 );

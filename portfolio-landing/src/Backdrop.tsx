@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { createWorkspace, type Workspace } from './workspace';
+import { createWorkspace, type Layout, type Workspace } from './workspace';
 
 /**
  * Mounts the workspace scene behind the page.
@@ -9,7 +9,7 @@ import { createWorkspace, type Workspace } from './workspace';
  * frame instead, so the composition is still there), or throw if WebGL is
  * missing (the page is legible on plain black).
  */
-export default function Backdrop() {
+export default function Backdrop({ layout = 'side', dim = false }: { layout?: Layout; dim?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function Backdrop() {
 
     let scene: Workspace | null = null;
     try {
-      scene = createWorkspace(canvas);
+      scene = createWorkspace(canvas, layout);
     } catch {
       scene = null;
     }
@@ -77,7 +77,7 @@ export default function Backdrop() {
       still.removeEventListener('change', sync);
       view.dispose();
     };
-  }, []);
+  }, [layout]);
 
   return (
     <>
@@ -86,7 +86,7 @@ export default function Backdrop() {
           frame the meta grid drops to 1.8:1 over it at full strength. */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 h-full w-full opacity-25 lg:opacity-100"
+        className={`absolute inset-0 h-full w-full ${dim ? 'opacity-25' : 'opacity-25 lg:opacity-100'}`}
         aria-hidden="true"
       />
       {/* Scrims over the two bands the copy occupies -- the meta grid along the

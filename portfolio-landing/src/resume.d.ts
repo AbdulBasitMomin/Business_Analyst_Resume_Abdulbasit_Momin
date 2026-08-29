@@ -25,6 +25,18 @@ declare module '@resume' {
     achievements: string[];
     tools: string[];
   }
+  export interface Project {
+    name: string;
+    blurb: string;
+    impact: string;
+    tags: string[];
+    link: string;
+  }
+  export interface Stage {
+    stage: string;
+    blurb: string;
+    artifacts: string[];
+  }
   export const resume: {
     meta: {
       name: string;
@@ -42,6 +54,8 @@ declare module '@resume' {
     stats: Stat[];
     experience: Role[];
     deliverables: string[];
+    projects: Project[];
+    process: Stage[];
     certifications: Certification[];
   };
   export const isPlaceholder: boolean;

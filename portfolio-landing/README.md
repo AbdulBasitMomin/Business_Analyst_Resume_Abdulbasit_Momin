@@ -8,6 +8,7 @@ and basis33 for the bitmap words.
 | ----------------- | ------------ | -------------------------------------------------------------- |
 | `src/App.tsx`     | `../landing` | The reference recreated exactly, hotlinked stock video and all. |
 | `src/Me.tsx`      | `../me`      | The same composition, real resume, generated background, self-hosted fonts. |
+| `src/Portfolio.tsx` | `../portfolio` | A longer scrolling page from a second reference, same real content. |
 
 Both are separate from the resume site in the repository root and share nothing
 with it. The resume site stays a no-build static page, which is what lets it
@@ -143,3 +144,34 @@ on its own between `lg` and `xl`.
 `../me` makes no external request of any kind: no font CDN, no video host,
 nothing. Verified by loading it with every non-local request aborted -- seven
 faces resolve, Silkscreen renders, zero requests attempted.
+
+
+## The portfolio page
+
+Built from a second reference: loading counter, GSAP hero entrance, bento work
+grid, pinned parallax gallery, marquee footer. Inter for reading, Instrument
+Serif italic for display -- a display face that stays legible, which the bitmap
+one did not.
+
+Three of its sections had no truthful equivalent and carry real work instead
+rather than being filled in:
+
+| Reference          | Here                                                     |
+| ------------------ | -------------------------------------------------------- |
+| Journal, 4 posts   | The delivery loop: the five process stages from data.js.  |
+| Explorations, Dribbble | The artefacts: six of the fourteen deliverable types. |
+| 20+ yrs, 95+ projects, 200% clients | The three resume figures, each printing the line it came from. |
+
+The reference fills its cards with photography and streams a Mux video behind
+the hero. Neither is used: `portfolioCovers.tsx` draws each cover as the
+artefact the project actually produced -- a segmentation map, a dashboard, a
+traceability matrix -- and the hero reuses the generated WebGL scene. Nothing is
+hotlinked and nothing 404s when someone else's CDN moves.
+
+`check-portfolio.mjs` guards it: every value against `data.js`, a blocklist for
+the reference persona, a sweep that fails on any number rendered on the page
+that cannot be traced back to `data.js`, and a contrast pass that hides the
+glyphs and samples whatever is actually behind each run. 33 checks.
+
+    npx http-server dist -p 8271 -s &
+    URL_ME=http://127.0.0.1:8271/me/ URL_PORTFOLIO=http://127.0.0.1:8271/portfolio/ npm run check

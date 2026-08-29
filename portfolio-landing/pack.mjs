@@ -16,6 +16,7 @@ const here = (p) => fileURLToPath(new U(p, import.meta.url));
 const TARGETS = [
   { name: 'landing', html: 'dist/index.html', out: '../landing' },
   { name: 'me', html: 'dist/me/index.html', out: '../me' },
+  { name: 'portfolio', html: 'dist/portfolio/index.html', out: '../portfolio' },
 ];
 
 for (const { name, html, out } of TARGETS) {

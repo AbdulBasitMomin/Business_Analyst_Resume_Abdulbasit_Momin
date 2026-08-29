@@ -64,13 +64,13 @@ const [ROLE_1, ROLE_2] = resume.meta.role.toUpperCase().split(' ');
 // neither contains an M.
 const PIXEL_WORD = 'font-extrabold inline-block leading-none align-baseline';
 
-const META_LABEL = 'text-base tracking-widest text-white/50 uppercase mb-3 font-display';
+const META_LABEL = 'text-base tracking-widest text-white/50 uppercase mb-3 font-bitmap';
 
 // Initials rather than a brand mark. There is no logo to use and inventing one
 // would be inventing a brand that does not exist.
 function Monogram() {
   return (
-    <span className="font-display text-2xl leading-none tracking-tight select-none" aria-label={resume.meta.name}>
+    <span className="font-bitmap text-2xl leading-none tracking-tight select-none" aria-label={resume.meta.name}>
       AM
     </span>
   );
@@ -118,7 +118,7 @@ export default function Me() {
               <span className="block font-extrabold text-xl md:text-2xl">{LAST}</span>
             </h2>
             <div className="text-[10px] text-white/50 mt-3">*</div>
-            <p className="font-display mt-1 text-xs text-white/60 leading-relaxed">
+            <p className="font-bitmap mt-1 text-xs text-white/60 leading-relaxed">
               Based in {resume.meta.location},
               <br />
               open to BA roles onsite

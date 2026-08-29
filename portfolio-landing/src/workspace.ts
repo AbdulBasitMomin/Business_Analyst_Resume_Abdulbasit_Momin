@@ -230,7 +230,13 @@ export interface Workspace {
  * unavailable, so the caller can simply leave the background black rather than
  * handling an exception -- the page reads perfectly well without this layer.
  */
-export function createWorkspace(canvas: HTMLCanvasElement): Workspace | null {
+export type Layout =
+  /** Copy down the left, rig to the right of it. */
+  | 'side'
+  /** Copy centred over the rig, so the rig drops and shrinks to stay clear. */
+  | 'center';
+
+export function createWorkspace(canvas: HTMLCanvasElement, layout: Layout = 'side'): Workspace | null {
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
@@ -277,6 +283,14 @@ export function createWorkspace(canvas: HTMLCanvasElement): Workspace | null {
     // Right of centre on wide screens, clear of the headline; centred and
     // pulled back below lg, where the copy claims the full width.
     const wide = w >= 1024;
+    if (layout === 'center') {
+      // Centred copy claims the middle of the frame at every width, so the rig
+      // sits below it rather than beside it, and further back.
+      rig.position.x = 0;
+      rig.position.y = wide ? -2.6 : -3.2;
+      rig.scale.setScalar(wide ? 0.66 : 0.44);
+      return;
+    }
     rig.position.x = wide ? 2.9 : 0;
     // Below lg there is no side to sit on -- the copy claims the full width --
     // so the rig drops into the one gap the stacked layout leaves, between the

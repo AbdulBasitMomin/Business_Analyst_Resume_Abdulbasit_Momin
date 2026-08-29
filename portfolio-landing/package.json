@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node pack.mjs",
     "preview": "vite preview",
-    "check": "node check-content.mjs $URL && node check-contrast.mjs $URL && node check-behaviour.mjs $URL"
+    "check": "node check-content.mjs $URL_ME && node check-contrast.mjs $URL_ME && node check-behaviour.mjs $URL_ME && node check-portfolio.mjs $URL_PORTFOLIO"
   },
   "dependencies": {
+    "framer-motion": "^13.1.1",
+    "gsap": "^3.15.0",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

@@ -25,6 +25,7 @@ export default defineConfig({
       input: {
         landing: fileURLToPath(new URL('./index.html', import.meta.url)),
         me: fileURLToPath(new URL('./me/index.html', import.meta.url)),
+        portfolio: fileURLToPath(new URL('./portfolio/index.html', import.meta.url)),
       },
     },
   },
