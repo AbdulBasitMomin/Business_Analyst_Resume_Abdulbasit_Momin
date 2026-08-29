@@ -508,3 +508,53 @@ export function initScrollSync(onProgress) {
   window.addEventListener('resize', onScroll);
   update();
 }
+
+/**
+ * Light the opening paragraph up as it is read.
+ *
+ * Each character gets its index and the paragraph gets the position of the
+ * reveal front, so this writes a single custom property per frame and the
+ * stylesheet computes two hundred opacities from it. Writing each character's
+ * opacity from JavaScript is the obvious version and costs two hundred style
+ * writes a frame for the same picture.
+ *
+ * Characters are wrapped, not replaced: innerText is unchanged, so selecting
+ * and copying the paragraph still yields the sentence, and anything reading
+ * the page as text sees no difference.
+ */
+export function initLitText({ reducedMotion = false } = {}) {
+  const node = document.querySelector('.summary-lead');
+  if (!node || reducedMotion) return;
+
+  const text = node.textContent;
+  node.textContent = '';
+  const frag = document.createDocumentFragment();
+  [...text].forEach((ch, i) => {
+    // Spaces stay bare: a wrapped space cannot break a line, so wrapping them
+    // turns the paragraph into one unbreakable string.
+    if (ch === ' ') { frag.append(' '); return; }
+    const span = document.createElement('span');
+    span.className = 'lit-char';
+    span.style.setProperty('--i', String(i));
+    span.textContent = ch;
+    frag.append(span);
+  });
+  node.append(frag);
+
+  const total = text.length;
+  let queued = false;
+  const update = () => {
+    queued = false;
+    const r = node.getBoundingClientRect();
+    // Fully lit by the time the paragraph's top reaches a third of the screen.
+    const span = r.height + window.innerHeight * 0.55;
+    const travelled = window.innerHeight * 0.85 - r.top;
+    const p = Math.max(0, Math.min(1, travelled / span));
+    node.style.setProperty('--p', String(Math.round(p * total * 1.15)));
+  };
+  const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
+}

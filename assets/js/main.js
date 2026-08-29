@@ -5,7 +5,7 @@
  * backdrop is an enhancement attached afterwards; if it fails, the page is
  * still a full resume.
  */
-import { renderAll, initReveal, initCounters, initMagnetic, initScrollSync } from './ui.js';
+import { renderAll, initReveal, initCounters, initMagnetic, initScrollSync, initLitText } from './ui.js';
 import { initRecruiterMode, initEvidence, initStoryLab } from './interactive.js';
 import { initTrace, initTraceGraph } from './traceui.js';
 import { initCards3D } from './cards3d.js';
@@ -14,6 +14,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 
 renderAll();
 initReveal();
+initLitText({ reducedMotion });
 initCounters({ reducedMotion });
 initMagnetic({ reducedMotion });
 initRecruiterMode();

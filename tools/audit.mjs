@@ -39,6 +39,14 @@ async function run(label, url, viewport, isMobile) {
   await page.waitForTimeout(4200);
   const P = `[${label}]`;
 
+  // Instant scrolling for the run. The sheet scrolls smoothly, and a sticky
+  // element under a smooth scroll never settles inside Playwright's
+  // actionability window: the project card's disclosure toggle timed out while
+  // being, by hit test, the topmost element at its own centre. Nothing here
+  // asserts smoothness, and instant scrolling makes every position check
+  // deterministic rather than a race.
+  await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' });
+
   // Measured on arrival, before this script expands anything: the number that
   // matters is the page a recruiter actually lands on.
   const landingHeight = await page.evaluate(() => document.documentElement.scrollHeight);
@@ -218,9 +226,12 @@ async function run(label, url, viewport, isMobile) {
       await page.evaluate(() => window.scrollTo(0, 0));
       await settle();
       await page.click('#palette-open');
-      await page.waitForTimeout(200);
+      // Wait for the overlay rather than a fixed pause: a bare timeout here
+      // reports the failure one step later, on the row that was never drawn.
+      await page.waitForSelector('#palette-input', { state: 'visible', timeout: 5000 });
       await page.fill('#palette-input', query);
-      await page.waitForTimeout(200);
+      await page.waitForSelector('#palette-list li', { state: 'visible', timeout: 5000 });
+      await page.waitForTimeout(120);
       const row = await page.evaluate(() => {
         const li = document.querySelector('#palette-list li');
         return li ? li.textContent.replace(/\s+/g, ' ').trim() : null;

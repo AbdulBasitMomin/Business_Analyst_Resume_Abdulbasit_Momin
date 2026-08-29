@@ -17,7 +17,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;800;900&family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
 <link rel="stylesheet" href="./assets/css/style.css" />
 
@@ -81,9 +81,9 @@
 
   <!-- ============ HEADER: the resume masthead ============ -->
   <header class="masthead" id="masthead">
+    <p class="eyebrow" id="hero-availability" style="--seq:0"></p>
+    <h1 class="hero-name hero-heading" id="hero-name" style="--seq:1"></h1>
     <div class="mast-main">
-      <p class="eyebrow" id="hero-availability" style="--seq:0"></p>
-      <h1 class="hero-name" id="hero-name" style="--seq:1"></h1>
       <p class="hero-role" style="--seq:2">Business Analyst</p>
       <p class="hero-disciplines" style="--seq:3">Business Analysis · Data · AI · Agile · Process Improvement</p>
       <p class="hero-tagline" style="--seq:4">Turning complex business problems into clear, measurable solutions.</p>
@@ -103,20 +103,20 @@
 
   <!-- ============ SUMMARY ============ -->
   <section class="section" id="summary">
-    <h2 class="section-title">Professional summary</h2>
+    <h2 class="section-title hero-heading">Professional summary</h2>
     <div class="summary-body" id="summary-body"></div>
   </section>
 
   <!-- ============ EXPERIENCE ============ -->
   <section class="section" id="experience">
-    <h2 class="section-title">Experience</h2>
+    <h2 class="section-title hero-heading">Experience</h2>
     <div class="gfx-slot reveal" id="gfx-timeline"></div>
     <div class="timeline" id="timeline"></div>
   </section>
 
   <!-- ============ SKILLS ============ -->
   <section class="section" id="skills">
-    <h2 class="section-title">Skills &amp; tools</h2>
+    <h2 class="section-title hero-heading">Skills &amp; tools</h2>
     <p class="section-lede">Grouped as they appear on the resume. Select a capability to see the role it was used in
       and the exact line that supports it. Or start from an achievement in Experience and work back to what it evidences.</p>
     <div class="ev-layout">
@@ -155,21 +155,21 @@
 
   <!-- ============ PROJECTS ============ -->
   <section class="section" id="projects">
-    <h2 class="section-title">Selected projects</h2>
+    <h2 class="section-title hero-heading">Selected projects</h2>
     <p class="section-lede">Problem, what I did, and the outcome. Expand for the full breakdown.</p>
     <div class="case-list" id="case-list"></div>
   </section>
 
   <!-- ============ BUSINESS IMPACT ============ -->
   <section class="section" id="impact">
-    <h2 class="section-title">Business impact</h2>
+    <h2 class="section-title hero-heading">Business impact</h2>
     <p class="section-lede">What measurably changed, and where. Each line traces to an achievement on the resume.</p>
     <ul class="impact-list" id="impact-list"></ul>
   </section>
 
   <!-- ============ EDUCATION ============ -->
   <section class="section" id="education">
-    <h2 class="section-title">Education &amp; certifications</h2>
+    <h2 class="section-title hero-heading">Education &amp; certifications</h2>
     <div class="edu-layout">
       <div class="edu-list" id="education-list"></div>
       <div class="cert-list" id="cert-list"></div>
@@ -178,7 +178,7 @@
 
   <!-- ============ METHOD: the BA thinking, kept compact ============ -->
   <section class="section" id="method">
-    <h2 class="section-title">How I work</h2>
+    <h2 class="section-title hero-heading">How I work</h2>
     <p class="section-lede">The lifecycle of a business problem, end to end. This is the part a skills list cannot show.</p>
 
     <nav class="lifecycle-rail" id="lifecycle-rail" aria-label="Lifecycle stages"></nav>
@@ -243,7 +243,7 @@
 
   <!-- ============ ASK ============ -->
   <section class="section" id="ask">
-    <h2 class="section-title">Ask my experience</h2>
+    <h2 class="section-title hero-heading">Ask my experience</h2>
     <p class="section-lede">Every answer is skill, project, and the resume line behind it. Nothing else.</p>
     <div class="ask-wrap">
       <form class="ask-form" id="ask-form" autocomplete="off">
