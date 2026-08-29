@@ -7,7 +7,7 @@ and basis33 for the bitmap words.
 | Source            | Published to | What it is                                                     |
 | ----------------- | ------------ | -------------------------------------------------------------- |
 | `src/App.tsx`     | `../landing` | The reference recreated exactly, hotlinked stock video and all. |
-| `src/Me.tsx`      | `../me`      | The same composition, real resume, generated background.        |
+| `src/Me.tsx`      | `../me`      | The same composition, real resume, generated background, self-hosted fonts. |
 
 Both are separate from the resume site in the repository root and share nothing
 with it. The resume site stays a no-build static page, which is what lets it
@@ -121,7 +121,25 @@ single still frame rather than dropping the composition, and the canvas is
 
 ## Fonts
 
-The spec names exact URLs for Inter and basis33 and says not to substitute them.
-They are used verbatim on both pages. Both are blocked by this sandbox's egress
-proxy (`CONNECT tunnel failed, 403`), so measurements here were taken with Inter
-self-hosted locally and monospace standing in for basis33.
+`../landing` loads them as the spec names them: Inter from Google Fonts,
+basis33 from its aggregator, two `<link>` tags in the head.
+
+`../me` does neither, because it has to match the resume site in the repository
+root and that site self-hosts everything so its single-file standalone opens
+offline. basis33 cannot be self-hosted here: it is served only by
+`db.onlinewebfonts.com`, which this environment's egress policy denies outright
+and whose licence for commercial use is unclear either way.
+
+**Silkscreen** stands in. It was picked by rendering ten self-hostable pixel
+faces at the sizes this page uses and comparing them against basis33 as it
+renders in a real browser -- Silkscreen has the same single-pixel strokes and
+wide letterforms, and it is OFL. Both pages that carry the real name now use it,
+so the jump from one to the other is not a jump. It sets wider than basis33,
+which the layout had to absorb: display words dropped from `1.25em` to `1.05em`
+and the bottom row went from an even split to `1.45fr 1fr`, because at the old
+values `DELIVERABLES` ran past its column edge and `REQUIREMENTS &` overflowed
+on its own between `lg` and `xl`.
+
+`../me` makes no external request of any kind: no font CDN, no video host,
+nothing. Verified by loading it with every non-local request aborted -- seven
+faces resolve, Silkscreen renders, zero requests attempted.

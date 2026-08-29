@@ -14,7 +14,7 @@ const text = await page.evaluate(() => document.body.innerText);
 const d = await page.evaluate(() => ({
   title: document.title,
   h1: document.querySelector('h1').innerText.replace(/\n/g, ' '),
-  pixel: [...document.querySelectorAll('h1 .font-pixel')].map(e => e.textContent),
+  pixel: [...document.querySelectorAll('h1 .font-display')].map(e => e.textContent),
   chips: [...document.querySelectorAll('.bg-\\[\\#0B0B0B\\]')].map(e => ({ t: e.innerText.replace(/\n/g, ' '), title: e.title })),
   navHrefs: [...document.querySelectorAll('nav a')].map(a => a.getAttribute('href')),
   cta: { href: document.querySelector('a[download]')?.getAttribute('href'), text: document.querySelector('a[download]')?.innerText },

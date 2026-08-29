@@ -9,7 +9,8 @@
 # woff2, which is roughly twice the size.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+rm -f assets/fonts/*.woff2   # stale families would otherwise linger unreferenced
 UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-URL="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+URL="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap"
 curl -sS -A "$UA" "$URL" -o /tmp/gf.css
 python3 tools/fetch-fonts.py

@@ -15,11 +15,11 @@
    ========================================================================= */
 
 :root {
-  /* The reference's background, taken exactly: a flat neutral near-black, with
-     no cast and no ambient gradients over it. The page is a portfolio, and the
-     backdrop it wants is the WebGL layer, not a tinted room. */
-  --bg: #0C0C0C;
-  --bg-2: #141414;
+  /* Pure black, matching the landing page this site sits behind. The two used
+     to be #000 and #0C0C0C, which is close enough to look like a mistake
+     rather than a decision when a visitor crosses from one to the other. */
+  --bg: #000000;
+  --bg-2: #0d0d0d;
 
   /* Elevation ladder. Real surfaces, so stacked panels do not accumulate haze
      the way repeated translucency does. Translucent enough that the ambient
@@ -61,11 +61,16 @@
   --success: #4ec98a;
   --warn: #d9a227;
 
-  /* Kanit throughout, at the reference's weight range. One face for the page:
-     the display sizes and the body copy are the same family, so the identity
-     holds from the name down to a bullet. */
-  --font: 'Kanit', system-ui, -apple-system, sans-serif;
-  --font-display: 'Kanit', system-ui, sans-serif;
+  /* Inter for reading, Silkscreen for display -- the landing page's pairing,
+     so the identity holds across the jump from it to here.
+
+     The landing page's display face is basis33, which is served only by a font
+     aggregator with no clear commercial licence and which would have to be
+     linked rather than self-hosted, costing this page its offline standalone
+     and adding a third-party request to every load. Silkscreen is the nearest
+     self-hostable equivalent and is OFL. */
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Silkscreen', 'Inter', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --gutter: clamp(1.15rem, 5vw, 4.5rem);
@@ -207,9 +212,13 @@ dl, dd, dt { margin: 0; }
 
 .hero-heading {
   font-family: var(--font-display);
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  line-height: 0.92;
+  /* A bitmap face has two weights and no optical compensation, so the negative
+     tracking a variable display face wanted here closes the counters up. It
+     needs the opposite: air between the glyphs, and leading a fraction looser
+     because the letterforms sit tall in their box. */
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  line-height: 1.02;
   background: linear-gradient(180deg, #8E9AA8 0%, #E8EFF6 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -218,7 +227,11 @@ dl, dd, dt { margin: 0; }
 }
 
 .hero-name {
-  font-size: clamp(2.15rem, 10.5vw, 8.4rem);
+  /* Stepped down from clamp(2.15rem, 10.5vw, 8.4rem). Silkscreen sets about
+     14% wider than Kanit did, and ABDULBASIT is ten characters: at the old cap
+     it needed 1112px inside a 976px column and lost its last letter off the
+     right edge. The audit measures this now rather than trusting the clamp. */
+  font-size: clamp(2rem, 9vw, 7rem);
   text-transform: uppercase;
   margin-bottom: 0.15em;
 }
@@ -259,7 +272,10 @@ dl, dd, dt { margin: 0; }
 .section:last-of-type { border-bottom: 0; }
 /* Large, but nine of them at full display scale is a shouting match. */
 .section-title {
-  font-size: clamp(1.75rem, 4vw, 2.9rem);
+  /* Stepped down from 2.9rem. Silkscreen sets appreciably wider than Kanit at
+     the same size, and the longest heading here is PROFESSIONAL SUMMARY. */
+  font-size: clamp(1.35rem, 3vw, 2.15rem);
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   margin-bottom: 1rem;
 }
@@ -1233,6 +1249,16 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
   .ev-grid { gap: 0.15rem 0.5rem; }
   .ev-chip { border: 0; background: none; padding: 0; font-size: 9.5pt; }
   .ev-chip::after { content: ' ·'; color: #888; }
+
+  /* Print stays on Inter. A bitmap display face is a screen device: on paper
+     it reads as a novelty rather than as a resume, and this PDF is the copy a
+     recruiter prints and marks up. The identity the landing page shares is a
+     screen identity. */
+  .hero-heading, .section-title, .contact-title, .hero-name, .eyebrow {
+    font-family: var(--font) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+  }
 
   .eyebrow, .hero-role, .role-org, .proj-org, .edu-school,
   .section-title, .contact-title, .stat-value { color: #000 !important; }

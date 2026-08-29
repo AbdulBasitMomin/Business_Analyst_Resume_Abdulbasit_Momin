@@ -54,15 +54,17 @@ const [ROLE_1, ROLE_2] = resume.meta.role.toUpperCase().split(' ');
 // The two headline words that break out of Inter into the bitmap face. 1.25em
 // keeps them optically level with the Inter caps around them, which sit on a
 // larger body relative to their cap height.
-const PIXEL_WORD = 'font-pixel font-normal text-[1.25em] inline-block leading-none align-baseline';
+// 1.05em, not the reference's 1.25em: Silkscreen sets wider than the basis33
+// it stands in for, and at 1.25em DELIVERABLES ran past the column edge.
+const PIXEL_WORD = 'font-display font-normal text-[1.05em] inline-block leading-none align-baseline';
 
-const META_LABEL = 'text-base tracking-widest text-white/50 uppercase mb-3 font-pixel';
+const META_LABEL = 'text-base tracking-widest text-white/50 uppercase mb-3 font-display';
 
 // Initials rather than a brand mark. There is no logo to use and inventing one
 // would be inventing a brand that does not exist.
 function Monogram() {
   return (
-    <span className="font-pixel text-2xl leading-none tracking-tight select-none" aria-label={resume.meta.name}>
+    <span className="font-display text-2xl leading-none tracking-tight select-none" aria-label={resume.meta.name}>
       AM
     </span>
   );
@@ -107,10 +109,10 @@ export default function Me() {
           <div>
             <h2 className="text-lg md:text-xl tracking-wide leading-tight">
               <span className="block font-normal">{FIRST}</span>
-              <span className="block font-pixel text-2xl md:text-3xl">{LAST}</span>
+              <span className="block font-display text-2xl md:text-3xl">{LAST}</span>
             </h2>
             <div className="text-[10px] text-white/50 mt-3">*</div>
-            <p className="font-pixel mt-1 text-xs text-white/60 leading-relaxed">
+            <p className="font-display mt-1 text-xs text-white/60 leading-relaxed">
               Based in {resume.meta.location},
               <br />
               open to BA roles onsite
@@ -124,7 +126,7 @@ export default function Me() {
           <div className="text-right lg:text-left">
             <h2 className="text-lg md:text-xl tracking-wide leading-tight">
               <span className="block font-normal">{ROLE_1}</span>
-              <span className="block font-pixel text-2xl md:text-3xl">{ROLE_2}</span>
+              <span className="block font-display text-2xl md:text-3xl">{ROLE_2}</span>
             </h2>
           </div>
 
@@ -148,11 +150,14 @@ export default function Me() {
         <div className="flex-1" />
 
         <div className="pb-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-end">
+          {/* Not an even split. The right column holds a button and three small
+              chips; the headline needs the room far more, and at an even split
+              REQUIREMENTS & overran the column on its own between lg and xl. */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-4 sm:gap-6 items-end">
             {/* 0.72 leading is tighter than any Tailwind step and is the whole
                 look of the headline -- the lines interlock rather than stack. */}
             <h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] xl:text-[4.25rem] tracking-wide uppercase font-normal"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] xl:text-[3.75rem] 2xl:text-[4.25rem] tracking-wide uppercase font-normal"
               style={{ lineHeight: 0.72 }}
             >
               I TURN THE

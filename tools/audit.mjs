@@ -315,9 +315,26 @@ async function run(label, url, viewport, isMobile) {
   });
   check(`${P} cards carry the lit material`, theme.cards >= 12 && theme.lit === theme.cards,
     JSON.stringify({ cards: theme.cards, lit: theme.lit }));
+  // Pure black, matching the landing page. Was #0C0C0C, which next to the
+  // landing page's #000 looked like a mistake rather than a decision.
   check(`${P} background is the flat reference colour`,
-    theme.bgFlat === 'rgb(12, 12, 12)' && !theme.bgLayer.includes('gradient'),
+    theme.bgFlat === 'rgb(0, 0, 0)' && !theme.bgLayer.includes('gradient'),
     JSON.stringify({ bg: theme.bgFlat, layer: theme.bgLayer.slice(0, 24) }));
+  // Display type is set in a bitmap face with no optical sizing, so a clamp
+  // tuned for the old proportional face silently overflows its column and
+  // clips the last letter. Word-wrapping cannot rescue a single long word,
+  // which is exactly what the surname and PROFESSIONAL SUMMARY are.
+  const overflow = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll('.hero-name, .section-title, .contact-title').forEach((el) => {
+      if (el.scrollWidth > el.clientWidth + 1) {
+        bad.push(`${el.className.split(' ')[0]} "${el.textContent.trim().slice(0, 18)}" ${el.scrollWidth}/${el.clientWidth}`);
+      }
+    });
+    return bad;
+  });
+  check(`${P} display type fits its column`, overflow.length === 0, overflow.join('; '));
+
   // Nothing should be left mid-tilt when no pointer is on it.
   check(`${P} no card holds stale tilt state`, theme.stray === 0, String(theme.stray));
 

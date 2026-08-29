@@ -22,8 +22,18 @@ for (const { name, html, out } of TARGETS) {
   const dir = here(out);
   const raw = await readFile(here(html), 'utf8');
 
-  const refs = [...new Set([...raw.matchAll(/\.{1,2}\/assets\/([^"']+)/g)].map((m) => m[1]))];
-  if (!refs.length) throw new Error(`${name}: no assets referenced -- pack would ship an empty page`);
+  const refs = new Set([...raw.matchAll(/\.{1,2}\/assets\/([^"']+)/g)].map((m) => m[1]));
+  if (!refs.size) throw new Error(`${name}: no assets referenced -- pack would ship an empty page`);
+
+  // Stylesheets reference assets of their own -- the self-hosted woff2 files
+  // are named only inside the CSS, never in the markup -- so follow one level
+  // in. Without this the personal page shipped with no fonts at all.
+  for (const ref of [...refs].filter((r) => r.endsWith('.css'))) {
+    const css = await readFile(here(`dist/assets/${ref}`), 'utf8');
+    for (const m of css.matchAll(/url\(["']?\.{0,2}\/?(?:assets\/)?([\w.-]+\.(?:woff2?|ttf|otf|png|svg|jpe?g))["']?\)/g)) {
+      refs.add(m[1]);
+    }
+  }
 
   await rm(dir, { recursive: true, force: true });
   await mkdir(`${dir}/assets`, { recursive: true });
@@ -41,6 +51,6 @@ for (const { name, html, out } of TARGETS) {
   await writeFile(`${dir}/index.html`, markup);
 
   const shipped = await readdir(`${dir}/assets`);
-  if (shipped.length !== refs.length) throw new Error(`${name}: stale files left in assets/`);
-  console.log(`packed ${name} -> ${out}/  (${refs.length} assets, ${(bytes / 1024).toFixed(0)} KB)`);
+  if (shipped.length !== refs.size) throw new Error(`${name}: stale files left in assets/`);
+  console.log(`packed ${name} -> ${out}/  (${refs.size} assets, ${(bytes / 1024).toFixed(0)} KB)`);
 }

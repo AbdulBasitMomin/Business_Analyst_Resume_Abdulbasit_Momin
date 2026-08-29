@@ -80,7 +80,9 @@ export function renderTimelineGraphic(node) {
           const x1 = x(r.from);
           const w = Math.max(x(r.to) - x1, 6);
           // A short span cannot hold its own label; put it alongside instead of
-          // letting the text run off the end of the bar.
+          // letting the text run off the end of the bar. This is a first guess
+          // only, so the bars are not visibly re-placed on load; placeLabels()
+          // corrects it against the text as actually rendered.
           const estimate = r.label.length * 6.3 + 18;
           const inside = w >= estimate;
           const tx = inside ? x1 + 9 : x1 + w + 8;
@@ -91,6 +93,39 @@ export function renderTimelineGraphic(node) {
         }).join('')}
       </svg>
     </figure>`;
+
+  placeLabels(node);
+}
+
+/**
+ * Decide inside-or-alongside from the measured text rather than from a
+ * per-character constant.
+ *
+ * The constant was 6.3px per character, which was right for exactly one font
+ * and became wrong the moment the page changed face -- BodyWellnessAI was
+ * judged to fit and ran off the end of its bar. getComputedTextLength returns
+ * viewBox units, the same space the bar geometry is in, so the comparison is
+ * exact whatever the font turns out to be.
+ *
+ * Runs twice: once now, and again once webfonts have loaded, because the first
+ * measurement would otherwise be of the fallback face.
+ */
+function placeLabels(node) {
+  const measure = () => {
+    node.querySelectorAll('.gfx-bar').forEach((g) => {
+      const rect = g.querySelector('rect');
+      const text = g.querySelector('text');
+      if (!rect || !text) return;
+      const x1 = parseFloat(rect.getAttribute('x'));
+      const w = parseFloat(rect.getAttribute('width'));
+      // 9 units of padding at the leading edge, the same again as trailing air.
+      const inside = w >= text.getComputedTextLength() + 18;
+      g.classList.toggle('is-outside', !inside);
+      text.setAttribute('x', (inside ? x1 + 9 : x1 + w + 8).toFixed(1));
+    });
+  };
+  measure();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure).catch(() => {});
 }
 
 /* ==================== coverage matrix ==================== */
