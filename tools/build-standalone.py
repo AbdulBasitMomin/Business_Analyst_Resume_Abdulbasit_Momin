@@ -88,6 +88,34 @@ def three_iife() -> str:
     )
 
 
+def inline_fonts() -> str:
+    """Fonts as data: URLs inside the stylesheet.
+
+    A relative @font-face src is a fetch, and the standalone file is meant to
+    open from a filesystem or an email attachment with no network and no
+    sibling files. Left as a link it fell back to a system face, which is the
+    one thing this build exists to avoid.
+
+    CSP is not a concern here the way it is for scripts: `data:` in `font-src`
+    is not what the restrictive policies block, and a font that fails to load
+    degrades to a fallback rather than killing the page.
+    """
+    css = (ROOT / 'assets' / 'css' / 'fonts.css').read_text()
+
+    def swap(match):
+        rel = match.group(1)
+        path = (ROOT / 'assets' / 'css' / rel).resolve()
+        if not path.exists():
+            sys.exit(f'fonts.css references a missing file: {rel}')
+        b64 = base64.b64encode(path.read_bytes()).decode()
+        return f"url(data:font/woff2;base64,{b64})"
+
+    out, n = re.subn(r'url\(([^)]+\.woff2)\)', swap, css)
+    if not n:
+        sys.exit('fonts.css: no woff2 sources found -- update the bundler')
+    return out
+
+
 def module_iife(name: str) -> str:
     src = (ROOT / 'assets' / 'js' / name).read_text()
 
@@ -136,6 +164,7 @@ def module_iife(name: str) -> str:
 def main() -> None:
     html = BASE.read_text()
     css = (ROOT / 'assets' / 'css' / 'style.css').read_text()
+    fonts_css = inline_fonts()
     favicon = (ROOT / 'assets' / 'favicon.svg').read_bytes()
     pdf_path = ROOT / 'assets' / 'Abdulbasit-Momin-Business-Analyst.pdf'
 
@@ -159,6 +188,7 @@ def main() -> None:
 
     subs = [
         # (label, pattern, replacement, expected count)
+        ('fonts', r'<link rel="stylesheet" href="[^"]*fonts\.css"\s*/?>', f'<style>\n{fonts_css}\n</style>', 1),
         ('stylesheet', r'<link rel="stylesheet" href="[^"]*style\.css"\s*/?>', f'<style>\n{css}\n</style>', 1),
         ('favicon', r'<link rel="icon"[^>]*href="[^"]*favicon\.svg"\s*/?>',
          f'<link rel="icon" type="image/svg+xml" href="{favicon_url}">', 1),

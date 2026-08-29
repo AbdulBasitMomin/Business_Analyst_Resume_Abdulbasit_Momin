@@ -15,22 +15,23 @@
    ========================================================================= */
 
 :root {
-  /* Base. Graphite with a faint cool cast: neutral enough to read as paper
-     stock rather than as a colour choice. */
-  --bg: #0a0b0f;
-  --bg-2: #101218;
+  /* The reference's background, taken exactly: a flat neutral near-black, with
+     no cast and no ambient gradients over it. The page is a portfolio, and the
+     backdrop it wants is the WebGL layer, not a tinted room. */
+  --bg: #0C0C0C;
+  --bg-2: #141414;
 
   /* Elevation ladder. Real surfaces, so stacked panels do not accumulate haze
      the way repeated translucency does. Translucent enough that the ambient
      light tints the face, opaque enough that the backdrop artefacts do not
      read through it: at 0.72 a wireframe monitor was visible inside a stat
      tile, behind the number. */
-  --panel: rgba(25, 27, 34, 0.94);
-  --panel-2: rgba(33, 36, 45, 0.95);
-  --panel-solid: #171a21;
+  --panel: rgba(26, 26, 26, 0.94);
+  --panel-2: rgba(34, 34, 34, 0.95);
+  --panel-solid: #1a1a1a;
 
-  --line: rgba(180, 186, 200, 0.12);
-  --line-2: rgba(180, 186, 200, 0.22);
+  --line: rgba(196, 196, 200, 0.12);
+  --line-2: rgba(196, 196, 200, 0.22);
   /* The 1px catch of light along a card's upper border. */
   --edge: rgba(255, 255, 255, 0.06);
   --edge-strong: rgba(255, 255, 255, 0.11);
@@ -60,11 +61,11 @@
   --success: #4ec98a;
   --warn: #d9a227;
 
-  --font: 'Sora', system-ui, -apple-system, sans-serif;
-  /* Display face. Kanit is used for the name and the section titles only: it
-     has the weight range for large type, and the body stays on a face chosen
-     for reading a page of it. */
-  --font-display: 'Kanit', 'Sora', system-ui, sans-serif;
+  /* Kanit throughout, at the reference's weight range. One face for the page:
+     the display sizes and the body copy are the same family, so the identity
+     holds from the name down to a bullet. */
+  --font: 'Kanit', system-ui, -apple-system, sans-serif;
+  --font-display: 'Kanit', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --gutter: clamp(1.15rem, 5vw, 4.5rem);
@@ -95,18 +96,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Ambient light. Three soft sources, fixed rather than scrolling, so the room
-   is lit from consistent directions and the gradients paint once. Held under
-   7% alpha: at 11% the tint pulled the graphite base back towards navy and
-   undid the point of a near-neutral ground. Light, not colour. */
-body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    radial-gradient(1150px 720px at 84% -8%, rgba(85, 144, 216, 0.07), transparent 62%),
-    radial-gradient(920px 640px at 4% 30%, rgba(144, 133, 233, 0.045), transparent 64%),
-    radial-gradient(1250px 820px at 62% 106%, rgba(85, 144, 216, 0.038), transparent 66%);
-}
+/* No ambient layer. The reference's background is a flat #0C0C0C, and three
+   coloured sources over it is a different design decision, not that one. What
+   lights the page here is the WebGL backdrop. */
 
 #bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
 .grain {
@@ -1114,9 +1106,6 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
      with less of it. */
   .stat { padding: 0.55rem 0.65rem; }
   .outcome { padding: 0.8rem 0.9rem; }
-  /* Nine display-sized section titles are most of the extra height the new
-     type costs, and this is the width with the least to spare. */
-  .section-title { font-size: 1.5rem; margin-bottom: 0.7rem; }
   .masthead { padding-top: 2.8rem; }
 }
 
@@ -1157,9 +1146,10 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
      the duplicate content the brief warns about -- and it cost a page. */
   #impact,
   #contact,
-  /* Cut for space, and once the problem/solution/result lines went the
-     section was a list of names. The full breakdown is on the site, which the
-     masthead now links to. */
+  /* Tried again once Kanit's tighter metrics freed half a page: with the
+     projects back the content is 1.84 pages and break boundaries push it onto
+     a third. Two pages with the projects on the site, which the masthead
+     prints, beats three pages with them on paper. */
   #projects,
   .extra, .proj-more, .section-lede { display: none !important; }
   .outcome { background: #fff; border-color: #ccc; border-left-color: #666; break-inside: avoid; }
@@ -1177,10 +1167,8 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
     color: #000 !important;
   }
 
-  /* The screen theme is a lit dark room. On paper none of it survives
-     usefully: the ambient gradients tint the page, and a dark elevation
-     shadow prints as a grey smear around every card. */
-  body::before { display: none !important; }
+  /* On paper a dark elevation shadow prints as a grey smear around every card
+     and the card faces print as grey boxes. */
   .card3d, .proj, .outcome, .ask-card, .sl-panel, .ev-detail, .ai-block,
   .rm-inner, .mf-step, .stat, .trace-chain, .tg-stage, .stake-panel {
     /* `background`, not `background-image`: the tile surfaces are a colour as
@@ -1232,11 +1220,12 @@ body.recruiter-mode #bg-canvas { opacity: 0.1; }
   .role-title { font-size: 10.5pt; }
   .role-list { gap: 0.15rem; }
   .role-list li { font-size: 9.5pt; }
-  .proj { break-inside: avoid; background: #fff; border: 0; border-top: 1px solid #ddd; border-radius: 0; padding: 0.3rem 0; }
+  .proj { break-inside: avoid; background: #fff; border: 0; border-top: 1px solid #ddd; border-radius: 0; padding: 0.22rem 0; }
   .proj-head { margin-bottom: 0.05rem; display: flex; justify-content: space-between; gap: 0.6rem; align-items: baseline; }
   .proj-title { font-size: 10pt; }
   .proj-org, .proj-dates, .proj-tools { font-size: 8.5pt; }
-  .proj-tools { margin: 0.1rem 0 0; }
+  /* The stack is already listed under Skills; on paper it is a second copy. */
+  .proj-tools { display: none; }
   .proj-par { display: none; }
   .proj-par div { grid-template-columns: 52px 1fr; gap: 0.4rem; }
   .proj-par dt { font-size: 8.5pt; }

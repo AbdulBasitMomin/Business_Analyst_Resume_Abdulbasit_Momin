@@ -306,13 +306,18 @@ async function run(label, url, viewport, isMobile) {
     return {
       cards: cards.length,
       lit: lit.length,
-      ambient: getComputedStyle(document.body, '::before').backgroundImage.includes('gradient'),
+      // The background is a flat #0C0C0C, taken from the reference. If a
+      // gradient reappears behind the page, something has re-tinted it.
+      bgFlat: getComputedStyle(document.body).backgroundColor,
+      bgLayer: getComputedStyle(document.body, '::before').backgroundImage,
       stray: cards.filter((n) => ['--rx', '--ry'].some((v) => n.style.getPropertyValue(v))).length,
     };
   });
   check(`${P} cards carry the lit material`, theme.cards >= 12 && theme.lit === theme.cards,
     JSON.stringify({ cards: theme.cards, lit: theme.lit }));
-  check(`${P} ambient light layer present`, theme.ambient);
+  check(`${P} background is the flat reference colour`,
+    theme.bgFlat === 'rgb(12, 12, 12)' && !theme.bgLayer.includes('gradient'),
+    JSON.stringify({ bg: theme.bgFlat, layer: theme.bgLayer.slice(0, 24) }));
   // Nothing should be left mid-tilt when no pointer is on it.
   check(`${P} no card holds stale tilt state`, theme.stray === 0, String(theme.stray));
 
