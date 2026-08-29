@@ -7,19 +7,23 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node pack.mjs",
     "preview": "vite preview",
-    "check": "node check-content.mjs http://127.0.0.1:8210/me/"
+    "check": "node check-content.mjs $URL && node check-contrast.mjs $URL && node check-behaviour.mjs $URL"
   },
   "dependencies": {
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.169.0"
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.169.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "pngjs": "^7.0.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Download, Menu, X } from 'lucide-react';
+import Backdrop from './Backdrop';
 import { resume } from '@resume';
 
 // The live resume this page fronts. Absolute rather than relative, because the
@@ -72,14 +73,11 @@ export default function Me() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black text-white">
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover lg:scale-[1.2]"
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260725_114042_d2ed2a89-f2fa-449b-9609-da456344257b.mp4"
-      />
+      {/* The reference's background is a stock video of a model on someone
+          else's CDN -- not licensed here, unrelated to the work, and dead the
+          day that URL moves. This is a generated scene of the instruments the
+          role actually uses instead. */}
+      <Backdrop />
 
       <div className="relative z-10 flex h-full flex-col px-5 sm:px-6 md:px-10 lg:px-14">
         <nav className="flex items-center justify-between py-6">

@@ -4,10 +4,10 @@ Two full-viewport landing compositions built to a supplied spec: React +
 TypeScript + Tailwind + Vite, `lucide-react` for the icons, Inter for body text
 and basis33 for the bitmap words.
 
-| Source            | Published to | What it is                                        |
-| ----------------- | ------------ | ------------------------------------------------- |
-| `src/App.tsx`     | `../landing` | The reference recreated exactly, as specified.    |
-| `src/Me.tsx`      | `../me`      | The same composition carrying the real resume.     |
+| Source            | Published to | What it is                                                     |
+| ----------------- | ------------ | -------------------------------------------------------------- |
+| `src/App.tsx`     | `../landing` | The reference recreated exactly, hotlinked stock video and all. |
+| `src/Me.tsx`      | `../me`      | The same composition, real resume, generated background.        |
 
 Both are separate from the resume site in the repository root and share nothing
 with it. The resume site stays a no-build static page, which is what lets it
@@ -42,10 +42,10 @@ the real sections of the live resume.
 `check-content.mjs` is the guard. It asserts every rendered value against
 `data.js` and fails on any of the reference's copy surviving into the personal
 page -- the persona, the awards, the invented counts, the services not
-performed:
+performed. `npm run check` runs it with the contrast and behaviour guards:
 
-    npx http-server dist -p 8210 -s &
-    npm run check        # 35 checks
+    npx http-server dist -p 8240 -s &
+    URL=http://127.0.0.1:8240/me/ npm run check     # 35 + 9 + 7
 
 ## The single viewport
 
@@ -78,13 +78,50 @@ measurable here, see below. If `AMBIGUOUS INTO` does split on a real browser,
 a shorter word on that line fixes it; `UNCLEAR INTO` measured equal to the
 reference.
 
-## Three external assets
+## The background
 
-The spec names exact URLs for the background video, Inter and basis33 and says
-not to substitute them. They are used verbatim. Inter and basis33 are blocked by
-this sandbox's egress proxy (`CONNECT tunnel failed, 403`), so measurements here
-were taken with Inter self-hosted locally and monospace standing in for basis33.
+`../landing` keeps the specified video, because it is a faithful recreation.
+`../me` does not. That video is a stock clip of a model, hotlinked from a
+CloudFront bucket belonging to whoever produced the original page: not licensed
+here, unrelated to the work, and dead the day that URL moves.
 
-The video is hotlinked from a CloudFront bucket belonging to whoever produced
-the original page. It is not served from this repository, it is not licensed to
-this one, and it will break whenever that URL moves.
+`src/workspace.ts` replaces it with a scene of the instruments the role actually
+uses -- a laptop running a dashboard whose bars and trend line animate, drifting
+requirements documents, and the delivery loop with a marker running the circuit.
+Every vertex is generated at runtime, so there is no asset to licence and
+nothing to 404. Drawn as unlit wireframe rather than solid props, because at the
+alpha this layer runs at a solid model turns into a grey smudge while an outline
+stays legible. Geometry and materials are built once and shared, keys are one
+instanced mesh, and the loop stops when the tab is hidden.
+
+It costs 125 KB gzipped, which is three.js. That is more JavaScript than the
+rest of the page put together and far less than the video it replaces.
+
+### Keeping the copy readable over it
+
+Text contrast is measured against the composited frame, not against token
+values: `check-contrast.mjs` screenshots each viewport with the copy hidden,
+finds the brightest pixel under every text run, composites the run's own colour
+over it and computes the ratio. Nine viewports, and the worst run is 4.83:1
+against a 4.5 floor.
+
+Getting there was not a matter of moving the rig. Each nudge to dodge one
+collision only held until some untested window size put a bright edge behind a
+different line -- 1440 cleared and 1280 broke, then 1280 cleared and 375 broke.
+The fix is structural: gradient scrims over the two bands the copy occupies, the
+meta grid along the top and the headline along the bottom, leaving the middle of
+the frame where the laptop is at full strength. Below `lg` the canvas also drops
+to 25% opacity, because the stacked layout leaves the scene nowhere to sit that
+is not behind a line of text.
+
+Three ways it degrades, all covered by `check-behaviour.mjs`: no WebGL renders
+the page on plain black with no uncaught error, `prefers-reduced-motion` holds a
+single still frame rather than dropping the composition, and the canvas is
+`aria-hidden`.
+
+## Fonts
+
+The spec names exact URLs for Inter and basis33 and says not to substitute them.
+They are used verbatim on both pages. Both are blocked by this sandbox's egress
+proxy (`CONNECT tunnel failed, 403`), so measurements here were taken with Inter
+self-hosted locally and monospace standing in for basis33.
