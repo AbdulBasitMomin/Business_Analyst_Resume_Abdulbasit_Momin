@@ -10,12 +10,22 @@
 # writing to its own repository already has permission, which is why this pulls
 # from the resume site rather than the resume site pushing to it.
 #
-# Afterwards: Actions -> "Sync from the resume site" -> Run workflow, to do the
-# first copy immediately. After that it runs itself every three hours.
+# Committing it starts the first run by itself. After that it runs on every
+# push here and every three hours, and there is a Run workflow button on
+# Actions -> "Sync from the resume site" for when you do not want to wait.
+#
+# IF THE RUN FAILS ON THE PUSH STEP, the repo is set to read-only for Actions:
+#   Settings -> Actions -> General -> Workflow permissions
+#   -> "Read and write permissions" -> Save
 # ============================================================================
 name: Sync from the resume site
 
 on:
+  # Runs the moment this file is committed, so installing it is the whole
+  # setup. Pushes made by a workflow's own GITHUB_TOKEN do not start further
+  # runs, so the commit at the end of this job cannot loop back into it.
+  push:
+    branches: [main]
   schedule:
     - cron: '0 */3 * * *'
   workflow_dispatch:
