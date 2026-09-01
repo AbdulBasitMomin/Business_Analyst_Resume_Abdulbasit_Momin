@@ -271,7 +271,7 @@ function Work() {
               {...RISE}
               transition={{ ...RISE.transition, delay: i * 0.08 }}
               key={p.name}
-              className={`group relative overflow-hidden rounded-3xl border border-stroke bg-surface ${spans[i % spans.length]}`}
+              className={`group relative cursor-pointer overflow-hidden rounded-3xl border border-stroke bg-surface transition-colors focus-within:border-white/40 hover:border-white/20 ${spans[i % spans.length]}`}
             >
               <div className={`relative ${ratios[i % ratios.length]} w-full overflow-hidden`}>
                 <Cover
@@ -302,7 +302,19 @@ function Work() {
               </div>
 
               <div className="p-6 md:p-7">
-                <h3 className="mb-2 text-lg text-text-primary md:text-xl">{p.name}</h3>
+                {/* The card's one link, stretched over the whole card by its own
+                    ::after. The hover pill said "View" from the start and went
+                    nowhere; a card that looks clickable has to be clickable, and
+                    doing it this way keeps a single focusable link per card
+                    rather than a second one behind the artwork. */}
+                <h3 className="mb-2 text-lg text-text-primary md:text-xl">
+                  <a
+                    href={p.href}
+                    className="after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none"
+                  >
+                    {p.name}
+                  </a>
+                </h3>
                 <p className="mb-3 max-w-2xl text-sm text-muted">{p.blurb}</p>
                 <p className="mb-4 max-w-2xl text-sm text-text-primary/80">{p.impact}</p>
                 <ul className="flex flex-wrap gap-2">

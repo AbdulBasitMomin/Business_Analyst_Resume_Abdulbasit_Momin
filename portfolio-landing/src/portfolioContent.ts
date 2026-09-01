@@ -35,7 +35,22 @@ export const NAV = [
   { label: 'Resume', href: `https://${meta.portfolio}/` },
 ];
 
-export const PROJECTS = resume.projects.map((p, i) => ({ ...p, cover: i }));
+/**
+ * Where a work card goes when you click it.
+ *
+ * The resume site renders a full problem / what-I-did / result breakdown for
+ * each of these under its own anchor, which is a better destination than the
+ * projects section as a whole. Aligned to resume.projects by order;
+ * check-portfolio.mjs asserts each id still exists in evidence.js, so a rename
+ * there fails a check rather than shipping a link to nowhere.
+ */
+const CASE_ANCHORS = ['cs-platform', 'cs-reporting', 'cs-uat'];
+
+export const PROJECTS = resume.projects.map((p, i) => ({
+  ...p,
+  cover: i,
+  href: `https://${meta.portfolio}/#${CASE_ANCHORS[i]}`,
+}));
 
 export const METHOD = resume.process;
 

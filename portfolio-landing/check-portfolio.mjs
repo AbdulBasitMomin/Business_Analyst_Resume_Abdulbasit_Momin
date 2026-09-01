@@ -1,5 +1,6 @@
 import pw from '/opt/node22/lib/node_modules/playwright/index.js';
 import { PNG } from 'pngjs';
+import { readFile } from 'node:fs/promises';
 const { chromium } = pw;
 
 const lum = (r, g, b) => { const f = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
@@ -30,6 +31,45 @@ for (const s of [resume.stats[0], resume.stats[2], resume.stats[3]]) {
   ck(`figure ${s.value}${s.suffix} ${s.label.slice(0, 20)}`, text.includes(s.label));
   ck(`  cites "${s.source}"`, text.includes(s.source));
 }
+// --- the work cards go somewhere, and somewhere that exists ------------------
+const evidence = await readFile(new URL('../assets/js/evidence.js', import.meta.url), 'utf8');
+const caseIds = [...evidence.matchAll(/id: '(cs-[a-z-]+)'/g)].map(m => m[1]);
+// elementFromPoint needs the card on screen, and the page scrolls smoothly, so
+// each card is scrolled into view and given a frame before it is hit-tested.
+// Measuring without that returns null for every point and reads as "the link
+// does not cover the card", which is what it did the first time.
+const cardCount = await page.evaluate(() => {
+  document.documentElement.style.scrollBehavior = 'auto';
+  return document.querySelectorAll('#work article').length;
+});
+const cards = [];
+for (let i = 0; i < cardCount; i++) {
+  await page.evaluate((n) => document.querySelectorAll('#work article')[n].scrollIntoView({ block: 'center' }), i);
+  await page.waitForTimeout(250);
+  cards.push(await page.evaluate((n) => {
+    const el = document.querySelectorAll('#work article')[n];
+    const a = el.querySelector('a[href]');
+    const r = el.getBoundingClientRect();
+    // Three points, because a link that only covers the caption is not a
+    // clickable card -- the artwork is where a reader actually aims.
+    const pts = [[r.x + r.width / 2, r.y + r.height / 2], [r.x + r.width / 2, r.y + 100], [r.x + 60, r.bottom - 120]];
+    const covered = pts.every(([x, y]) => { const h = document.elementFromPoint(Math.round(x), Math.round(y));
+      return !!h && (h === a || h.closest('a') === a); });
+    return { title: el.querySelector('h3')?.textContent?.trim(), href: a?.getAttribute('href') || null, hitIsLink: covered };
+  }, i));
+}
+await page.evaluate(() => window.scrollTo(0, 0));
+await page.waitForTimeout(200);
+ck('every work card has a link', cards.length > 0 && cards.every(c => c.href),
+   cards.map(c => c.href ? 'ok' : `NONE for ${c.title}`).join(', '));
+ck('the link covers the card', cards.every(c => c.hitIsLink),
+   cards.filter(c => !c.hitIsLink).map(c => c.title).join(', '));
+for (const c of cards) {
+  const anchor = (c.href || '').split('#')[1];
+  ck(`  "${(c.title || '').slice(0, 26)}" -> #${anchor}`, caseIds.includes(anchor),
+     caseIds.includes(anchor) ? '' : `not one of ${caseIds.join(', ')}`);
+}
+
 const FORBIDDEN = ['Michael', 'Smith', 'Chicago', 'Dribbble', '20+', '95+', '200%', 'Journal',
   'Automotive', 'Urban Architecture', 'Brand Identity', 'Satisfied Clients', 'COLLECTION'];
 for (const w of FORBIDDEN) ck(`no borrowed copy: "${w}"`, !text.includes(w));
