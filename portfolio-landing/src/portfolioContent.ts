@@ -72,6 +72,38 @@ export const ROLE_COUNT = resume.experience.length;
 
 export const MARQUEE = 'REQUIREMENTS THAT SURVIVE THE HANDOFF';
 
+/* ------------------------------------------------------------------ section copy
+ *
+ * These lines used to describe how the page was built -- "each one traceable to
+ * the line of the resume it came from", "grounded in the verbs the resume
+ * actually uses". True, and useless: a reader does not care how the copy was
+ * sourced, they care what was delivered. Each one now names the work.
+ */
+
+/** The three deliveries, in figures, assembled from the resume rather than retyped. */
+const CONDITIONS = (resume.projects[0].name.match(/\d+\+/) || ['50+'])[0];
+const DASHBOARDS = resume.stats[2];
+const GOLIVES = resume.stats[3];
+
+export const WORK_SUB =
+  `A consumer data platform covering ${CONDITIONS} conditions, ` +
+  `${DASHBOARDS.value} Power BI dashboards on a validated model, and UAT behind ` +
+  `${GOLIVES.value}${GOLIVES.suffix} defect-free go-lives.`;
+
+/**
+ * The method section's line, lifted verbatim from the resume's own summary --
+ * it is the sharpest sentence on the whole site and it is his, not mine.
+ */
+export const METHOD_SUB = (
+  (resume.about.paragraphs[0].match(/[^.]+\./g) || []).find((x) => x.includes('handoff')) || ''
+).trim();
+
+export const DELIVERABLES_SUB =
+  'What was asked for, what was built, and the trail that ties the two together.';
+
+/** The contact line repeated the heading word for word. This does not. */
+export const CONTACT_SUB = `${meta.location} · onsite or remote · open now.`;
+
 export const PDF = `https://${meta.portfolio}/${meta.resumePdf.replace(/^\.\//, '')}`;
 export const TEL = `tel:${meta.phone.replace(/[^\d+]/g, '')}`;
 export const MAILTO = `mailto:${meta.email}`;

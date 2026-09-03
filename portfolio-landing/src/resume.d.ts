@@ -52,6 +52,7 @@ declare module '@resume' {
       portfolio: string;
     };
     stats: Stat[];
+    about: { headline: string; paragraphs: string[] };
     experience: Role[];
     deliverables: string[];
     projects: Project[];

@@ -23,7 +23,27 @@ const { resume } = await import('../assets/js/data.js');
 const text = await page.evaluate(() => document.body.innerText);
 ck('name', text.includes(resume.meta.name), resume.meta.name);
 ck('tagline', text.includes(resume.meta.tagline));
-ck('availability', text.includes(resume.meta.availability));
+ck('location', text.includes(resume.meta.location), resume.meta.location);
+
+// --- the section copy says something about the work, not about the page ------
+// It used to say things like "each one traceable to the line of the resume it
+// came from": accurate, and about the build rather than about the delivery.
+const META_COPY = ['traceable to the line', 'verbs the resume', 'the resume actually uses',
+  'types across', 'each one traceable'];
+for (const phrase of META_COPY) ck(`no copy about the page itself: "${phrase}"`, !text.includes(phrase));
+
+// The method line is the resume's own sentence, so it must appear there verbatim.
+const about = resume.about.paragraphs.join(' ');
+const methodLine = (about.match(/[^.]+\./g) || []).find((x) => x.includes('handoff'))?.trim();
+ck('method line is the resume\'s own sentence', !!methodLine && text.includes(methodLine),
+   methodLine ? methodLine.slice(0, 52) + '...' : 'not found in about');
+
+// The work line names the deliveries in figures rather than describing itself.
+const conditions = (resume.projects[0].name.match(/\d+\+/) || [])[0];
+ck('work line names the platform scale', !!conditions && text.includes(`${conditions} conditions`), conditions);
+ck('work line names the dashboards', text.includes(`${resume.stats[2].value} Power BI dashboards`));
+ck('work line names the go-lives',
+   text.includes(`${resume.stats[3].value}${resume.stats[3].suffix} defect-free go-lives`));
 ck('email', text.includes(resume.meta.email));
 for (const p of resume.projects) ck(`project "${p.name.slice(0, 26)}"`, text.includes(p.name));
 for (const m of resume.process) ck(`stage "${m.stage}"`, text.includes(m.stage));

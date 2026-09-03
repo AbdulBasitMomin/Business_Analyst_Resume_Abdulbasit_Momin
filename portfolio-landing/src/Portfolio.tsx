@@ -5,8 +5,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Backdrop from './Backdrop';
 import { Cover, DeliverableMark } from './portfolioCovers';
 import {
-  DELIVERABLES, DELIVERABLE_COUNT, EYEBROW, FOCUS_AREAS, LOADING_WORDS, MAILTO,
-  MARQUEE, METHOD, NAV, PDF, PROJECTS, ROLE_COUNT, SOCIALS, STATS, meta,
+  CONTACT_SUB, DELIVERABLES, DELIVERABLES_SUB, EYEBROW, FOCUS_AREAS, LOADING_WORDS,
+  MAILTO, MARQUEE, METHOD, METHOD_SUB, NAV, PDF, PROJECTS, SOCIALS, STATS, WORK_SUB, meta,
 } from './portfolioContent';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -260,9 +260,9 @@ function Work() {
       <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-16">
         <Head
           eyebrow="Selected work"
-          lead="Featured"
-          italic="projects"
-          sub="Three deliveries, each one traceable to the line of the resume it came from."
+          lead="Three"
+          italic="deliveries"
+          sub={WORK_SUB}
         />
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-12 md:gap-6">
@@ -346,7 +346,7 @@ function Method() {
           eyebrow="How I work"
           lead="The delivery"
           italic="loop"
-          sub="Five stages, each grounded in the verbs the resume actually uses."
+          sub={METHOD_SUB}
         />
 
         <ol className="flex flex-col gap-4">
@@ -412,9 +412,7 @@ function Deliverables() {
         <h2 className="mb-3 text-3xl text-text-primary md:text-5xl">
           The <span className="font-display italic">artefacts</span>
         </h2>
-        <p className="max-w-md text-sm text-muted md:text-base">
-          {DELIVERABLE_COUNT} types across {ROLE_COUNT} roles. Six of them here.
-        </p>
+        <p className="max-w-md text-sm text-muted md:text-base">{DELIVERABLES_SUB}</p>
       </div>
 
       <div className="relative z-20 mx-auto mt-12 grid max-w-[1400px] grid-cols-2 gap-6 px-6 md:mt-0 md:gap-40 md:px-10">
@@ -496,7 +494,7 @@ function Contact() {
         <h2 className="mb-6 text-3xl text-text-primary md:text-5xl">
           Open to <span className="font-display italic">Business Analyst</span> roles
         </h2>
-        <p className="mx-auto mb-8 max-w-md text-sm text-muted md:text-base">{meta.availability}.</p>
+        <p className="mx-auto mb-8 max-w-md text-sm text-muted md:text-base">{CONTACT_SUB}</p>
 
         <a
           href={MAILTO}
